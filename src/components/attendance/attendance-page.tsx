@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -10,16 +11,19 @@ import {
   Clock3,
   FileText,
   MapPin,
+  Plus,
   Search,
   UsersRound,
 } from "lucide-react";
-import { initialMembers } from "@/components/members/member-data";
+import type { AppRoleId } from "@/components/auth/role-config";
 import styles from "./attendance.module.css";
+import { AttendanceSessionForm } from "./attendance-session-form";
 import {
-  createInitialSessions,
   formatSessionDate,
   getActiveMembers,
   getSessionCounts,
+  type AttendanceMember,
+  type AttendanceSession,
   type SessionStatus,
 } from "./attendance-data";
 
@@ -30,15 +34,51 @@ const filters: Array<{ label: string; value: SessionStatus | "Semua" }> = [
   { label: "Ditutup", value: "Ditutup" },
 ];
 
-const activeMembers = getActiveMembers(initialMembers);
-const sessions = createInitialSessions(initialMembers);
+type AttendancePageProps = {
+  sessions: AttendanceSession[];
+  members: AttendanceMember[];
+  periodName: string | null;
+  role: AppRoleId;
+  division: string | undefined;
+};
 
-export function AttendancePage() {
+export function AttendancePage({
+  sessions: initialSessions,
+  members,
+  periodName,
+  role,
+  division,
+}: AttendancePageProps) {
+  const router = useRouter();
+  const [sessions, setSessions] = useState(initialSessions);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedFilter, setSelectedFilter] =
     useState<SessionStatus | "Semua">("Semua");
   const [search, setSearch] = useState("");
+  const activeMembers = getActiveMembers(members);
+  const canManage = role === "ketua-divisi" || role === "pj-divisi";
+
+  function getCounts(session: AttendanceSession) {
+    const sessionMembers = session.division
+      ? activeMembers.filter((member) => member.division === session.division)
+      : activeMembers;
+    return getSessionCounts(session, sessionMembers.length);
+  }
+
+  function handleCreated(session: AttendanceSession) {
+    setSessions((current) => [session, ...current]);
+    setIsCreateOpen(false);
+    router.push(`/attendance/${session.id}`);
+  }
 
   const activeSession = sessions.find((session) => session.status === "Aktif");
+  const canCreateSession =
+    Boolean(periodName) && !activeSession && activeMembers.length > 0;
+  const createSessionDisabledReason = !periodName
+    ? "Belum ada periode aktif. Minta Admin mengaktifkan periode sebelum membuka sesi."
+    : activeMembers.length === 0
+      ? `Belum ada anggota aktif di divisi ${division ?? "ini"}. Minta Admin menambahkan anggota atau mengubah status anggota menjadi Aktif sebelum membuka sesi.`
+      : null;
   const normalizedSearch = search.trim().toLocaleLowerCase("id");
   const filteredSessions = useMemo(
     () =>
@@ -53,7 +93,7 @@ export function AttendancePage() {
             .includes(normalizedSearch);
         return matchesStatus && matchesSearch;
       }),
-    [normalizedSearch, selectedFilter],
+    [normalizedSearch, selectedFilter, sessions],
   );
 
   const activeCount = sessions.filter(
@@ -68,7 +108,7 @@ export function AttendancePage() {
   const averageAttendance = closedSessions.length
     ? Math.round(
         closedSessions.reduce((total, session) => {
-          const counts = getSessionCounts(session, activeMembers.length);
+          const counts = getCounts(session);
           return total + (counts.totalActive ? (counts.hadir / counts.totalActive) * 100 : 0);
         }, 0) / closedSessions.length,
       )
@@ -79,12 +119,46 @@ export function AttendancePage() {
         <header className={styles.pageHeading}>
         <div>
           <span className={styles.pageEyebrow}>
-            MONITORING · PERIODE 2026—2027
+            {canManage ? "ABSENSI DIVISI" : "MONITORING ABSENSI"} · {periodName ?? "TANPA PERIODE AKTIF"}
           </span>
-          <h1>Monitoring Absensi</h1>
-          <p>Pantau sesi yang berlangsung dan tinjau rekap kehadiran anggota.</p>
+          <h1>{canManage ? "Absensi Divisi" : "Monitoring Absensi"}</h1>
+          <p>
+            {canManage
+              ? `Kelola sesi dan catat kehadiran anggota${division ? ` ${division}` : ""}.`
+              : "Pantau sesi yang berlangsung dan tinjau rekap kehadiran anggota."}
+          </p>
         </div>
+        {canManage && (
+          <button
+            type="button"
+            className={styles.createButton}
+            onClick={() => setIsCreateOpen((open) => !open)}
+            disabled={!canCreateSession}
+            aria-describedby={
+              !activeSession && createSessionDisabledReason
+                ? "create-session-disabled-reason"
+                : undefined
+            }
+          >
+            <Plus size={15} aria-hidden="true" />
+            Buka sesi
+          </button>
+        )}
       </header>
+
+      {canManage && !activeSession && createSessionDisabledReason && (
+      <p
+        id="create-session-disabled-reason"
+        className={styles.createDisabledNotice}
+        role="status"
+      >
+        {createSessionDisabledReason}
+      </p>
+      )}
+
+      {canManage && isCreateOpen && (
+        <AttendanceSessionForm onCancel={() => setIsCreateOpen(false)} onCreated={handleCreated} />
+      )}
 
       {activeSession ? (
         <section className={styles.activeBanner} aria-label="Sesi sedang berjalan">
@@ -104,14 +178,14 @@ export function AttendancePage() {
             <span>KEHADIRAN TERCATAT</span>
             <strong>
               {activeSession.attendance.filter((entry) => entry.status === "Hadir").length}
-              <small> / {activeMembers.length}</small>
+              <small> / {getCounts(activeSession).totalActive}</small>
             </strong>
             <div className={styles.progressTrack}>
               <span
                 style={{
-                  width: `${getSessionCounts(activeSession, activeMembers.length).totalActive
-                    ? (getSessionCounts(activeSession, activeMembers.length).hadir /
-                        activeMembers.length) *
+                  width: `${getCounts(activeSession).totalActive
+                    ? (getCounts(activeSession).hadir /
+                        getCounts(activeSession).totalActive) *
                       100
                     : 0}%`,
                 }}
@@ -122,7 +196,7 @@ export function AttendancePage() {
             href={`/attendance/${activeSession.id}`}
             className={styles.bannerAction}
           >
-            Pantau detail
+            {canManage ? "Scan & rekap" : "Pantau detail"}
             <ArrowRight size={16} aria-hidden="true" />
           </Link>
         </section>
@@ -133,8 +207,28 @@ export function AttendancePage() {
           </span>
           <div>
             <h2>Belum ada sesi yang berjalan</h2>
-            <p>Sesi aktif akan muncul di sini setelah Operator memulainya.</p>
+            <p>
+              {canManage
+                ? "Buka sesi kegiatan untuk mulai mencatat kehadiran anggota."
+                : "Sesi aktif akan muncul di sini setelah dibuka oleh pengurus divisi."}
+            </p>
           </div>
+          {canManage && (
+            <button
+              type="button"
+              className={styles.emptyAction}
+              onClick={() => setIsCreateOpen(true)}
+              disabled={!canCreateSession}
+              aria-describedby={
+                createSessionDisabledReason
+                  ? "create-session-disabled-reason"
+                  : undefined
+              }
+            >
+              <Plus size={14} aria-hidden="true" />
+              Buka sesi
+            </button>
+          )}
         </section>
       )}
 
@@ -145,7 +239,7 @@ export function AttendancePage() {
           </span>
           <span className={styles.metricLabel}>Total sesi</span>
           <strong>{sessions.length}</strong>
-          <small>Periode 2026—2027</small>
+          <small>{periodName ?? "Periode belum aktif"}</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconGreen}`}>
@@ -161,7 +255,7 @@ export function AttendancePage() {
           </span>
           <span className={styles.metricLabel}>Draft</span>
           <strong>{draftCount}</strong>
-          <small>Menunggu Operator memulai</small>
+          <small>{canManage ? "Siap dibuka oleh pengurus" : "Menunggu pengurus divisi"}</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconRose}`}>
@@ -178,7 +272,11 @@ export function AttendancePage() {
           <div>
             <span className={styles.panelEyebrow}>RIWAYAT KEGIATAN</span>
             <h2 id="sessions-title">Semua sesi</h2>
-            <p>Admin memiliki akses baca untuk seluruh sesi pada periode aktif.</p>
+            <p>
+              {canManage
+                ? "Riwayat sesi dan kehadiran divisi yang menjadi tanggung jawabmu."
+                : "Admin memiliki akses baca untuk seluruh sesi pada periode aktif."}
+            </p>
           </div>
           <label className={styles.searchBox}>
             <Search size={16} aria-hidden="true" />
@@ -227,7 +325,7 @@ export function AttendancePage() {
             </thead>
             <tbody>
               {filteredSessions.map((session) => {
-                const counts = getSessionCounts(session, activeMembers.length);
+                const counts = getCounts(session);
                 const statusClass =
                   session.status === "Aktif"
                     ? styles.statusActive
@@ -244,7 +342,9 @@ export function AttendancePage() {
                         </span>
                         <span>
                           <strong>{session.title}</strong>
-                          <small>{session.type} · {session.id}</small>
+                          <small>
+                            {session.type}{session.division ? ` · ${session.division}` : ""} · {session.id.slice(0, 8)}
+                          </small>
                         </span>
                       </span>
                     </td>
@@ -299,9 +399,11 @@ export function AttendancePage() {
         </div>
       </section>
 
-      <p className={styles.demoNotice}>
-        Tampilan ini menggunakan data pratinjau lokal. Sesi dan absensi dikelola Operator.
-      </p>
+      {role === "pj-divisi" && (
+        <p className={styles.demoNotice}>
+          Sebagai PJ, kamu dapat langsung menjalankan sesi saat Ketua Divisi berhalangan. Nama operator selalu tersimpan pada catatan absensi.
+        </p>
+      )}
     </div>
   );
 }

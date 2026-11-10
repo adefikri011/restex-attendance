@@ -12,6 +12,7 @@ export type ActivityType = (typeof activityTypes)[number];
 export type SessionStatus = "Aktif" | "Draft" | "Ditutup";
 export type AttendanceStatus = "Hadir" | "Izin" | "Sakit" | "Alpha";
 export type AttendanceMethod = "QR" | "Manual";
+export type AttendanceMember = Pick<Member, "id" | "name" | "nim" | "division" | "status">;
 
 export type AttendanceEntry = {
   memberId: string;
@@ -19,6 +20,7 @@ export type AttendanceEntry = {
   method?: AttendanceMethod;
   reason?: string;
   time?: string;
+  recordedBy?: string;
 };
 
 export type AttendanceSession = {
@@ -30,6 +32,8 @@ export type AttendanceSession = {
   location: string;
   notes: string;
   status: SessionStatus;
+  division?: string | null;
+  createdBy?: string;
   attendance: AttendanceEntry[];
 };
 
@@ -38,7 +42,46 @@ export type NewSessionInput = Pick<
   "title" | "type" | "date" | "time" | "location" | "notes"
 >;
 
-export function getActiveMembers(members: Member[]) {
+export function isAttendanceSession(value: unknown): value is AttendanceSession {
+  if (typeof value !== "object" || value === null) return false;
+  if (
+    !("id" in value) ||
+    typeof value.id !== "string" ||
+    !("title" in value) ||
+    typeof value.title !== "string" ||
+    !("type" in value) ||
+    typeof value.type !== "string" ||
+    !activityTypes.some((item) => item === value.type) ||
+    !("date" in value) ||
+    typeof value.date !== "string" ||
+    !("time" in value) ||
+    typeof value.time !== "string" ||
+    !("location" in value) ||
+    typeof value.location !== "string" ||
+    !("notes" in value) ||
+    typeof value.notes !== "string" ||
+    !("status" in value) ||
+    (value.status !== "Draft" && value.status !== "Aktif" && value.status !== "Ditutup") ||
+    !("attendance" in value) ||
+    !Array.isArray(value.attendance)
+  ) {
+    return false;
+  }
+  return value.attendance.every(
+    (entry) =>
+      typeof entry === "object" &&
+      entry !== null &&
+      "memberId" in entry &&
+      typeof entry.memberId === "string" &&
+      "status" in entry &&
+      (entry.status === "Hadir" ||
+        entry.status === "Izin" ||
+        entry.status === "Sakit" ||
+        entry.status === "Alpha"),
+  );
+}
+
+export function getActiveMembers<T extends AttendanceMember>(members: T[]) {
   return members.filter((member) => member.status === "Aktif");
 }
 

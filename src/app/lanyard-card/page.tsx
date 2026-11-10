@@ -12,8 +12,12 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function LanyardCardRoute() {
-  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi"]);
-  const { members, periodName } = await getMembersPageData();
+  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const division =
+    user.role === "ketua-divisi" || user.role === "pj-divisi"
+      ? user.managedDivision
+      : undefined;
+  const { members, periodName } = await getMembersPageData(division);
 
   return (
     <DashboardShell role={user.role} displayName={user.name}>

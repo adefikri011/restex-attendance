@@ -30,11 +30,21 @@ if (baseURL) {
   }
 }
 
+const trustedOrigins = new Set(baseURL ? [new URL(baseURL).origin] : []);
+if (process.env.NODE_ENV !== "production") {
+  trustedOrigins.add("http://localhost:3000");
+  trustedOrigins.add("http://127.0.0.1:3000");
+  for (const origin of process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []) {
+    const trimmedOrigin = origin.trim();
+    if (trimmedOrigin) trustedOrigins.add(new URL(trimmedOrigin).origin);
+  }
+}
+
 export const auth = betterAuth({
   appName: "RESTEX Attendance",
   baseURL,
   secret,
-  trustedOrigins: baseURL ? [new URL(baseURL).origin] : undefined,
+  trustedOrigins: [...trustedOrigins],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
   emailAndPassword: {
     enabled: true,

@@ -2,6 +2,7 @@ export const administratorRoles = [
   "Super Admin",
   "Admin",
   "Ketua Divisi",
+  "PJ Divisi",
 ] as const;
 
 export type AdministratorRole = (typeof administratorRoles)[number];

@@ -14,6 +14,7 @@ import {
   Shield,
   ShieldCheck,
   UserRound,
+  UserRoundCheck,
   UsersRound,
 } from "lucide-react";
 import { InviteAdministratorForm } from "./invite-administrator-form";
@@ -66,6 +67,13 @@ const roleDescriptions: Array<{
     className: styles.roleDivisionLead,
   },
   {
+    role: "PJ Divisi",
+    title: "PJ Divisi",
+    description: "Dapat membuka sesi sebagai pengganti Ketua Divisi dan mencatat absensi pada divisinya.",
+    icon: UserRoundCheck,
+    className: styles.roleDivisionLead,
+  },
+  {
     role: "Anggota",
     title: "Anggota",
     description: "Melihat profil dan riwayat absensi milik sendiri.",
@@ -96,6 +104,8 @@ export function AdministratorAccountsPage({
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("Semua");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("Semua");
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [inviteRole, setInviteRole] = useState<AdministratorRole>("Admin");
+  const [inviteDivision, setInviteDivision] = useState("");
   const [notice, setNotice] = useState("");
   const [createdCredentials, setCreatedCredentials] = useState<{
     email: string;
@@ -120,30 +130,27 @@ export function AdministratorAccountsPage({
 
   const activeCount = accounts.filter((account) => account.status === "Aktif").length;
   const inactiveCount = accounts.filter((account) => account.status === "Nonaktif").length;
-  const divisionLeadCount = accounts.filter(
-    (account) =>
-      account.role === "Ketua Divisi" &&
-      account.status === "Aktif" &&
-      divisions.includes(account.division ?? ""),
-  ).length;
   const divisionLeads = divisions.map((division) => ({
     division,
     memberCount: divisionMemberCounts[division] ?? 0,
-    account: accounts.find(
+    lead: accounts.find(
       (account) =>
         account.role === "Ketua Divisi" &&
         account.division === division &&
         account.status === "Aktif",
     ),
+    pj: accounts.find(
+      (account) =>
+        account.role === "PJ Divisi" &&
+        account.division === division &&
+        account.status === "Aktif",
+    ),
   }));
   const availableDivisions = divisions.filter(
-    (division) =>
-      !accounts.some(
-        (account) =>
-          account.role === "Ketua Divisi" &&
-          account.division === division &&
-          account.status === "Aktif",
-      ),
+    (division) => !divisionLeads.some((item) => item.division === division && item.lead),
+  );
+  const availablePjDivisions = divisions.filter(
+    (division) => !divisionLeads.some((item) => item.division === division && item.pj),
   );
 
   function addCreatedAccount(result: {
@@ -204,7 +211,7 @@ export function AdministratorAccountsPage({
           <span className={styles.pageEyebrow}>PENGELOLAAN · AKSES ORGANISASI</span>
           <h1>Akun Pengurus</h1>
           <p>
-            Atur akses pengurus dan pastikan setiap divisi memiliki Ketua Divisi.
+            Atur Ketua Divisi dan akun PJ pendamping untuk menjaga kelangsungan absensi.
           </p>
         </div>
         <button
@@ -213,6 +220,8 @@ export function AdministratorAccountsPage({
           onClick={() => {
             setNotice("");
             setCreatedCredentials(null);
+            setInviteRole("Admin");
+            setInviteDivision("");
             setIsInviteOpen((isOpen) => !isOpen);
           }}
         >
@@ -224,7 +233,10 @@ export function AdministratorAccountsPage({
       {isInviteOpen && (
         <InviteAdministratorForm
           availableDivisions={availableDivisions}
+          availablePjDivisions={availablePjDivisions}
           periodName={periodName}
+          initialRole={inviteRole}
+          initialDivision={inviteDivision}
           onCancel={() => setIsInviteOpen(false)}
           onCreated={addCreatedAccount}
         />
@@ -281,10 +293,10 @@ export function AdministratorAccountsPage({
             <Building2 size={17} aria-hidden="true" />
           </span>
           <div>
-            <span>Ketua Divisi aktif</span>
-            <strong>{divisionLeadCount}<small> / {divisions.length}</small></strong>
+            <span>PJ Divisi aktif</span>
+            <strong>{accounts.filter((account) => account.role === "PJ Divisi" && account.status === "Aktif").length}<small> / {divisions.length}</small></strong>
           </div>
-          <small>Penanggung jawab divisi</small>
+          <small>Akun cadangan absensi</small>
         </article>
       </section>
 
@@ -293,15 +305,15 @@ export function AdministratorAccountsPage({
           <div>
             <span className={styles.sectionEyebrow}>STRUKTUR DIVISI</span>
             <h2 id="division-coverage-title">Penanggung jawab per divisi</h2>
-            <p>Setiap Ketua Divisi dicatat dengan divisi tanggung jawabnya.</p>
+            <p>Setiap divisi dapat memiliki satu Ketua dan satu PJ aktif.</p>
           </div>
           <span className={styles.coverageBadge}>
             <Check size={13} aria-hidden="true" />
-            {divisionLeads.filter((item) => item.account).length} dari {divisions.length} terisi
+            {divisionLeads.filter((item) => item.lead && item.pj).length} dari {divisions.length} lengkap
           </span>
         </div>
         <div className={styles.divisionGrid}>
-          {divisionLeads.map(({ division, memberCount, account }) => (
+          {divisionLeads.map(({ division, memberCount, lead, pj }) => (
             <article className={styles.divisionCard} key={division}>
               <span className={styles.divisionIcon} aria-hidden="true">
                 <Building2 size={16} />
@@ -310,11 +322,11 @@ export function AdministratorAccountsPage({
                 <h3>{division}</h3>
                 <span>{memberCount} anggota aktif</span>
               </div>
-              {account ? (
+              {lead ? (
                 <div className={styles.divisionLead}>
-                  <span>{getAdministratorInitials(account.name)}</span>
+                  <span>{getAdministratorInitials(lead.name)}</span>
                   <div>
-                    <strong>{account.name}</strong>
+                    <strong>{lead.name}</strong>
                     <small>Ketua Divisi</small>
                   </div>
                 </div>
@@ -326,10 +338,36 @@ export function AdministratorAccountsPage({
                     setRoleFilter("Ketua Divisi");
                     setStatusFilter("Semua");
                     setSearch(division);
+                    setInviteRole("Ketua Divisi");
+                    setInviteDivision(division);
                     setIsInviteOpen(true);
                   }}
                 >
                   Undang ketua
+                </button>
+              )}
+              {pj ? (
+                <div className={styles.divisionLead}>
+                  <span>{getAdministratorInitials(pj.name)}</span>
+                  <div>
+                    <strong>{pj.name}</strong>
+                    <small>PJ Divisi</small>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className={styles.assignButton}
+                  onClick={() => {
+                    setRoleFilter("PJ Divisi");
+                    setStatusFilter("Semua");
+                    setSearch(division);
+                    setInviteRole("PJ Divisi");
+                    setInviteDivision(division);
+                    setIsInviteOpen(true);
+                  }}
+                >
+                  Undang PJ
                 </button>
               )}
             </article>
@@ -415,7 +453,7 @@ export function AdministratorAccountsPage({
           {filteredAccounts.length ? (
             filteredAccounts.map((account) => (
               <article className={styles.accountRow} key={account.id}>
-                <span className={`${styles.accountAvatar} ${account.role === "Ketua Divisi" ? styles.avatarDivision : ""}`}>
+                <span className={`${styles.accountAvatar} ${account.role === "Ketua Divisi" || account.role === "PJ Divisi" ? styles.avatarDivision : ""}`}>
                   {getAdministratorInitials(account.name)}
                 </span>
                 <div className={styles.accountIdentity}>

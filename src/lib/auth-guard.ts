@@ -6,6 +6,7 @@ import {
   type AppRoleId,
 } from "@/components/auth/role-config";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 export async function requirePageUser(allowedRoles?: readonly AppRoleId[]) {
   const access = await getApiUser(allowedRoles);
@@ -31,11 +32,26 @@ export async function requirePageUser(allowedRoles?: readonly AppRoleId[]) {
 export async function getApiUser(allowedRoles?: readonly AppRoleId[]) {
   const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session || !session.user.isActive) {
+  if (!session) {
     return { user: null, status: 401 as const, databaseRole: null };
   }
 
-  const role = getAppRoleByDatabaseRole(session.user.role);
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      isActive: true,
+      managedDivision: true,
+    },
+  });
+  if (!user?.isActive) {
+    return { user: null, status: 401 as const, databaseRole: null };
+  }
+
+  const role = getAppRoleByDatabaseRole(user.role);
   if (!role) {
     return { user: null, status: 403 as const, databaseRole: null };
   }
@@ -44,18 +60,19 @@ export async function getApiUser(allowedRoles?: readonly AppRoleId[]) {
     return {
       user: null,
       status: 403 as const,
-      databaseRole: session.user.role,
+      databaseRole: user.role,
     };
   }
 
   return {
     user: {
-      id: session.user.id,
-      name: session.user.name,
-      email: session.user.email,
+      id: user.id,
+      name: user.name,
+      email: user.email,
       role: role.id,
+      managedDivision: user.managedDivision,
     },
     status: 200 as const,
-    databaseRole: session.user.role,
+    databaseRole: user.role,
   };
 }

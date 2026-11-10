@@ -51,11 +51,29 @@ Untuk membuat Super Admin pertama:
 
 Endpoint bootstrap hanya aktif dengan token tersebut dan hanya selama belum ada
 Super Admin. Jangan mengirim token atau password lewat chat, commit, atau log.
-Bootstrap hanya membuat Super Admin pertama. Pendaftaran publik dinonaktifkan;
-provisioning akun untuk role lain perlu dihubungkan pada tahap administrasi
-berikutnya. Login saat ini hanya menyediakan email dan password; QR belum
-diimplementasikan. Form data anggota pada modul lain masih berupa pratinjau dan
-belum membuat akun login di database.
+Akun Admin, Ketua Divisi, dan PJ Divisi dibuat oleh Super Admin melalui halaman
+Akun Pengurus. Setiap divisi dapat memiliki satu Ketua dan satu PJ aktif; PJ
+dapat langsung membuka sesi absensi divisinya ketika Ketua berhalangan.
+
+## Sesi dan QR absensi
+
+Ketua Divisi dan PJ dapat membuka, memindai QR, serta menutup sesi untuk divisi
+yang ditugaskan. Admin dan Super Admin hanya memantau sesi. Hak akses sesi
+diperiksa kembali di server, dan setiap scan menyimpan operator, waktu, serta
+metode pencatatannya. QR anggota berisi token bertanda tangan yang disimpan
+dalam bentuk hash; QR dapat disiapkan dari halaman Kartu Lanyard. Token
+`QR_TOKEN_SECRET` harus stabil dan minimal 32 karakter di production. Jika tidak
+diisi, aplikasi memakai `BETTER_AUTH_SECRET`.
+
+Terapkan migrasi sebelum memakai fitur sesi/PJ, lalu generate Prisma Client:
+
+```bash
+npm run db:deploy
+npm run db:generate
+```
+
+QR kehadiran tidak digunakan sebagai metode login. Login tetap memakai email
+dan password.
 
 ## Tema tampilan
 

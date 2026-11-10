@@ -1,18 +1,14 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AttendanceSessionDetail } from "@/components/attendance/attendance-session-detail";
-import { createInitialSessions } from "@/components/attendance/attendance-data";
-import { initialMembers } from "@/components/members/member-data";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { requirePageUser } from "@/lib/auth-guard";
+import { getAttendanceSessionData } from "@/lib/attendance-service";
 
 export const metadata: Metadata = {
   title: "Detail Sesi | RESTEX Attendance",
   description: "Pantau rekap dan kehadiran anggota pada sesi RESTEX.",
 };
-
-const sessions = createInitialSessions(initialMembers);
 
 export const instant = false;
 
@@ -21,26 +17,14 @@ export default async function AttendanceSessionRoute({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi"]);
+  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const { sessionId } = await params;
+  const data = await getAttendanceSessionData(sessionId, user);
+  if (!data) notFound();
 
   return (
     <DashboardShell role={user.role} displayName={user.name}>
-      <Suspense fallback={<p role="status" aria-busy="true">Memuat detail sesi...</p>}>
-        <AttendanceSessionContent params={params} />
-      </Suspense>
+      <AttendanceSessionDetail {...data} />
     </DashboardShell>
   );
-}
-
-async function AttendanceSessionContent({
-  params,
-}: {
-  params: Promise<{ sessionId: string }>;
-}) {
-  const { sessionId } = await params;
-  const session = sessions.find((item) => item.id === sessionId);
-
-  if (!session) notFound();
-
-  return <AttendanceSessionDetail session={session} members={initialMembers} />;
 }

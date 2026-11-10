@@ -59,6 +59,20 @@
   transform: translateY(-1px);
 }
 
+.createButton:disabled,
+.emptyAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+  transform: none;
+}
+
+.createDisabledNotice {
+  margin: -8px 0 0;
+  color: var(--ui-warning-text);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 .liveNotice {
   position: absolute;
   width: 1px;
@@ -654,6 +668,159 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   clip-path: inset(50%);
+}
+
+.sessionFormPanel {
+  display: grid;
+  gap: 16px;
+  padding: 19px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 5px 18px rgb(25 55 75 / 4%);
+}
+
+.sessionFormHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.sessionFormHeading h2 {
+  margin: 5px 0 4px;
+  color: var(--ui-text-accent);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.sessionFormHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+}
+
+.formCloseButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-muted);
+  cursor: pointer;
+}
+
+.sessionForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.sessionForm > label {
+  display: grid;
+  gap: 6px;
+  color: var(--ui-text-accent);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.sessionForm > label > span {
+  color: var(--ui-text-muted);
+  font-weight: 450;
+}
+
+.sessionForm input,
+.sessionForm select,
+.sessionForm textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 38px;
+  padding: 9px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 10px;
+}
+
+.sessionForm input:focus,
+.sessionForm select:focus,
+.sessionForm textarea:focus {
+  border-color: var(--ui-text-accent);
+  box-shadow: 0 0 0 3px rgb(29 92 124 / 7%);
+}
+
+.sessionForm textarea {
+  resize: vertical;
+}
+
+.sessionForm .sessionNotesField,
+.sessionFormFooter,
+.sessionForm .formError {
+  grid-column: 1 / -1;
+}
+
+.sessionFormFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ui-border);
+}
+
+.sessionFormFooter > p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.sessionFormFooter > div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+.cancelButton {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.formError {
+  margin: 0;
+  color: var(--ui-danger-text);
+  font-size: 10px;
+}
+
+@media (max-width: 620px) {
+  .sessionForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sessionFormFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .sessionFormFooter > div {
+    width: 100%;
+  }
+
+  .sessionFormFooter button {
+    flex: 1;
+  }
 }
 
 .sessionDialog,

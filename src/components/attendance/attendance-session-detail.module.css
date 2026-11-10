@@ -86,7 +86,8 @@
 .overview,
 .summaryPanel,
 .rosterPanel,
-.notes {
+.notes,
+.scannerPanel {
   border: 1px solid var(--ui-border);
   border-radius: 14px;
   background: var(--ui-surface);
@@ -97,6 +98,208 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   padding: 16px 18px;
+}
+
+.sessionActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 15px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.sessionActions p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+}
+
+.closeSessionButton {
+  display: inline-flex;
+  min-height: 34px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border: 1px solid color-mix(in srgb, var(--ui-danger-text) 24%, transparent);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-danger-text);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.closeSessionButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.actionError {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  color: var(--ui-danger-text);
+  font-size: 10px;
+}
+
+.scannerPanel {
+  display: grid;
+  gap: 15px;
+  padding: 17px;
+}
+
+.scannerHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.scannerIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+}
+
+.scannerHeading h2 {
+  margin: 4px 0;
+  color: var(--ui-text-accent);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.scannerHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.scannerContent {
+  display: grid;
+  grid-template-columns: minmax(250px, 360px) minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+}
+
+.cameraFrame {
+  position: relative;
+  min-height: 230px;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #102b3c;
+}
+
+.cameraFrame video {
+  width: 100%;
+  height: 100%;
+  min-height: 230px;
+  object-fit: cover;
+}
+
+.cameraLoading {
+  display: grid;
+  min-height: 230px;
+  place-items: center;
+  color: white;
+  font-size: 10px;
+}
+
+.cameraOverlay {
+  position: absolute;
+  inset: 20%;
+  border: 2px solid rgb(255 255 255 / 84%);
+  border-radius: 16px;
+  box-shadow: 0 0 0 999px rgb(6 21 32 / 24%);
+  pointer-events: none;
+}
+
+.scannerInstructions {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+}
+
+.cameraErrorGroup {
+  display: grid;
+  justify-items: start;
+  gap: 9px;
+}
+
+.cameraRetryButton {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.cameraRetryButton:hover {
+  background: var(--ui-surface-subtle);
+}
+
+.cameraBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border-radius: 99px;
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.scannerInstructions h3 {
+  margin: 2px 0 0;
+  color: var(--ui-text-accent);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.scannerInstructions > p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.scannerInstructions .scanPending {
+  color: var(--ui-text-accent);
+  font-weight: 650;
+}
+
+.scannerInstructions .scannerError,
+.scannerInstructions .scanSuccess {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 2px;
+  color: var(--ui-danger-text);
+  font-weight: 650;
+}
+
+.scannerInstructions .scanSuccess {
+  color: var(--ui-success-text);
+}
+
+.scannerError svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
 }
 
 .overviewItem {
@@ -382,6 +585,31 @@
   .overview {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 0;
+  }
+
+  @media (max-width: 620px) {
+    .sessionActions {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .scannerContent {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 15px;
+    }
+
+    .cameraFrame,
+    .cameraFrame video {
+      min-height: 210px;
+    }
+
+    .overview {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .overviewItem:nth-child(2) {
+      border-right: 0;
+    }
   }
 
   .overviewItem:nth-child(2) {

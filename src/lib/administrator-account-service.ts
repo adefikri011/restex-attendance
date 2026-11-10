@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 
 export type NewAdministratorInput = {
   name: string;
-  role: "admin" | "ketua-divisi";
+  role: "admin" | "ketua-divisi" | "pj-divisi";
   division: string | null;
 };
 
@@ -40,7 +40,7 @@ export async function getAdministratorAccountsPageData() {
   ]);
   const [users, memberCounts] = await Promise.all([
     prisma.user.findMany({
-      where: { role: { in: ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD"] } },
+      where: { role: { in: ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD", "DIVISION_PJ"] } },
       orderBy: { createdAt: "asc" },
       select: {
         id: true,
@@ -74,7 +74,9 @@ export async function getAdministratorAccountsPageData() {
         ? "Super Admin"
         : user.role === "ADMIN"
           ? "Admin"
-          : "Ketua Divisi",
+          : user.role === "DIVISION_PJ"
+            ? "PJ Divisi"
+            : "Ketua Divisi",
     division: user.managedDivision,
     status: user.isActive ? "Aktif" : "Nonaktif",
     lastActiveAt: formatDate(user.authSessions[0]?.createdAt ?? null),
@@ -90,7 +92,7 @@ export async function getAdministratorAccountsPageData() {
 }
 
 function accountEmailBase(name: string, role: NewAdministratorInput["role"], division: string | null, periodName: string) {
-  if (role === "ketua-divisi" && division) {
+  if ((role === "ketua-divisi" || role === "pj-divisi") && division) {
     return generateMemberEmail(name, division, periodName);
   }
 
@@ -109,7 +111,7 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
   }
   if (
     (input.role === "admin" && input.division !== null) ||
-    (input.role === "ketua-divisi" && !input.division)
+    (input.role !== "admin" && !input.division)
   ) {
     throw new Error("Jabatan atau divisi tidak valid.");
   }
@@ -124,7 +126,7 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
     });
     if (!activePeriod) throw new Error("Tidak ada periode aktif.");
 
-    if (input.role === "ketua-divisi") {
+    if (input.role !== "admin") {
       const division = input.division;
       if (!division) throw new Error("Jabatan atau divisi tidak valid.");
       const activeDivision = await transaction.division.findFirst({
@@ -135,13 +137,19 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
 
       const currentLead = await transaction.user.findFirst({
         where: {
-          role: "DIVISION_LEAD",
+          role: input.role === "ketua-divisi" ? "DIVISION_LEAD" : "DIVISION_PJ",
           managedDivision: division,
           isActive: true,
         },
         select: { id: true },
       });
-      if (currentLead) throw new Error("Divisi tersebut sudah memiliki Ketua Divisi aktif.");
+      if (currentLead) {
+        throw new Error(
+          input.role === "ketua-divisi"
+            ? "Divisi tersebut sudah memiliki Ketua Divisi aktif."
+            : "Divisi tersebut sudah memiliki PJ aktif.",
+        );
+      }
     }
 
     const emailBase = accountEmailBase(
@@ -165,7 +173,12 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
         id: userId,
         name: input.name,
         email,
-        role: input.role === "admin" ? "ADMIN" : "DIVISION_LEAD",
+        role:
+          input.role === "admin"
+            ? "ADMIN"
+            : input.role === "ketua-divisi"
+              ? "DIVISION_LEAD"
+              : "DIVISION_PJ",
         managedDivision: input.division,
         isActive: true,
         accounts: {
@@ -184,7 +197,12 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
       id: user.id,
       name: user.name,
       email: user.email,
-      role: user.role === "ADMIN" ? "Admin" as const : "Ketua Divisi" as const,
+      role:
+        user.role === "ADMIN"
+          ? "Admin" as const
+          : user.role === "DIVISION_PJ"
+            ? "PJ Divisi" as const
+            : "Ketua Divisi" as const,
       division: user.managedDivision,
       status: "Aktif" as const,
       lastActiveAt: null,
@@ -199,21 +217,31 @@ export async function setAdministratorAccountActive(id: string, isActive: boolea
     where: { id },
     select: { id: true, role: true, managedDivision: true },
   });
-  if (!user || !["ADMIN", "DIVISION_LEAD"].includes(user.role)) {
+  if (!user || !["ADMIN", "DIVISION_LEAD", "DIVISION_PJ"].includes(user.role)) {
     throw new Error("Akun pengurus tidak ditemukan.");
   }
 
-  if (isActive && user.role === "DIVISION_LEAD" && user.managedDivision) {
-    const existingLead = await prisma.user.findFirst({
+  if (
+    isActive &&
+    (user.role === "DIVISION_LEAD" || user.role === "DIVISION_PJ") &&
+    user.managedDivision
+  ) {
+    const existingAssignee = await prisma.user.findFirst({
       where: {
         id: { not: id },
-        role: "DIVISION_LEAD",
+        role: user.role,
         managedDivision: user.managedDivision,
         isActive: true,
       },
       select: { id: true },
     });
-    if (existingLead) throw new Error("Divisi tersebut sudah memiliki Ketua Divisi aktif.");
+    if (existingAssignee) {
+      throw new Error(
+        user.role === "DIVISION_LEAD"
+          ? "Divisi tersebut sudah memiliki Ketua Divisi aktif."
+          : "Divisi tersebut sudah memiliki PJ aktif.",
+      );
+    }
   }
 
   await prisma.user.update({ where: { id }, data: { isActive } });

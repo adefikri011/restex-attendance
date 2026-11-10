@@ -39,9 +39,13 @@ const roleActions: Record<AppRoleId, DashboardAction[]> = {
     { title: "Audit Log", description: "Lihat jejak perubahan sistem.", href: "/audit-log", actionLabel: "Tinjau aktivitas", icon: ShieldCheck },
   ],
   "ketua-divisi": [
-    { title: "Sesi absensi", description: "Pantau kegiatan divisi yang dipimpin.", href: "/attendance", actionLabel: "Lihat sesi", icon: CalendarDays },
+    { title: "Sesi absensi", description: "Buka sesi, scan QR, dan rekap kehadiran divisi.", href: "/attendance", actionLabel: "Kelola sesi", icon: CalendarDays },
     { title: "Anggota divisi", description: "Tinjau data keanggotaan divisi.", href: "/members", actionLabel: "Lihat anggota", icon: UsersRound },
     { title: "Laporan divisi", description: "Tinjau ringkasan kehadiran.", href: "/reports", actionLabel: "Buka laporan", icon: ChartNoAxesCombined },
+    { title: "Kartu lanyard", description: "Bantu anggota menyiapkan kartu identitas.", href: "/lanyard-card", actionLabel: "Buka kartu", icon: IdCard },
+  ],
+  "pj-divisi": [
+    { title: "Sesi absensi", description: "Buka sesi dan catat kehadiran anggota divisi.", href: "/attendance", actionLabel: "Kelola sesi", icon: CalendarDays },
     { title: "Kartu lanyard", description: "Bantu anggota menyiapkan kartu identitas.", href: "/lanyard-card", actionLabel: "Buka kartu", icon: IdCard },
   ],
   anggota: [
@@ -81,8 +85,8 @@ export function RoleDashboardPage({
         </div>
         {!isMember && (
           <span className={styles.rolePill}>
-            {roleId === "ketua-divisi"
-              ? "Ketua Divisi"
+            {roleId === "ketua-divisi" || roleId === "pj-divisi"
+              ? roleId === "ketua-divisi" ? "Ketua Divisi" : "PJ Divisi"
               : roleId === "super-admin"
                 ? "Super Admin"
                 : "Admin"}

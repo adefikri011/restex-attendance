@@ -8,7 +8,7 @@ export type DivisionSummary = {
   isActive: boolean;
   sortOrder: number;
   membershipCount: number;
-  leaderCount: number;
+  managerCount: number;
 };
 
 function normalizeDivisionName(value: string) {
@@ -40,14 +40,17 @@ export async function getDivisionsPageData(): Promise<DivisionSummary[]> {
     }),
     prisma.user.groupBy({
       by: ["managedDivision"],
-      where: { role: "DIVISION_LEAD", managedDivision: { not: null } },
+      where: {
+        role: { in: ["DIVISION_LEAD", "DIVISION_PJ"] },
+        managedDivision: { not: null },
+      },
       _count: { _all: true },
     }),
   ]);
   const membershipCounts = new Map(
     memberships.map(({ division, _count }) => [division, _count._all]),
   );
-  const leaderCounts = new Map(
+  const managerCounts = new Map(
     leaders.flatMap(({ managedDivision, _count }) =>
       managedDivision ? [[managedDivision, _count._all] as const] : [],
     ),
@@ -56,7 +59,7 @@ export async function getDivisionsPageData(): Promise<DivisionSummary[]> {
   return divisions.map((division) => ({
     ...division,
     membershipCount: membershipCounts.get(division.name) ?? 0,
-    leaderCount: leaderCounts.get(division.name) ?? 0,
+    managerCount: managerCounts.get(division.name) ?? 0,
   }));
 }
 
@@ -85,16 +88,16 @@ export async function updateDivision(
 
     const name = input.name === undefined ? current.name : normalizeDivisionName(input.name);
     if (input.isActive === false) {
-      const activeLeader = await transaction.user.findFirst({
+      const activeAssignee = await transaction.user.findFirst({
         where: {
-          role: "DIVISION_LEAD",
+          role: { in: ["DIVISION_LEAD", "DIVISION_PJ"] },
           isActive: true,
           managedDivision: current.name,
         },
         select: { id: true },
       });
-      if (activeLeader) {
-        throw new Error("Nonaktifkan Ketua Divisi terlebih dahulu.");
+      if (activeAssignee) {
+        throw new Error("Nonaktifkan Ketua Divisi dan PJ terlebih dahulu.");
       }
     }
 
@@ -113,6 +116,10 @@ export async function updateDivision(
           where: { managedDivision: current.name },
           data: { managedDivision: name },
         }),
+        transaction.session.updateMany({
+          where: { division: current.name },
+          data: { division: name },
+        }),
       ]);
     }
     return division;
@@ -127,11 +134,12 @@ export async function deleteDivision(id: string) {
     });
     if (!division) throw new Error("Divisi tidak ditemukan.");
 
-    const [membershipCount, leaderCount] = await Promise.all([
+    const [membershipCount, managerCount, sessionCount] = await Promise.all([
       transaction.membership.count({ where: { division: division.name } }),
       transaction.user.count({ where: { managedDivision: division.name } }),
+      transaction.session.count({ where: { division: division.name } }),
     ]);
-    if (membershipCount || leaderCount) {
+    if (membershipCount || managerCount || sessionCount) {
       throw new Error("Divisi masih digunakan. Nonaktifkan divisi agar riwayat tetap aman.");
     }
 

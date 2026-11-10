@@ -11,6 +11,7 @@ enum UserRole {
   SUPER_ADMIN
   ADMIN
   DIVISION_LEAD
+  DIVISION_PJ
   MEMBER
 
   @@map("user_role")
@@ -201,6 +202,7 @@ model Session {
   scheduledAt DateTime      @map("scheduled_at") @db.Timestamptz(3)
   location    String        @db.VarChar(160)
   notes       String?       @db.VarChar(1000)
+  division    String?       @db.VarChar(100)
   status      SessionStatus @default(DRAFT)
   createdById String        @map("created_by_id") @db.Uuid
   createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
@@ -210,6 +212,7 @@ model Session {
   attendances Attendance[]
 
   @@index([periodId, status, scheduledAt])
+  @@index([periodId, division, status, scheduledAt])
   @@index([createdById])
   @@map("sessions")
 }

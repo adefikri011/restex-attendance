@@ -37,7 +37,7 @@ const statusFromDatabase: Record<DatabaseMembershipStatus, MembershipStatus> = {
   ALUMNI: "Alumni",
 };
 
-export async function getMembersPageData() {
+export async function getMembersPageData(division?: string | null) {
   const [activePeriod, divisions] = await Promise.all([
     prisma.period.findFirst({
       where: { isActive: true },
@@ -50,11 +50,17 @@ export async function getMembersPageData() {
   if (!activePeriod) {
     return { periodName: null, members: [] as Member[], divisions };
   }
+  if (division === null) {
+    return { periodName: activePeriod.name, members: [] as Member[], divisions };
+  }
 
   const rows = await prisma.member.findMany({
     where: {
       memberships: {
-        some: { periodId: activePeriod.id },
+        some: {
+          periodId: activePeriod.id,
+          ...(division === undefined ? {} : { division }),
+        },
       },
     },
     orderBy: { fullName: "asc" },
@@ -65,7 +71,10 @@ export async function getMembersPageData() {
       cohort: true,
       user: { select: { email: true } },
       memberships: {
-        where: { periodId: activePeriod.id },
+        where: {
+          periodId: activePeriod.id,
+          ...(division === undefined ? {} : { division }),
+        },
         take: 1,
         select: { division: true, status: true, joinedAt: true },
       },

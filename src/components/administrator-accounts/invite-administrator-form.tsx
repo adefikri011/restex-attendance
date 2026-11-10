@@ -18,7 +18,10 @@ type CreatedAccount = {
 
 type InviteAdministratorFormProps = {
   availableDivisions: string[];
+  availablePjDivisions: string[];
   periodName: string | null;
+  initialRole?: AdministratorRole;
+  initialDivision?: string;
   onCancel: () => void;
   onCreated: (result: CreatedAccount) => void;
 };
@@ -38,7 +41,7 @@ function isCreatedAccount(value: unknown): value is CreatedAccount {
     "email" in account &&
     typeof account.email === "string" &&
     "role" in account &&
-    (account.role === "Admin" || account.role === "Ketua Divisi") &&
+    (account.role === "Admin" || account.role === "Ketua Divisi" || account.role === "PJ Divisi") &&
     "status" in account &&
     account.status === "Aktif" &&
     typeof initialPassword === "string"
@@ -47,7 +50,7 @@ function isCreatedAccount(value: unknown): value is CreatedAccount {
 
 function previewEmail(name: string, role: AdministratorRole, division: string, periodName: string | null) {
   if (!name.trim() || !periodName) return "";
-  if (role === "Ketua Divisi") {
+  if (role === "Ketua Divisi" || role === "PJ Divisi") {
     return generateMemberEmail(name, division, periodName);
   }
   const nameSlug = name
@@ -61,16 +64,22 @@ function previewEmail(name: string, role: AdministratorRole, division: string, p
 
 export function InviteAdministratorForm({
   availableDivisions,
+  availablePjDivisions,
   periodName,
+  initialRole = "Admin",
+  initialDivision = "",
   onCancel,
   onCreated,
 }: InviteAdministratorFormProps) {
   const [name, setName] = useState("");
-  const [role, setRole] = useState<AdministratorRole>("Admin");
-  const [division, setDivision] = useState<string>(availableDivisions[0] ?? "");
+  const [role, setRole] = useState<AdministratorRole>(initialRole);
+  const [division, setDivision] = useState<string>(initialDivision || availableDivisions[0] || "");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const emailPreview = previewEmail(name, role, division, periodName);
+  const isDivisionRole = role === "Ketua Divisi" || role === "PJ Divisi";
+  const roleDivisions = role === "PJ Divisi" ? availablePjDivisions : availableDivisions;
+  const selectedDivision = roleDivisions.includes(division) ? division : (roleDivisions[0] ?? "");
+  const emailPreview = previewEmail(name, role, selectedDivision, periodName);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -83,8 +92,8 @@ export function InviteAdministratorForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          role: role === "Admin" ? "admin" : "ketua-divisi",
-          division: role === "Ketua Divisi" ? division : null,
+          role: role === "Admin" ? "admin" : role === "Ketua Divisi" ? "ketua-divisi" : "pj-divisi",
+          division: isDivisionRole ? selectedDivision : null,
         }),
       });
       const result: unknown = await response.json();
@@ -160,23 +169,23 @@ export function InviteAdministratorForm({
               ))}
           </select>
         </label>
-        {role === "Ketua Divisi" && (
+        {isDivisionRole && (
           <label>
             Divisi
             <select
               required
-              value={availableDivisions.includes(division) ? division : (availableDivisions[0] ?? "")}
+              value={selectedDivision}
               onChange={(event) => setDivision(event.target.value)}
-              disabled={!availableDivisions.length}
+              disabled={!roleDivisions.length}
             >
-              {availableDivisions.length ? (
-                availableDivisions.map((item) => (
+              {roleDivisions.length ? (
+                roleDivisions.map((item) => (
                   <option key={item} value={item}>
                     {item}
                   </option>
                 ))
               ) : (
-                <option value="">Semua divisi sudah memiliki ketua</option>
+                <option value="">Semua divisi sudah memiliki {role === "PJ Divisi" ? "PJ" : "ketua"}</option>
               )}
             </select>
           </label>
@@ -200,7 +209,7 @@ export function InviteAdministratorForm({
               disabled={
                 isSubmitting ||
                 !periodName ||
-                (role === "Ketua Divisi" && !availableDivisions.length)
+                (isDivisionRole && !roleDivisions.length)
               }
             >
               <Send size={14} aria-hidden="true" />

@@ -37,7 +37,11 @@ export async function PATCH(
     if (error instanceof Error && error.message.includes("tidak ditemukan")) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }
-    if (error instanceof Error && error.message.includes("sudah memiliki Ketua Divisi")) {
+    if (
+      error instanceof Error &&
+      (error.message.includes("sudah memiliki Ketua Divisi") ||
+        error.message.includes("sudah memiliki PJ"))
+    ) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
     console.error("Administrator account status update failed.");

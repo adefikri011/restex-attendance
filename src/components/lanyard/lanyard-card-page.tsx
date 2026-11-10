@@ -21,15 +21,6 @@ const qrOptions = {
   },
 };
 
-function createPreviewQr() {
-  if (!globalThis.crypto?.randomUUID) {
-    return Promise.reject(new Error("Browser ini belum mendukung pembuatan token acak."));
-  }
-
-  const token = `restex-preview:${globalThis.crypto.randomUUID()}`;
-  return QRCode.toDataURL(token, qrOptions);
-}
-
 function getCardDetails(member: Member): LanyardCardDetails {
   return {
     id: member.id,
@@ -70,47 +61,53 @@ function LanyardCardWorkspace({
   const renderKey = JSON.stringify([details, photoUrl, qrDataUrl]);
   const currentRenderedCard = renderedCard?.key === renderKey ? renderedCard : null;
 
-  const generateQr = useCallback(async () => {
+  const generateQr = useCallback(async (memberCode: string) => {
     const currentRequest = ++requestId.current;
+    setQrDataUrl("");
+    setQrError("");
 
     try {
-      const dataUrl = await createPreviewQr();
+      const response = await fetch(
+        `/api/members/${encodeURIComponent(memberCode)}/qr-token`,
+        { method: "POST" },
+      );
+      const result: unknown = await response.json();
+      if (
+        !response.ok ||
+        typeof result !== "object" ||
+        result === null ||
+        !("token" in result) ||
+        typeof result.token !== "string"
+      ) {
+        const message =
+          typeof result === "object" &&
+          result !== null &&
+          "error" in result &&
+          typeof result.error === "string"
+            ? result.error
+            : "QR anggota gagal disiapkan.";
+        throw new Error(message);
+      }
+      const dataUrl = await QRCode.toDataURL(result.token, qrOptions);
 
       if (currentRequest === requestId.current) {
         setQrDataUrl(dataUrl);
         setQrError("");
       }
     } catch (error) {
-      console.error("Gagal membuat QR pratinjau kartu anggota.", error);
+      console.error("Gagal menyiapkan QR kartu anggota.", error);
       if (currentRequest === requestId.current) {
-        setQrError("QR pratinjau gagal dibuat. Coba muat ulang halaman.");
+        setQrError(error instanceof Error ? error.message : "QR anggota gagal dibuat.");
       }
     }
   }, []);
 
   useEffect(() => {
-    let cancelled = false;
-    const currentRequest = ++requestId.current;
-
-    createPreviewQr()
-      .then((dataUrl) => {
-        if (!cancelled && currentRequest === requestId.current) {
-          setQrDataUrl(dataUrl);
-          setQrError("");
-        }
-      })
-      .catch((error: unknown) => {
-        console.error("Gagal membuat QR pratinjau kartu anggota.", error);
-        if (!cancelled && currentRequest === requestId.current) {
-          setQrError("QR pratinjau gagal dibuat. Coba muat ulang halaman.");
-        }
-      });
-
+    void generateQr(initialMember.id);
     return () => {
-      cancelled = true;
       requestId.current += 1;
     };
-  }, []);
+  }, [generateQr, initialMember.id]);
 
   useEffect(
     () => () => {
@@ -155,13 +152,15 @@ function LanyardCardWorkspace({
 
     setSelectedMemberId(memberId);
     setDetails(getCardDetails(member));
+    setQrDataUrl("");
+    setQrError("");
     setPhotoName("");
     setPhotoUrl("");
     if (photoUrlRef.current) {
       URL.revokeObjectURL(photoUrlRef.current);
       photoUrlRef.current = "";
     }
-    void generateQr();
+    void generateQr(memberId);
   }
 
   function selectPhoto(file: File | undefined) {
@@ -276,9 +275,9 @@ function LanyardCardWorkspace({
           </div>
 
           <div className={styles.previewActions}>
-            <button type="button" className={styles.secondaryButton} onClick={() => void generateQr()}>
+            <button type="button" className={styles.secondaryButton} onClick={() => void generateQr(selectedMemberId)}>
               <RefreshCw size={16} aria-hidden="true" />
-              Buat QR baru
+              Muat ulang QR
             </button>
             <button
               type="button"
@@ -303,8 +302,7 @@ function LanyardCardWorkspace({
           <p className={styles.previewNotice}>
             <ShieldCheck size={16} aria-hidden="true" />
             <span>
-              QR ini hanya untuk pratinjau, berisi token acak tanpa NIM, dan belum terhubung ke
-              data absensi.
+              QR milik anggota terpilih dan dapat dipindai pada sesi aktif. Perubahan data teks hanya untuk pratinjau.
             </span>
           </p>
           <p className={styles.downloadHint}>

@@ -83,7 +83,7 @@ export function DivisionManager({
           isActive: result.division.isActive,
           sortOrder: result.division.sortOrder,
           membershipCount: 0,
-          leaderCount: 0,
+          managerCount: 0,
         },
       ].sort((a, b) => Number(b.isActive) - Number(a.isActive) || a.sortOrder - b.sortOrder));
       setNewName("");
@@ -165,7 +165,7 @@ export function DivisionManager({
           <span className={styles.divisionManagerIcon}><Building2 size={16} aria-hidden="true" /></span>
           <div>
             <h2 id="division-manager-title">Kelola divisi</h2>
-            <p>Perubahan di sini akan digunakan pada data anggota dan akun Ketua Divisi.</p>
+            <p>Perubahan di sini akan digunakan pada data anggota dan akun pengurus divisi.</p>
           </div>
         </div>
         <form className={styles.divisionAddForm} onSubmit={addDivision}>
@@ -226,7 +226,7 @@ export function DivisionManager({
                   </span>
                 </div>
                 <small>
-                  {division.membershipCount} data anggota · {division.leaderCount} akun ketua
+                  {division.membershipCount} data anggota · {division.managerCount} akun pengurus
                 </small>
                 <div className={styles.divisionRowActions}>
                   <button
@@ -255,9 +255,9 @@ export function DivisionManager({
                   <button
                     type="button"
                     aria-label={`Hapus ${division.name}`}
-                    title={division.membershipCount || division.leaderCount ? "Divisi terpakai; nonaktifkan untuk menyimpan riwayat" : "Hapus divisi"}
+                    title={division.membershipCount || division.managerCount ? "Divisi terpakai; nonaktifkan untuk menyimpan riwayat" : "Hapus divisi"}
                     onClick={() => void removeDivision(division)}
-                    disabled={isSaving || Boolean(division.membershipCount || division.leaderCount)}
+                    disabled={isSaving || Boolean(division.membershipCount || division.managerCount)}
                   >
                     <Trash2 size={14} aria-hidden="true" />
                   </button>

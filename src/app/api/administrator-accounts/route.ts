@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   const division = body.division;
   if (
     typeof role !== "string" ||
-    (role !== "admin" && role !== "ketua-divisi") ||
+    (role !== "admin" && role !== "ketua-divisi" && role !== "pj-divisi") ||
     (division !== null && typeof division !== "string")
   ) {
     return NextResponse.json({ error: "Jabatan atau divisi tidak valid." }, { status: 400 });
@@ -64,6 +64,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: error.message }, { status: 400 });
       }
       if (error.message.includes("sudah memiliki Ketua Divisi")) {
+        return NextResponse.json({ error: error.message }, { status: 409 });
+      }
+      if (error.message.includes("sudah memiliki PJ")) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }

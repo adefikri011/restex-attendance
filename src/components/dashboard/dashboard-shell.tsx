@@ -126,6 +126,13 @@ export function DashboardShell({
                 ["Sesi Absensi", "Kartu Lanyard", "Laporan"].includes(label),
               ),
             ]
+          : activeRole.id === "pj-divisi"
+            ? [
+                dashboardItem,
+                ...primaryNavigation.filter(({ label }) =>
+                  ["Sesi Absensi", "Kartu Lanyard"].includes(label),
+                ),
+              ]
           : [dashboardItem];
   const visibleManagementNavigation =
     activeRole.id === "super-admin"

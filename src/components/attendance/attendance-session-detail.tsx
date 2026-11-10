@@ -1,17 +1,24 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
   Check,
+  CircleAlert,
   Clock3,
   MapPin,
+  Square,
   UsersRound,
 } from "lucide-react";
-import type { Member } from "@/components/members/member-data";
+import { AttendanceScanner } from "./attendance-scanner";
 import {
   formatSessionDate,
   getActiveMembers,
   getSessionCounts,
+  isAttendanceSession,
+  type AttendanceMember,
   type AttendanceSession,
   type AttendanceStatus,
 } from "./attendance-data";
@@ -19,7 +26,9 @@ import styles from "./attendance-session-detail.module.css";
 
 type AttendanceSessionDetailProps = {
   session: AttendanceSession;
-  members: Member[];
+  members: AttendanceMember[];
+  canManage: boolean;
+  periodName: string;
 };
 
 const statusClassNames: Record<AttendanceStatus, string> = {
@@ -30,16 +39,82 @@ const statusClassNames: Record<AttendanceStatus, string> = {
 };
 
 export function AttendanceSessionDetail({
-  session,
+  session: initialSession,
   members,
+  canManage,
+  periodName,
 }: AttendanceSessionDetailProps) {
-  const activeMembers = getActiveMembers(members);
+  const [session, setSession] = useState(initialSession);
+  const [actionError, setActionError] = useState("");
+  const [isClosing, setIsClosing] = useState(false);
+  const sessionMembers = session.division
+    ? members.filter((member) => member.division === session.division)
+    : members;
+  const activeMembers = getActiveMembers(sessionMembers);
   const counts = getSessionCounts(session, activeMembers.length);
   const isDraft = session.status === "Draft";
   const attendanceRecorded = session.attendance.length;
   const attendanceProgress = activeMembers.length
     ? Math.round((counts.hadir / activeMembers.length) * 100)
     : 0;
+
+  async function closeSession() {
+    setActionError("");
+    setIsClosing(true);
+    try {
+      const response = await fetch(`/api/attendance/sessions/${session.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "CLOSED" }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        setActionError(
+          typeof result === "object" &&
+            result !== null &&
+            "error" in result &&
+            typeof result.error === "string"
+            ? result.error
+            : "Sesi gagal ditutup.",
+        );
+        return;
+      }
+      if (
+        typeof result !== "object" ||
+        result === null ||
+        !("session" in result) ||
+        !isAttendanceSession(result.session) ||
+        result.session.status !== "Ditutup"
+      ) {
+        throw new Error("Respons penutupan sesi tidak valid.");
+      }
+      setSession(result.session);
+    } catch {
+      setActionError("Layanan sesi tidak dapat dihubungi.");
+    } finally {
+      setIsClosing(false);
+    }
+  }
+
+  function addScannedAttendance(memberCode: string, recordedBy: string) {
+    setSession((current) => ({
+      ...current,
+      attendance: [
+        ...current.attendance,
+        {
+          memberId: memberCode,
+          status: "Hadir",
+          method: "QR",
+          recordedBy,
+          time: new Intl.DateTimeFormat("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+            timeZone: "Asia/Jakarta",
+          }).format(new Date()),
+        },
+      ],
+    }));
+  }
 
   return (
     <div className={styles.page}>
@@ -50,10 +125,10 @@ export function AttendanceSessionDetail({
 
       <header className={styles.heading}>
         <div className={styles.titleGroup}>
-          <span className={styles.eyebrow}>DETAIL SESI · {session.id}</span>
+          <span className={styles.eyebrow}>DETAIL SESI · {session.division ?? "ORGANISASI"}</span>
           <h1>{session.title}</h1>
           <p>
-            {session.type} <span aria-hidden="true">·</span> Periode 2026—2027
+            {session.type} <span aria-hidden="true">·</span> Periode {periodName}
           </p>
         </div>
         <span className={`${styles.status} ${styles[session.status]}`}>
@@ -67,6 +142,24 @@ export function AttendanceSessionDetail({
           {session.status}
         </span>
       </header>
+
+      {canManage && session.status === "Aktif" && (
+        <div className={styles.sessionActions}>
+          <p>
+            Dibuka oleh <strong>{session.createdBy ?? "—"}</strong>. Operator setiap scan tercatat pada rekap.
+          </p>
+          <button
+            type="button"
+            className={styles.closeSessionButton}
+            onClick={() => void closeSession()}
+            disabled={isClosing}
+          >
+            <Square size={14} aria-hidden="true" />
+            {isClosing ? "Menutup sesi..." : "Tutup sesi"}
+          </button>
+        </div>
+      )}
+      {actionError && <p className={styles.actionError} role="alert"><CircleAlert size={14} />{actionError}</p>}
 
       <section className={styles.overview} aria-label="Informasi sesi">
         <div className={styles.overviewItem}>
@@ -98,6 +191,15 @@ export function AttendanceSessionDetail({
           </span>
         </div>
       </section>
+
+      {canManage && session.status === "Aktif" && (
+        <AttendanceScanner
+          sessionId={session.id}
+          onRecorded={({ memberCode, recordedBy }) =>
+            addScannedAttendance(memberCode, recordedBy)
+          }
+        />
+      )}
 
       {session.notes && (
         <p className={styles.notes}>
@@ -192,6 +294,7 @@ export function AttendanceSessionDetail({
                   <th scope="col">Status kehadiran</th>
                   <th scope="col">Metode</th>
                   <th scope="col">Waktu tercatat</th>
+                  <th scope="col">Operator</th>
                 </tr>
               </thead>
               <tbody>
@@ -235,6 +338,7 @@ export function AttendanceSessionDetail({
                       </td>
                       <td data-label="Metode">{entry?.method ?? "—"}</td>
                       <td data-label="Waktu tercatat">{entry?.time ?? "—"}</td>
+                      <td data-label="Operator">{entry?.recordedBy ?? "—"}</td>
                     </tr>
                   );
                 })}
@@ -245,8 +349,9 @@ export function AttendanceSessionDetail({
       )}
 
       <p className={styles.demoNote}>
-        Informasi sesi ini merupakan data pratinjau lokal. Halaman Admin hanya
-        untuk monitoring; pembukaan sesi dan pencatatan absensi dilakukan Operator.
+        {canManage
+          ? "Sesi dan kehadiran tersimpan pada database. Setiap scan mencatat waktu dan akun operator."
+          : "Halaman ini hanya untuk monitoring; pembukaan sesi dan scan QR dilakukan Ketua Divisi atau PJ."}
       </p>
     </div>
   );

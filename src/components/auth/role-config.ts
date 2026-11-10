@@ -29,11 +29,23 @@ export const appRoles = [
     dashboardPath: "/dashboard/ketua-divisi",
     databaseRole: "DIVISION_LEAD",
     description:
-      "Mengelola kegiatan dan keanggotaan pada divisi yang menjadi tanggung jawab.",
+      "Membuka sesi, mencatat absensi, dan memantau kehadiran divisi yang menjadi tanggung jawab.",
     displayName: "Ketua Divisi",
     homeTitle: "Aktivitas divisi, terpantau rapi.",
     homeDescription:
-      "Siapkan sesi dan pantau kegiatan anggota di divisi yang kamu pimpin.",
+      "Buka sesi kegiatan, scan QR anggota, dan tinjau rekap kehadiran divisi.",
+  },
+  {
+    id: "pj-divisi",
+    label: "PJ Divisi",
+    dashboardPath: "/dashboard/pj-divisi",
+    databaseRole: "DIVISION_PJ",
+    description:
+      "Mendampingi Ketua Divisi dan menjalankan sesi serta absensi pada divisi yang ditugaskan.",
+    displayName: "PJ Divisi",
+    homeTitle: "Dukungan absensi untuk divisi.",
+    homeDescription:
+      "Buka sesi dan catat kehadiran anggota pada divisi yang menjadi tanggung jawabmu.",
   },
   {
     id: "anggota",
