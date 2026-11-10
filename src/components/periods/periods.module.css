@@ -1,0 +1,787 @@
+.periodsPage {
+  display: grid;
+  gap: 20px;
+  color: var(--ui-text-primary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.pageHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageEyebrow,
+.sectionEyebrow {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.pageHeading h1 {
+  margin: 7px 0 5px;
+  color: var(--ui-text-primary);
+  font-size: 29px;
+  font-weight: 730;
+  letter-spacing: -0.045em;
+}
+
+.pageHeading p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  min-height: 39px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, transform 150ms ease;
+}
+
+.primaryButton {
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.primaryButton:hover {
+  background: var(--ui-button-primary-hover);
+}
+
+.primaryButton:active,
+.secondaryButton:active,
+.detailButton:active {
+  transform: translateY(1px);
+}
+
+.secondaryButton {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+}
+
+.activePeriodCard {
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 92% 5%, color-mix(in srgb, var(--ui-button-primary) 10%, transparent), transparent 44%),
+    var(--ui-surface);
+  box-shadow: 0 8px 26px rgb(25 55 75 / 4%);
+}
+
+.activeCardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 0;
+}
+
+.activeIcon,
+.summaryIcon,
+.periodCardIcon {
+  display: grid;
+  width: 39px;
+  height: 39px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.statusBadge {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusActive {
+  border-color: color-mix(in srgb, var(--ui-success-text) 20%, transparent);
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.statusActive > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ui-success-fill);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-success-fill) 15%, transparent);
+}
+
+.statusComplete {
+  border-color: var(--ui-border);
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-secondary);
+}
+
+.statusPlanned {
+  border-color: color-mix(in srgb, var(--ui-info-text) 22%, transparent);
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.activeCardContent {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 26px;
+  padding: 14px 22px 20px;
+}
+
+.activeCardCopy h2 {
+  margin: 5px 0 6px;
+  color: var(--ui-text-primary);
+  font-size: clamp(26px, 3vw, 35px);
+  font-weight: 760;
+  letter-spacing: -0.05em;
+}
+
+.activeCardCopy p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+}
+
+.activeStats {
+  display: flex;
+  gap: 26px;
+}
+
+.activeStats > div {
+  display: grid;
+  gap: 5px;
+  min-width: 90px;
+}
+
+.activeStats > div > span,
+.summaryCard > div > span {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.activeStats strong {
+  color: var(--ui-text-primary);
+  font-size: 19px;
+  font-weight: 730;
+  line-height: 1;
+}
+
+.activeCardFooter {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 22px;
+  border-top: 1px solid var(--ui-border-subtle);
+  background: color-mix(in srgb, var(--ui-surface-subtle) 78%, transparent);
+}
+
+.activeCardFooter > span,
+.activeCardFooter > div,
+.activeCardFooter a {
+  display: inline-flex;
+  align-items: center;
+}
+
+.activeCardFooter > span {
+  gap: 7px;
+  color: var(--ui-success-text);
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.activeCardFooter > div {
+  gap: 16px;
+}
+
+.activeCardFooter a,
+.transitionNotice a {
+  gap: 6px;
+  color: var(--ui-text-accent);
+  font-size: 9px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.activeCardFooter a:hover,
+.transitionNotice a:hover {
+  color: var(--ui-accent);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.summaryCard {
+  display: grid;
+  grid-template-columns: 39px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 11px;
+  min-height: 82px;
+  padding: 14px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.summaryIcon {
+  grid-row: span 2;
+}
+
+.summaryIconComplete {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.summaryIconPlanned {
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.summaryCard > div {
+  display: grid;
+  gap: 2px;
+}
+
+.summaryCard strong {
+  color: var(--ui-text-primary);
+  font-size: 19px;
+  font-weight: 730;
+  line-height: 1;
+}
+
+.summaryCard small {
+  grid-column: 2;
+  margin-top: 3px;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.transitionNotice {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 15px 17px;
+  border: 1px solid color-mix(in srgb, var(--ui-warning-text) 22%, var(--ui-border));
+  border-radius: 12px;
+  background: var(--ui-warning-soft);
+}
+
+.transitionIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--ui-warning-text) 13%, var(--ui-surface));
+  color: var(--ui-warning-text);
+}
+
+.transitionNotice > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.transitionNotice h2 {
+  margin: 0 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.transitionNotice p {
+  max-width: 730px;
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.transitionNotice a {
+  flex: 0 0 auto;
+}
+
+.periodListSection {
+  display: grid;
+  gap: 13px;
+}
+
+.listHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.listHeading h2,
+.formHeading h2 {
+  margin: 5px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 17px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.listHeading p,
+.formHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.filterControl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.filterControl select {
+  height: 34px;
+  padding: 0 27px 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.filterControl select:focus,
+.periodForm input:focus {
+  border-color: var(--ui-text-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-text-accent) 13%, transparent);
+}
+
+.periodList {
+  display: grid;
+  gap: 9px;
+}
+
+.periodCard {
+  overflow: hidden;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.periodCardMain {
+  display: flex;
+  min-height: 76px;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 15px;
+}
+
+.periodCardIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+}
+
+.periodIdentity {
+  min-width: 175px;
+  flex: 1;
+}
+
+.periodTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.periodTitleRow h3 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 12px;
+  font-weight: 710;
+}
+
+.periodIdentity p {
+  margin: 5px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.periodQuickStats {
+  display: flex;
+  gap: 16px;
+}
+
+.periodQuickStats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.detailButton,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.detailButton {
+  min-height: 34px;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+
+.detailButton:hover,
+.iconButton:hover {
+  background: var(--ui-surface-muted);
+}
+
+.periodDetails {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  padding: 14px 17px 15px 64px;
+  border-top: 1px solid var(--ui-border-subtle);
+  background: var(--ui-surface-subtle);
+}
+
+.periodDetails > div {
+  display: grid;
+  gap: 5px;
+}
+
+.periodDetails span {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.periodDetails strong {
+  color: var(--ui-text-primary);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.emptyState {
+  display: grid;
+  min-height: 120px;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  border: 1px dashed var(--ui-border);
+  border-radius: 12px;
+  color: var(--ui-text-muted);
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: 10px;
+}
+
+.formPanel {
+  display: grid;
+  gap: 16px;
+  padding: 19px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 8px 24px rgb(25 55 75 / 4%);
+}
+
+.formHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.formIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.formHeading > div:nth-child(2) {
+  flex: 1;
+}
+
+.formHeading h2 {
+  font-size: 15px;
+}
+
+.iconButton {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+.periodForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.periodForm label {
+  display: grid;
+  gap: 6px;
+  color: var(--ui-text-primary);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.periodForm input {
+  width: 100%;
+  height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 10px;
+}
+
+.formActions {
+  display: flex;
+  gap: 8px;
+}
+
+.formActions .primaryButton,
+.formActions .secondaryButton {
+  min-height: 38px;
+  font-size: 9px;
+}
+
+.formError {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ui-danger-text);
+  font-size: 9px;
+}
+
+.formNote,
+.previewNote {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.formNote {
+  padding-top: 12px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.previewNote {
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .activeCardContent {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .activeStats {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .periodQuickStats {
+    display: none;
+  }
+
+  .periodForm {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .formActions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+@media (max-width: 600px) {
+  .periodsPage {
+    gap: 15px;
+  }
+
+  .pageHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pageHeading h1 {
+    font-size: 25px;
+  }
+
+  .pageHeading > .primaryButton {
+    width: 100%;
+  }
+
+  .activeCardTop {
+    padding: 15px 15px 0;
+  }
+
+  .activeCardContent {
+    gap: 17px;
+    padding: 13px 15px 17px;
+  }
+
+  .activeStats {
+    gap: 8px;
+  }
+
+  .activeStats > div {
+    min-width: 0;
+  }
+
+  .activeStats > div > span {
+    font-size: 8px;
+  }
+
+  .activeStats strong {
+    font-size: 16px;
+  }
+
+  .activeCardFooter {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 11px 15px;
+  }
+
+  .activeCardFooter > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .summaryGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .summaryCard {
+    min-height: 69px;
+  }
+
+  .transitionNotice {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 13px;
+  }
+
+  .transitionNotice > div {
+    flex-basis: calc(100% - 50px);
+  }
+
+  .transitionNotice a {
+    margin-left: 47px;
+  }
+
+  .listHeading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .filterControl {
+    align-self: flex-end;
+  }
+
+  .periodCardMain {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .periodIdentity {
+    min-width: calc(100% - 50px);
+  }
+
+  .periodTitleRow {
+    flex-wrap: wrap;
+  }
+
+  .detailButton {
+    margin-left: auto;
+  }
+
+  .periodDetails {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 13px;
+  }
+
+  .formPanel {
+    padding: 14px;
+  }
+
+  .periodForm {
+    grid-template-columns: 1fr;
+  }
+
+  .formActions {
+    grid-column: auto;
+  }
+
+  .formActions > button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .secondaryButton,
+  .detailButton {
+    transition: none;
+  }
+}

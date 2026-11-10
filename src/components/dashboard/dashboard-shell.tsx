@@ -35,7 +35,7 @@ const primaryNavigation: NavigationItem[] = [
   { label: "Sesi Absensi", icon: CalendarDays, href: "/attendance" },
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
-  { label: "Periode", icon: CalendarRange },
+  { label: "Periode", icon: CalendarRange, href: "/periods" },
   { label: "Laporan", icon: ChartNoAxesCombined },
 ];
 
