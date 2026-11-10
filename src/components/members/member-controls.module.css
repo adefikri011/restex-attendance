@@ -3,7 +3,7 @@
   align-items: center;
   gap: 22px;
   padding: 0 22px;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .visuallyHidden {
@@ -25,7 +25,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #8795a1;
+  color: var(--ui-text-muted);
   font: inherit;
   font-size: 11px;
   font-weight: 550;
@@ -40,13 +40,13 @@
   place-items: center;
   padding: 0 4px;
   border-radius: 6px;
-  background: #f1f4f6;
-  color: #83919c;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
   font-size: 8px;
 }
 
 .selectedStatusTab {
-  color: #164b67;
+  color: var(--ui-text-accent);
   font-weight: 700;
 }
 
@@ -57,13 +57,13 @@
   left: 0;
   height: 2px;
   border-radius: 2px 2px 0 0;
-  background: #d83f63;
+  background: var(--ui-accent);
   content: "";
 }
 
 .selectedStatusTab > span {
-  background: #fcecef;
-  color: #a93c56;
+  background: var(--ui-surface-muted);
+  color: var(--ui-danger-text);
 }
 
 .toolbar {
@@ -83,14 +83,14 @@
   align-items: center;
   gap: 9px;
   padding: 0 10px;
-  border: 1px solid #e6ebef;
+  border: 1px solid var(--ui-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--ui-surface);
   color: #95a2ad;
 }
 
 .searchField:focus-within {
-  border-color: #9fb6c4;
+  border-color: var(--ui-text-accent);
   box-shadow: 0 0 0 3px rgb(29 92 124 / 8%);
 }
 
@@ -100,7 +100,7 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #293f50;
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 12px;
 }
@@ -119,11 +119,11 @@
   width: 136px;
   height: 37px;
   padding: 0 25px 0 10px;
-  border: 1px solid #e6ebef;
+  border: 1px solid var(--ui-border);
   border-radius: 8px;
-  outline-color: #8caebe;
-  background: #fff;
-  color: #607486;
+  outline-color: var(--ui-text-accent);
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 11px;
 }
@@ -137,10 +137,10 @@
   justify-content: center;
   gap: 7px;
   padding: 0 10px;
-  border: 1px solid #e3e9ee;
+  border: 1px solid var(--ui-border);
   border-radius: 8px;
-  background: #fff;
-  color: #587083;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 11px;
   font-weight: 600;
@@ -151,8 +151,8 @@
 
 .importButton:hover,
 .exportButton:not(:disabled):hover {
-  border-color: #c6d4dd;
-  background: #fbfcfd;
+  border-color: var(--ui-border);
+  background: var(--ui-surface-subtle);
 }
 
 .exportButton:disabled {
@@ -172,14 +172,14 @@
 }
 
 .addButton {
-  border-color: #0b2f4a;
-  background: #0b2f4a;
-  color: #fff;
+  border-color: var(--ui-text-accent);
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
 }
 
 .addButton:hover {
-  border-color: #154767;
-  background: #154767;
+  border-color: var(--ui-text-accent);
+  background: var(--ui-button-primary-hover);
 }
 
 .importNote {
@@ -188,12 +188,12 @@
   gap: 5px;
   width: 100%;
   margin: 0;
-  color: #788997;
+  color: var(--ui-text-accent);
   font-size: 9px;
 }
 
 .importNote strong {
-  color: #3c5668;
+  color: var(--ui-text-accent);
   font-weight: 650;
 }
 

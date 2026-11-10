@@ -27,6 +27,15 @@ Do not run migrations against production until the schema and migration have bee
 reviewed and the database has a backup. The current UI still uses local preview data;
 the Prisma client is the server-side foundation for the next integration step.
 
+## Tema tampilan
+
+Tema Terang/Gelap diatur secara global lewat `ThemeProvider` dan pilihan di
+`src/components/theme/theme-config.ts`. Warna antarmuka menggunakan token `--ui-*`
+di `src/app/globals.css`, sehingga komponen tidak perlu memiliki palet mode-gelap
+masing-masing. Untuk menambahkan tema seperti Halloween atau Kemerdekaan, tambahkan
+pilihannya ke registry dan definisikan nilai tokennya menggunakan atribut
+`[data-theme="nama-tema"]`. Artwork kartu lanyard tetap mempertahankan warna cetaknya.
+
 ## Getting Started
 
 First, run the development server:

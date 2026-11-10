@@ -1,7 +1,7 @@
 .membersPage {
   display: grid;
   gap: 20px;
-  color: #172b3a;
+  color: var(--ui-text-accent);
 }
 
 .visuallyHidden {
@@ -33,7 +33,7 @@
 
 .pageHeading h1 {
   margin: 7px 0 5px;
-  color: #19374b;
+  color: var(--ui-text-accent);
   font-size: 29px;
   font-weight: 730;
   letter-spacing: -0.045em;
@@ -41,7 +41,7 @@
 
 .pageHeading p {
   margin: 0;
-  color: #7d8c99;
+  color: var(--ui-text-accent);
   font-size: 12px;
 }
 
@@ -52,10 +52,10 @@
   justify-content: center;
   gap: 8px;
   padding: 0 12px;
-  border: 1px solid #e0e7ec;
+  border: 1px solid var(--ui-border);
   border-radius: 9px;
-  background: #fff;
-  color: #496174;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 10px;
   font-weight: 600;
@@ -72,9 +72,9 @@
   align-items: center;
   gap: 21px;
   padding: 15px 20px;
-  border: 1px solid #e7edf2;
+  border: 1px solid var(--ui-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
 }
 
@@ -95,21 +95,21 @@
 }
 
 .summaryIconNavy {
-  background: #edf3f7;
-  color: #1d5e7a;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .summaryIconGreen {
-  background: #e9f7f0;
+  background: var(--ui-surface-subtle);
 }
 
 .summaryIconAmber {
-  background: #fff5e5;
+  background: var(--ui-surface-subtle);
 }
 
 .summaryIconGray {
-  background: #f0f3f5;
-  color: #748594;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .summaryStatusDot {
@@ -131,12 +131,12 @@
 }
 
 .summaryItem > div:last-child > span {
-  color: #82919d;
+  color: var(--ui-text-muted);
   font-size: 10px;
 }
 
 .summaryItem strong {
-  color: #203c50;
+  color: var(--ui-text-accent);
   font-size: 17px;
   font-weight: 720;
   line-height: 1;
@@ -146,7 +146,7 @@
   width: 1px;
   height: 34px;
   flex: 0 0 auto;
-  background: #edf0f3;
+  background: var(--ui-surface-muted);
 }
 
 .summaryPeriod {
@@ -155,13 +155,13 @@
   gap: 7px;
   margin-left: auto;
   padding-left: 14px;
-  color: #8896a2;
+  color: var(--ui-text-muted);
   font-size: 9px;
   white-space: nowrap;
 }
 
 .summaryPeriod strong {
-  color: #496274;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 650;
 }
@@ -175,9 +175,9 @@
 
 .membersCard {
   overflow: hidden;
-  border: 1px solid #e7edf2;
+  border: 1px solid var(--ui-border);
   border-radius: 15px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
 }
 
@@ -191,7 +191,7 @@
 
 .cardIntro h2 {
   margin: 0;
-  color: #213d50;
+  color: var(--ui-text-accent);
   font-size: 14px;
   font-weight: 700;
 }
@@ -204,9 +204,9 @@
 
 .currentPeriodBadge {
   padding: 6px 9px;
-  border: 1px solid #e8edf1;
+  border: 1px solid var(--ui-border);
   border-radius: 7px;
-  color: #607588;
+  color: var(--ui-text-accent);
   font-size: 9px;
   font-weight: 650;
 }
@@ -240,23 +240,23 @@
 }
 
 .activeBadge {
-  background: #eaf7f0;
-  color: #278760;
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
 }
 
 .leaveBadge {
-  background: #fff4e3;
-  color: #ad7928;
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
 }
 
 .exitedBadge {
-  background: #fcecef;
-  color: #bd4660;
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
 }
 
 .alumniBadge {
-  background: #f0f2f4;
-  color: #7a8792;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
 }
 
 .mockDataNote {
@@ -299,7 +299,7 @@
     grid-column: 1 / -1;
     margin: 0;
     padding: 10px 0 0;
-    border-top: 1px solid #edf0f3;
+    border-top: 1px solid var(--ui-border);
   }
   .cardIntro {
     padding-right: 16px;

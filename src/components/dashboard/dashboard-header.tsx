@@ -1,5 +1,6 @@
 import { Bell, ChevronDown, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import styles from "./dashboard-shell.module.css";
 
 export function DashboardHeader() {
@@ -29,6 +30,7 @@ export function DashboardHeader() {
           <ChevronDown size={15} aria-hidden="true" />
         </div>
         <span className={styles.headerDivider} aria-hidden="true" />
+        <ThemeSwitcher />
         <button
           type="button"
           className={styles.notificationButton}

@@ -1,5 +1,5 @@
 .tableArea {
-  border-top: 1px solid #edf0f3;
+  border-top: 1px solid var(--ui-border);
 }
 
 .tableScroller {
@@ -17,7 +17,7 @@
 .memberTable th {
   height: 37px;
   padding: 0 12px;
-  background: #fbfcfd;
+  background: var(--ui-surface-subtle);
   color: #9aa5af;
   font-size: 9px;
   font-weight: 700;
@@ -38,8 +38,8 @@
 .memberTable td {
   height: 66px;
   padding: 9px 12px;
-  border-bottom: 1px solid #f0f3f5;
-  color: #506678;
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text-accent);
   font-size: 10px;
 }
 
@@ -48,7 +48,7 @@
 }
 
 .memberTable tbody tr:hover {
-  background: #fcfdfe;
+  background: var(--ui-surface-subtle);
 }
 
 .memberIdentity {
@@ -64,28 +64,28 @@
 }
 
 .avatarTone1 {
-  background: #eaf2f6;
-  color: #2d6680;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .avatarTone2 {
-  background: #f7eaf0;
-  color: #a64b69;
+  background: var(--ui-surface-muted);
+  color: var(--ui-danger-text);
 }
 
 .avatarTone3 {
-  background: #f2edfa;
-  color: #7759a2;
+  background: var(--ui-surface-muted);
+  color: var(--ui-info-text);
 }
 
 .avatarTone4 {
-  background: #eaf5ee;
-  color: #39805b;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-success-text);
 }
 
 .avatarTone5 {
-  background: #fff3e7;
-  color: #a87334;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-warning-text);
 }
 
 .memberNameBlock {
@@ -94,7 +94,7 @@
 }
 
 .memberNameBlock strong {
-  color: #2c4659;
+  color: var(--ui-text-accent);
   font-size: 11px;
   font-weight: 650;
 }
@@ -105,21 +105,21 @@
 }
 
 .memberCode {
-  color: #728392;
+  color: var(--ui-text-accent);
   font-family: var(--font-geist-mono), monospace;
   font-size: 9px;
 }
 
 .divisionName {
-  color: #667b8b;
+  color: var(--ui-text-accent);
   font-size: 10px;
 }
 
 .cohortPill {
   padding: 5px 7px;
   border-radius: 6px;
-  background: #f1f4f6;
-  color: #72818d;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
   font-size: 9px;
   font-weight: 650;
 }
@@ -135,18 +135,18 @@
   height: 4px;
   overflow: hidden;
   border-radius: 99px;
-  background: #edf1f3;
+  background: var(--ui-surface-subtle);
 }
 
 .attendanceTrack > span {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #42a17d;
+  background: var(--ui-success-fill);
 }
 
 .attendanceValue strong {
-  color: #4a6374;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 650;
 }
@@ -169,8 +169,8 @@
 }
 
 .rowAction:hover {
-  background: #f1f5f7;
-  color: #334e61;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .tableFooter {
@@ -180,7 +180,7 @@
   justify-content: space-between;
   gap: 14px;
   padding: 10px 22px;
-  border-top: 1px solid #edf0f3;
+  border-top: 1px solid var(--ui-border);
 }
 
 .tableFooter > p {
@@ -190,7 +190,7 @@
 }
 
 .tableFooter > p strong {
-  color: #536a7b;
+  color: var(--ui-text-accent);
   font-weight: 650;
 }
 
@@ -203,7 +203,7 @@
 }
 
 .pagination strong {
-  color: #526a7c;
+  color: var(--ui-text-accent);
   font-weight: 650;
 }
 
@@ -212,10 +212,10 @@
   width: 29px;
   height: 29px;
   place-items: center;
-  border: 1px solid #e5eaee;
+  border: 1px solid var(--ui-border);
   border-radius: 7px;
-  background: #fff;
-  color: #5f7383;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   cursor: pointer;
 }
 
@@ -239,14 +239,14 @@
   height: 39px;
   place-items: center;
   border-radius: 12px;
-  background: #f1f5f7;
-  color: #7790a0;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
   font-weight: 700;
 }
 
 .emptyState h3 {
   margin: 12px 0 4px;
-  color: #344f62;
+  color: var(--ui-text-accent);
   font-size: 12px;
 }
 

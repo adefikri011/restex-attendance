@@ -212,10 +212,6 @@ export function LanyardCardPage() {
               <span className={styles.panelEyebrow}>HASIL DESAIN</span>
               <h2 id="preview-title">Pratinjau kartu</h2>
             </div>
-            <span className={styles.liveIndicator}>
-              <span aria-hidden="true" />
-              Langsung
-            </span>
           </div>
 
           <div className={styles.previewStage}>

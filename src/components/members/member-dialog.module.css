@@ -13,9 +13,9 @@
 .dialog {
   width: min(100%, 460px);
   padding: 25px;
-  border: 1px solid #e7edf2;
+  border: 1px solid var(--ui-border);
   border-radius: 17px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 22px 70px rgb(9 28 41 / 22%);
 }
 
@@ -35,7 +35,7 @@
 
 .dialogHeading h2 {
   margin: 6px 0 4px;
-  color: #203c50;
+  color: var(--ui-text-accent);
   font-size: 19px;
   font-weight: 720;
   letter-spacing: -0.03em;
@@ -43,7 +43,7 @@
 
 .dialogHeading p {
   margin: 0;
-  color: #84939f;
+  color: var(--ui-text-muted);
   font-size: 10px;
 }
 
@@ -55,8 +55,8 @@
   place-items: center;
   border: 0;
   border-radius: 9px;
-  background: #f2f5f7;
-  color: #647888;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
   cursor: pointer;
 }
 
@@ -69,7 +69,7 @@
 .memberForm label {
   display: grid;
   gap: 7px;
-  color: #425c6e;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 650;
 }
@@ -79,18 +79,18 @@
   width: 100%;
   height: 40px;
   padding: 0 11px;
-  border: 1px solid #e2e8ed;
+  border: 1px solid var(--ui-border);
   border-radius: 8px;
   outline: 0;
-  background: #fff;
-  color: #314b5d;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 10px;
 }
 
 .memberForm input:focus,
 .memberForm select:focus {
-  border-color: #8eafbe;
+  border-color: var(--ui-text-accent);
   box-shadow: 0 0 0 3px rgb(29 92 124 / 8%);
 }
 
@@ -117,18 +117,18 @@
   gap: 9px;
   margin: 2px -25px -25px;
   padding: 15px 25px;
-  border-top: 1px solid #edf0f3;
-  background: #fbfcfd;
+  border-top: 1px solid var(--ui-border);
+  background: var(--ui-surface-subtle);
   border-radius: 0 0 17px 17px;
 }
 
 .cancelButton {
   min-height: 37px;
   padding: 0 13px;
-  border: 1px solid #e2e8ed;
+  border: 1px solid var(--ui-border);
   border-radius: 8px;
-  background: #fff;
-  color: #607586;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font: inherit;
   font-size: 10px;
   font-weight: 600;
@@ -151,16 +151,16 @@
   gap: 12px;
   margin-top: 21px;
   padding: 14px;
-  border: 1px solid #edf0f3;
+  border: 1px solid var(--ui-border);
   border-radius: 12px;
-  background: #fbfcfd;
+  background: var(--ui-surface-subtle);
 }
 
 .detailAvatar {
   width: 43px;
   height: 43px;
-  background: #eaf2f6;
-  color: #2d6680;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
   font-size: 11px;
 }
 
@@ -171,7 +171,7 @@
 .detailIdentity h3 {
   overflow: hidden;
   margin: 0 0 5px;
-  color: #304b5e;
+  color: var(--ui-text-accent);
   font-size: 12px;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -208,12 +208,12 @@
 }
 
 .detailList dt svg {
-  color: #7890a0;
+  color: var(--ui-text-accent);
 }
 
 .detailList dd {
   margin: 0;
-  color: #3f586a;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 600;
 }
@@ -223,13 +223,13 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
-  border-top: 1px solid #edf0f3;
-  color: #788996;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-accent);
   font-size: 10px;
 }
 
 .detailAttendance strong {
-  color: #2c8967;
+  color: var(--ui-success-text);
   font-size: 13px;
 }
 

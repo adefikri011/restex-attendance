@@ -21,21 +21,21 @@
 
 .pageIntro h1 {
   margin: 0;
-  color: #19374b;
+  color: var(--ui-text-accent);
   font-size: clamp(24px, 2.2vw, 30px);
   font-weight: 720;
   letter-spacing: -0.045em;
 }
 
 .pageIntro h1 span {
-  color: #d83f63;
+  color: var(--ui-danger-text);
   font-size: 20px;
   vertical-align: 3px;
 }
 
 .introDescription {
   margin: 8px 0 0;
-  color: #778796;
+  color: var(--ui-text-accent);
   font-size: 13px;
 }
 
@@ -45,10 +45,10 @@
   align-items: center;
   gap: 9px;
   padding: 0 13px;
-  border: 1px solid #dfe7ed;
+  border: 1px solid var(--ui-border);
   border-radius: 10px;
-  background: #fff;
-  color: #344e62;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
   font-size: 11px;
   font-weight: 650;
   text-decoration: none;
@@ -56,8 +56,8 @@
 }
 
 .quickAction:hover {
-  border-color: #b7c8d4;
-  background: #fbfcfd;
+  border-color: var(--ui-border);
+  background: var(--ui-surface-subtle);
 }
 
 .quickActionDot {
@@ -91,7 +91,7 @@
 }
 
 .welcomeTag {
-  color: #98c0d0;
+  color: var(--ui-text-accent);
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -125,7 +125,7 @@
 }
 
 .welcomeLink > span {
-  color: #f08099;
+  color: var(--ui-danger-text);
   font-size: 17px;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .summaryLabel {
-  color: #a9c2d0;
+  color: var(--ui-text-accent);
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -204,7 +204,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #e26981;
+  background: var(--ui-accent);
   box-shadow: 0 0 19px 6px rgb(226 105 129 / 28%);
 }
 
@@ -216,9 +216,9 @@
 
 .statCard,
 .panel {
-  border: 1px solid #e7edf2;
+  border: 1px solid var(--ui-border);
   border-radius: 15px;
-  background: #fff;
+  background: var(--ui-surface);
   box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
 }
 
@@ -242,43 +242,43 @@
 }
 
 .navy {
-  background: #edf3f7;
-  color: #1c5975;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .green {
-  background: #e9f7f0;
-  color: #239266;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-success-text);
 }
 
 .rose {
-  background: #fcecef;
-  color: #c84060;
+  background: var(--ui-surface-muted);
+  color: var(--ui-danger-text);
 }
 
 .amber {
-  background: #fff5e5;
-  color: #ba8124;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-warning-text);
 }
 
 .statTrend {
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  color: #269568;
+  color: var(--ui-success-text);
   font-size: 10px;
   font-weight: 700;
 }
 
 .statLabel {
   margin: 15px 0 4px;
-  color: #7e8d9b;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 550;
 }
 
 .statValue {
-  color: #1a374a;
+  color: var(--ui-text-accent);
   font-size: 25px;
   font-weight: 720;
   letter-spacing: -0.045em;
@@ -314,7 +314,7 @@
 
 .panelHeading h2 {
   margin: 0;
-  color: #213d50;
+  color: var(--ui-text-accent);
   font-size: 13px;
   font-weight: 700;
 }
@@ -327,9 +327,9 @@
 
 .chartPeriod {
   padding: 6px 8px;
-  border: 1px solid #edf0f3;
+  border: 1px solid var(--ui-border);
   border-radius: 7px;
-  color: #738392;
+  color: var(--ui-text-accent);
   font-size: 9px;
   white-space: nowrap;
 }
@@ -351,7 +351,7 @@
 }
 
 .chartValue {
-  color: #7c8c99;
+  color: var(--ui-text-accent);
   font-size: 9px;
   font-weight: 600;
 }
@@ -364,7 +364,7 @@
   align-items: flex-end;
   overflow: hidden;
   border-radius: 6px 6px 3px 3px;
-  background: #f0f4f6;
+  background: var(--ui-surface-subtle);
 }
 
 .chartBar {
@@ -378,7 +378,7 @@
 }
 
 .chartLabel {
-  color: #8896a2;
+  color: var(--ui-text-muted);
   font-size: 9px;
 }
 
@@ -389,8 +389,8 @@
   gap: 12px;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid #eff2f4;
-  color: #7f8e9b;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-accent);
   font-size: 9px;
 }
 
@@ -402,7 +402,7 @@
 }
 
 .chartFooter > strong {
-  color: #29956b;
+  color: var(--ui-success-text);
   font-weight: 650;
 }
 
@@ -410,7 +410,7 @@
   width: 7px;
   height: 7px;
   border-radius: 3px;
-  background: #205774;
+  background: var(--ui-info-soft);
 }
 
 .sessionPanel {
@@ -424,8 +424,8 @@
   gap: 7px;
   padding: 6px 8px;
   border-radius: 7px;
-  background: #eaf7f0;
-  color: #21865e;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-success-text);
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -441,7 +441,7 @@
 }
 
 .sessionType {
-  color: #bd5870;
+  color: var(--ui-danger-text);
   font-size: 8px;
   font-weight: 750;
   letter-spacing: 0.11em;
@@ -449,7 +449,7 @@
 
 .sessionDetails h3 {
   margin: 7px 0 11px;
-  color: #1a374a;
+  color: var(--ui-text-accent);
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.025em;
@@ -464,7 +464,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #7d8c99;
+  color: var(--ui-text-accent);
   font-size: 10px;
 }
 
@@ -475,15 +475,15 @@
 .attendanceProgress {
   margin-top: 16px;
   padding: 12px 0 10px;
-  border-top: 1px solid #eff2f4;
-  border-bottom: 1px solid #eff2f4;
+  border-top: 1px solid var(--ui-border);
+  border-bottom: 1px solid var(--ui-border);
 }
 
 .progressLabels {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #778896;
+  color: var(--ui-text-accent);
   font-size: 9px;
 }
 
@@ -494,7 +494,7 @@
 }
 
 .progressLabels strong {
-  color: #244257;
+  color: var(--ui-text-accent);
   font-size: 11px;
 }
 
@@ -509,7 +509,7 @@
   margin-top: 10px;
   overflow: hidden;
   border-radius: 99px;
-  background: #edf1f3;
+  background: var(--ui-surface-subtle);
 }
 
 .progressTrack span {
@@ -531,7 +531,7 @@
   width: fit-content;
   align-items: center;
   gap: 7px;
-  color: #1c617e;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 650;
   text-decoration: none;
@@ -544,7 +544,7 @@
 
 .textLink:hover,
 .viewAllLink:hover {
-  color: #d04463;
+  color: var(--ui-danger-text);
 }
 
 .recentPanel {
@@ -570,8 +570,8 @@
 
 .sessionsTable th {
   padding: 11px 10px;
-  border-top: 1px solid #eff2f4;
-  border-bottom: 1px solid #eff2f4;
+  border-top: 1px solid var(--ui-border);
+  border-bottom: 1px solid var(--ui-border);
   color: #95a1ac;
   font-size: 9px;
   font-weight: 600;
@@ -584,8 +584,8 @@
 
 .sessionsTable td {
   padding: 12px 10px;
-  border-bottom: 1px solid #f0f3f5;
-  color: #667887;
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text-accent);
   font-size: 10px;
 }
 
@@ -606,8 +606,8 @@
   flex: 0 0 auto;
   place-items: center;
   border-radius: 9px;
-  background: #f1f5f7;
-  color: #547287;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
 }
 
 .sessionNameCell > span:last-child {
@@ -616,7 +616,7 @@
 }
 
 .sessionNameCell strong {
-  color: #324b5d;
+  color: var(--ui-text-accent);
   font-size: 10px;
   font-weight: 650;
 }
@@ -637,7 +637,7 @@
 }
 
 .attendanceCell {
-  color: #354e60 !important;
+  color: var(--ui-text-accent) !important;
   font-weight: 650;
 }
 
@@ -652,18 +652,18 @@
 }
 
 .completedStatus {
-  background: #eaf7f0;
-  color: #20865d;
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
 }
 
 .activeStatus {
-  background: #edf5fa;
-  color: #286d8b;
+  background: var(--ui-info-soft);
+  color: var(--ui-text-accent);
 }
 
 .draftStatus {
-  background: #f2f4f6;
-  color: #748391;
+  background: var(--ui-warning-soft);
+  color: var(--ui-text-accent);
 }
 
 .statusDot {
