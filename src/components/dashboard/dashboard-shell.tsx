@@ -41,7 +41,7 @@ const primaryNavigation: NavigationItem[] = [
 
 const managementNavigation: NavigationItem[] = [
   { label: "Audit Log", icon: ScrollText, href: "/audit-log" },
-  { label: "Akun Pengurus", icon: Activity },
+  { label: "Akun Pengurus", icon: Activity, href: "/administrator-accounts" },
 ];
 
 function NavigationGroup({

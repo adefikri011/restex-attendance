@@ -13,6 +13,7 @@ export function DashboardHeader() {
     "/periods": "Periode",
     "/reports": "Laporan",
     "/audit-log": "Audit Log",
+    "/administrator-accounts": "Akun Pengurus",
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"

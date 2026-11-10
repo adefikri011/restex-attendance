@@ -1,0 +1,975 @@
+.accountsPage {
+  display: grid;
+  gap: 19px;
+  color: var(--ui-text-primary);
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.pageHeading,
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageEyebrow,
+.sectionEyebrow {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.pageHeading h1 {
+  margin: 7px 0 5px;
+  color: var(--ui-text-primary);
+  font-size: 29px;
+  font-weight: 730;
+  letter-spacing: -0.045em;
+}
+
+.pageHeading p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+}
+
+.primaryButton,
+.secondaryButton {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 13px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.primaryButton {
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--ui-button-primary-hover);
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.secondaryButton {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.summaryCard {
+  display: grid;
+  grid-template-columns: 35px minmax(0, 1fr);
+  align-items: center;
+  gap: 0 10px;
+  min-height: 84px;
+  padding: 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.summaryIcon {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.summaryIconGreen {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.summaryIconAmber {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.summaryIconRose {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.summaryCard > div {
+  display: grid;
+  gap: 3px;
+}
+
+.summaryCard > div > span {
+  color: var(--ui-text-secondary);
+  font-size: 8px;
+}
+
+.summaryCard strong {
+  color: var(--ui-text-primary);
+  font-size: 18px;
+  font-weight: 730;
+  line-height: 1;
+}
+
+.summaryCard strong small {
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.summaryCard > small {
+  grid-column: 2;
+  margin-top: 3px;
+  color: var(--ui-text-muted);
+  font-size: 7px;
+}
+
+.divisionSection,
+.accessSection,
+.accountSection {
+  display: grid;
+  gap: 13px;
+}
+
+.sectionHeading {
+  align-items: center;
+}
+
+.sectionHeading h2 {
+  margin: 5px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 16px;
+  font-weight: 720;
+  letter-spacing: -0.025em;
+}
+
+.sectionHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.coverageBadge,
+.listCount {
+  display: inline-flex;
+  min-height: 26px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--ui-success-text) 20%, transparent);
+  border-radius: 20px;
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+  font-size: 8px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.divisionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.divisionCard {
+  display: grid;
+  grid-template-columns: 33px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 86px;
+  padding: 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.divisionIcon {
+  display: grid;
+  width: 33px;
+  height: 33px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.divisionInfo {
+  min-width: 0;
+}
+
+.divisionInfo h3 {
+  overflow: hidden;
+  margin: 0 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 10px;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.divisionInfo > span {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.divisionLead {
+  display: flex;
+  grid-column: 2;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.divisionLead > span,
+.accountAvatar {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 50%;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+  font-size: 7px;
+  font-weight: 750;
+}
+
+.divisionLead > div {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.divisionLead strong {
+  overflow: hidden;
+  color: var(--ui-text-primary);
+  font-size: 8px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.divisionLead small {
+  color: var(--ui-text-muted);
+  font-size: 7px;
+}
+
+.assignButton {
+  grid-column: 2;
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 8px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.assignButton:hover {
+  color: var(--ui-accent);
+}
+
+.accessSection,
+.accountSection {
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background: var(--ui-surface);
+}
+
+.helpIcon {
+  flex: 0 0 auto;
+  color: var(--ui-text-muted);
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.roleCard {
+  display: grid;
+  grid-template-columns: 29px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+  min-height: 83px;
+  padding: 10px;
+  border: 1px solid var(--ui-border-subtle);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+}
+
+.roleIcon {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border-radius: 8px;
+}
+
+.roleSuperAdmin {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.roleAdmin {
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.roleDivisionLead {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.roleMember {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.roleCard h3 {
+  margin: 2px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.roleCard p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 7px;
+  line-height: 1.55;
+}
+
+.listCount {
+  border-color: var(--ui-border);
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-secondary);
+}
+
+.filters {
+  display: flex;
+  gap: 9px;
+}
+
+.searchBox,
+.filterSelect {
+  display: flex;
+  height: 36px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
+}
+
+.searchBox {
+  min-width: 210px;
+  flex: 1;
+  padding: 0 10px;
+}
+
+.searchBox:focus-within,
+.filterSelect:focus-within {
+  border-color: var(--ui-text-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-text-accent) 12%, transparent);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 8px;
+}
+
+.searchBox input::placeholder {
+  color: var(--ui-text-muted);
+}
+
+.filterSelect {
+  position: relative;
+  min-width: 145px;
+  padding: 0 9px;
+}
+
+.filterSelect > span {
+  font-size: 8px;
+}
+
+.filterSelect select {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding-right: 17px;
+  appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.filterSelect > svg {
+  position: absolute;
+  right: 7px;
+  pointer-events: none;
+}
+
+.accountList {
+  display: grid;
+  margin: 0 -16px -16px;
+}
+
+.accountRow {
+  display: grid;
+  grid-template-columns: 34px minmax(150px, 1.3fr) minmax(140px, 1fr) minmax(112px, 0.8fr) minmax(110px, 0.8fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 68px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.accountAvatar {
+  width: 33px;
+  height: 33px;
+  background: var(--ui-surface-muted);
+  font-size: 8px;
+}
+
+.avatarDivision {
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.accountIdentity,
+.accountRole,
+.accountLastActive {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.accountIdentity strong {
+  overflow: hidden;
+  color: var(--ui-text-primary);
+  font-size: 9px;
+  font-weight: 680;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountIdentity > span,
+.accountRole small,
+.accountLastActive > span {
+  overflow: hidden;
+  color: var(--ui-text-muted);
+  font-size: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountRole {
+  justify-items: start;
+}
+
+.roleBadge,
+.accountStatus {
+  display: inline-flex;
+  min-height: 21px;
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  font-size: 7px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.roleBadge {
+  padding: 0 7px;
+}
+
+.roleBadgeSuperAdmin {
+  border-color: color-mix(in srgb, var(--ui-danger-text) 19%, transparent);
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.roleBadgeAdmin {
+  border-color: color-mix(in srgb, var(--ui-info-text) 19%, transparent);
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.roleBadgeDivisionLead {
+  border-color: color-mix(in srgb, var(--ui-success-text) 19%, transparent);
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.accountStatus {
+  gap: 5px;
+  padding: 0 7px;
+}
+
+.accountStatus > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.statusActive {
+  border-color: color-mix(in srgb, var(--ui-success-text) 19%, transparent);
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.statusInvited {
+  border-color: color-mix(in srgb, var(--ui-warning-text) 19%, transparent);
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.statusDisabled {
+  border-color: var(--ui-border);
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-muted);
+}
+
+.accountLastActive strong {
+  color: var(--ui-text-secondary);
+  font-size: 7px;
+  font-weight: 600;
+}
+
+.deactivateButton,
+.activateButton,
+.cancelInviteButton,
+.protectedAccount {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  font: inherit;
+  font-size: 7px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.deactivateButton,
+.activateButton,
+.cancelInviteButton {
+  cursor: pointer;
+}
+
+.deactivateButton:hover {
+  border-color: color-mix(in srgb, var(--ui-danger-text) 35%, var(--ui-border));
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.activateButton:hover {
+  border-color: color-mix(in srgb, var(--ui-success-text) 35%, var(--ui-border));
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.cancelInviteButton:hover {
+  border-color: color-mix(in srgb, var(--ui-warning-text) 35%, var(--ui-border));
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.protectedAccount {
+  gap: 5px;
+  color: var(--ui-text-muted);
+}
+
+.emptyState {
+  display: grid;
+  min-height: 140px;
+  align-content: center;
+  justify-items: center;
+  gap: 7px;
+  border-top: 1px solid var(--ui-border-subtle);
+  color: var(--ui-text-muted);
+}
+
+.emptyState strong {
+  color: var(--ui-text-primary);
+  font-size: 10px;
+}
+
+.emptyState span {
+  font-size: 8px;
+}
+
+.previewNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
+}
+
+.previewNote svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--ui-text-accent);
+}
+
+.previewNote p {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.invitePanel {
+  display: grid;
+  gap: 15px;
+  padding: 17px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background: var(--ui-surface);
+}
+
+.inviteHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.inviteHeading h2 {
+  margin: 5px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 15px;
+  font-weight: 710;
+}
+
+.inviteHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.iconButton {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+  cursor: pointer;
+}
+
+.inviteForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.inviteForm > label {
+  display: grid;
+  gap: 6px;
+  color: var(--ui-text-primary);
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.inviteForm input,
+.inviteForm select {
+  width: 100%;
+  height: 37px;
+  padding: 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 9px;
+}
+
+.inviteForm input:focus,
+.inviteForm select:focus {
+  border-color: var(--ui-text-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-text-accent) 12%, transparent);
+}
+
+.formError {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--ui-danger-text);
+  font-size: 8px;
+}
+
+.formFooter {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.formFooter > p {
+  max-width: 490px;
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+.formFooter > div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 8px;
+}
+
+@media (max-width: 1050px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .roleGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .accountRow {
+    grid-template-columns: 34px minmax(140px, 1fr) minmax(130px, 0.8fr) minmax(110px, 0.7fr) auto;
+  }
+
+  .accountLastActive {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .accountsPage {
+    gap: 15px;
+  }
+
+  .pageHeading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .pageHeading h1 {
+    font-size: 25px;
+  }
+
+  .pageHeading > .primaryButton {
+    width: 100%;
+  }
+
+  .summaryGrid {
+    gap: 8px;
+  }
+
+  .summaryCard {
+    grid-template-columns: 29px minmax(0, 1fr);
+    min-height: 76px;
+    gap: 0 7px;
+    padding: 9px;
+  }
+
+  .summaryIcon {
+    width: 29px;
+    height: 29px;
+  }
+
+  .summaryCard > div > span {
+    font-size: 7px;
+  }
+
+  .summaryCard strong {
+    font-size: 16px;
+  }
+
+  .summaryCard > small {
+    font-size: 6px;
+  }
+
+  .sectionHeading {
+    align-items: flex-start;
+  }
+
+  .sectionHeading h2 {
+    font-size: 14px;
+  }
+
+  .divisionGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .accessSection,
+  .accountSection {
+    padding: 13px;
+  }
+
+  .roleGrid {
+    gap: 7px;
+  }
+
+  .roleCard {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 6px;
+    min-height: 88px;
+    padding: 8px;
+  }
+
+  .roleIcon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .roleCard p {
+    font-size: 7px;
+  }
+
+  .filters {
+    flex-wrap: wrap;
+  }
+
+  .searchBox {
+    min-width: 100%;
+    flex-basis: 100%;
+  }
+
+  .filterSelect {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .accountList {
+    margin-right: -13px;
+    margin-left: -13px;
+  }
+
+  .accountRow {
+    grid-template-columns: 32px minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 11px 13px;
+  }
+
+  .accountAvatar {
+    grid-row: span 2;
+  }
+
+  .accountIdentity {
+    grid-column: 2;
+  }
+
+  .accountRole {
+    grid-column: 2;
+  }
+
+  .accountStatus {
+    grid-column: 3;
+    grid-row: 1;
+    justify-self: end;
+  }
+
+  .deactivateButton,
+  .activateButton,
+  .protectedAccount {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: end;
+  }
+
+  .protectedAccount {
+    width: 30px;
+    overflow: hidden;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .protectedAccount svg {
+    flex: 0 0 auto;
+  }
+
+  .invitePanel {
+    padding: 13px;
+  }
+
+  .inviteForm {
+    grid-template-columns: 1fr;
+  }
+
+  .formFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .formFooter > div {
+    justify-content: flex-end;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .secondaryButton {
+    transition: none;
+  }
+}
