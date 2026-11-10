@@ -11,6 +11,7 @@ export function DashboardHeader() {
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
     "/periods": "Periode",
+    "/reports": "Laporan",
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"

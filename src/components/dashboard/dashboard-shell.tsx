@@ -36,7 +36,7 @@ const primaryNavigation: NavigationItem[] = [
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
   { label: "Periode", icon: CalendarRange, href: "/periods" },
-  { label: "Laporan", icon: ChartNoAxesCombined },
+  { label: "Laporan", icon: ChartNoAxesCombined, href: "/reports" },
 ];
 
 const managementNavigation: NavigationItem[] = [
