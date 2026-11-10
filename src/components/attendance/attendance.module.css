@@ -1,0 +1,1400 @@
+.attendancePage {
+  display: grid;
+  gap: 20px;
+  color: #172b3a;
+}
+
+.pageHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.pageEyebrow,
+.panelEyebrow {
+  color: #96a4b0;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+}
+
+.pageHeading h1 {
+  margin: 7px 0 5px;
+  color: #19374b;
+  font-size: clamp(24px, 2.2vw, 30px);
+  font-weight: 730;
+  letter-spacing: -0.045em;
+}
+
+.pageHeading p {
+  margin: 0;
+  color: #7d8c99;
+  font-size: 12px;
+}
+
+.createButton,
+.emptyAction {
+  display: inline-flex;
+  min-height: 41px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #0b2f4a;
+  border-radius: 9px;
+  background: #0b2f4a;
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.createButton:hover,
+.emptyAction:hover {
+  background: #164a6b;
+  transform: translateY(-1px);
+}
+
+.liveNotice {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.activeBanner,
+.emptyBanner {
+  display: flex;
+  min-height: 150px;
+  align-items: center;
+  gap: 26px;
+  padding: 23px 26px;
+  border: 1px solid #e6ebef;
+  border-radius: 15px;
+  background:
+    radial-gradient(ellipse at 87% 14%, rgb(38 91 119 / 37%), transparent 36%),
+    linear-gradient(112deg, #0b2d47, #123f5c);
+  box-shadow: 0 6px 20px rgb(18 49 72 / 8%);
+  color: white;
+}
+
+.activeBannerCopy {
+  min-width: 0;
+  flex: 1;
+}
+
+.activeEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #b7cfda;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.activeEyebrow > span,
+.statusPulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #55c391;
+  box-shadow: 0 0 0 4px rgb(85 195 145 / 13%);
+}
+
+.activeBannerCopy h2 {
+  margin: 9px 0 11px;
+  color: #fff;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.activeMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 17px;
+}
+
+.activeMeta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #c1d0d9;
+  font-size: 10px;
+}
+
+.activeMeta svg {
+  color: #91b1c2;
+}
+
+.activeProgress {
+  display: grid;
+  width: 156px;
+  flex: 0 0 auto;
+  gap: 8px;
+  padding: 14px 15px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 11px;
+  background: rgb(255 255 255 / 7%);
+}
+
+.activeProgress > span {
+  color: #b2c8d3;
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.activeProgress > strong {
+  color: #fff;
+  font-size: 21px;
+  line-height: 1;
+}
+
+.activeProgress > strong small {
+  color: #b2c5cf;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.progressTrack {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgb(255 255 255 / 16%);
+}
+
+.progressTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #73cba8, #b2e2c6);
+  transition: width 250ms ease;
+}
+
+.bannerAction {
+  display: inline-flex;
+  min-height: 38px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.bannerAction:hover {
+  background: rgb(255 255 255 / 16%);
+}
+
+.emptyBanner {
+  min-height: 116px;
+  background: linear-gradient(112deg, #f8fafb, #f1f5f7);
+  color: #19374b;
+  box-shadow: none;
+}
+
+.emptyIcon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: #e7eff3;
+  color: #34637b;
+}
+
+.emptyBanner > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.emptyBanner h2 {
+  margin: 0 0 5px;
+  color: #19374b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.emptyBanner p {
+  margin: 0;
+  color: #778996;
+  font-size: 11px;
+}
+
+.emptyAction {
+  border-color: #dce5eb;
+  background: #fff;
+  color: #294d63;
+}
+
+.emptyAction:hover {
+  border-color: #bfd0da;
+  background: #f9fbfc;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.metricCard {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: 11px;
+  row-gap: 5px;
+  padding: 15px 16px 14px;
+  border: 1px solid #e7edf2;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
+}
+
+.metricIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 10px;
+}
+
+.metricIconNavy {
+  background: #edf3f6;
+  color: #37647d;
+}
+
+.metricIconGreen {
+  background: #eaf6ef;
+}
+
+.metricIconGreen > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #36a978;
+  box-shadow: 0 0 0 4px rgb(54 169 120 / 13%);
+}
+
+.metricIconAmber {
+  background: #fbf3e7;
+  color: #bc8540;
+}
+
+.metricIconRose {
+  background: #faedf0;
+  color: #c45972;
+}
+
+.metricLabel {
+  overflow: hidden;
+  color: #81909d;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metricCard > strong {
+  grid-column: 2;
+  color: #1c3a4e;
+  font-size: 20px;
+  font-weight: 730;
+  line-height: 1.15;
+}
+
+.metricCard > small {
+  grid-column: 1 / -1;
+  overflow: hidden;
+  padding-top: 8px;
+  border-top: 1px solid #f0f3f5;
+  color: #9aa6af;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sessionsPanel {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #e6ebef;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
+}
+
+.panelHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 21px 16px;
+}
+
+.panelHeading h2 {
+  margin: 5px 0 4px;
+  color: #203c50;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.panelHeading p {
+  margin: 0;
+  color: #8998a4;
+  font-size: 10px;
+}
+
+.searchBox {
+  display: flex;
+  width: min(100%, 245px);
+  min-height: 37px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #e2e8ed;
+  border-radius: 8px;
+  color: #8d9ba6;
+}
+
+.searchBox:focus-within {
+  border-color: #9ab5c5;
+  box-shadow: 0 0 0 3px rgb(29 92 124 / 7%);
+}
+
+.searchBox input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #314b5d;
+  font: inherit;
+  font-size: 10px;
+}
+
+.searchBox input::placeholder {
+  color: #a4afb8;
+}
+
+.filterTabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 0 21px;
+  border-bottom: 1px solid #edf0f3;
+  scrollbar-width: none;
+}
+
+.filterTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.filterTabs button {
+  display: inline-flex;
+  min-height: 39px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #85939e;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.filterTabs button > span {
+  display: grid;
+  min-width: 17px;
+  height: 17px;
+  place-items: center;
+  border-radius: 99px;
+  background: #f0f3f5;
+  color: #82909b;
+  font-size: 8px;
+}
+
+.filterTabs button:hover {
+  color: #35576d;
+}
+
+.filterTabs .selectedFilter {
+  border-bottom-color: #d64d6c;
+  color: #1b3d54;
+  font-weight: 700;
+}
+
+.filterTabs .selectedFilter > span {
+  background: #f7e9ed;
+  color: #b34460;
+}
+
+.tableScroller {
+  overflow-x: auto;
+}
+
+.sessionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sessionsTable th {
+  padding: 11px 14px;
+  border-bottom: 1px solid #edf0f3;
+  background: #fcfdfe;
+  color: #97a3ad;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.sessionsTable th:first-child,
+.sessionsTable td:first-child {
+  padding-left: 21px;
+}
+
+.sessionsTable th:last-child,
+.sessionsTable td:last-child {
+  padding-right: 21px;
+  text-align: right;
+}
+
+.sessionsTable td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #f0f3f5;
+  color: #677b89;
+  font-size: 10px;
+}
+
+.sessionsTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sessionName {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sessionIcon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: #f0f5f7;
+  color: #54758a;
+}
+
+.sessionName > span:last-child,
+.scheduleCell {
+  display: grid;
+  gap: 4px;
+}
+
+.sessionName strong,
+.scheduleCell strong {
+  color: #324b5d;
+  font-size: 10px;
+  font-weight: 680;
+}
+
+.sessionName small,
+.scheduleCell small {
+  color: #94a0aa;
+  font-size: 8px;
+}
+
+.attendanceCount {
+  color: #315a70;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.attendanceCount small {
+  color: #99a5ad;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.noAttendance {
+  color: #a2adb5;
+  font-size: 9px;
+}
+
+.statusBadge {
+  display: inline-flex;
+  min-height: 23px;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.statusActive {
+  background: #eaf7f0;
+  color: #21865e;
+}
+
+.statusDraft {
+  background: #fbf3e7;
+  color: #a97835;
+}
+
+.statusClosed {
+  background: #f0f3f5;
+  color: #758590;
+}
+
+.statusBadge .statusPulse {
+  width: 5px;
+  height: 5px;
+  box-shadow: 0 0 0 3px rgb(85 195 145 / 13%);
+}
+
+.rowAction,
+.detailsAction {
+  display: inline-flex;
+  min-height: 29px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid #dfe7ec;
+  border-radius: 7px;
+  background: #fff;
+  color: #42657a;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.rowAction:hover:not(:disabled),
+.detailsAction:hover {
+  border-color: #b9ccd7;
+  background: #f8fafb;
+}
+
+.rowAction:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.emptyState {
+  display: grid;
+  justify-items: center;
+  gap: 7px;
+  padding: 37px 20px 42px;
+  text-align: center;
+}
+
+.emptyState > span {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  margin-bottom: 3px;
+  place-items: center;
+  border-radius: 10px;
+  background: #f2f5f7;
+  color: #80909b;
+}
+
+.emptyState strong {
+  color: #385467;
+  font-size: 11px;
+}
+
+.emptyState p {
+  margin: 0;
+  color: #919da7;
+  font-size: 9px;
+}
+
+.demoNotice {
+  margin: -5px 0 0;
+  color: #98a4ad;
+  font-size: 9px;
+  text-align: right;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.sessionDialog,
+.detailDialog {
+  width: min(100%, 520px);
+}
+
+.detailDialog {
+  position: relative;
+}
+
+.dialogHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.dialogEyebrow {
+  color: #a2adb6;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.dialogHeading h2 {
+  margin: 6px 0 4px;
+  color: #203c50;
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+}
+
+.dialogHeading p {
+  margin: 0;
+  color: #84939f;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.dialogClose {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 9px;
+  background: #f2f5f7;
+  color: #647888;
+  cursor: pointer;
+}
+
+.sessionForm,
+.manualForm {
+  display: grid;
+  gap: 13px;
+  margin-top: 21px;
+}
+
+.sessionForm label,
+.manualForm label {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: #425c6e;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.sessionForm input,
+.sessionForm select,
+.sessionForm textarea,
+.manualForm select {
+  width: 100%;
+  min-width: 0;
+  min-height: 39px;
+  padding: 0 11px;
+  border: 1px solid #e2e8ed;
+  border-radius: 8px;
+  outline: 0;
+  background: #fff;
+  color: #314b5d;
+  font: inherit;
+  font-size: 10px;
+}
+
+.sessionForm textarea {
+  min-height: 72px;
+  padding-top: 10px;
+  resize: vertical;
+}
+
+.sessionForm input:focus,
+.sessionForm select:focus,
+.sessionForm textarea:focus,
+.manualForm select:focus {
+  border-color: #8eafbe;
+  box-shadow: 0 0 0 3px rgb(29 92 124 / 8%);
+}
+
+.sessionForm input::placeholder,
+.sessionForm textarea::placeholder {
+  color: #a4afb8;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.inputWithIcon {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithIcon > svg {
+  position: absolute;
+  left: 10px;
+  color: #8295a1;
+  pointer-events: none;
+}
+
+.inputWithIcon input {
+  padding-left: 32px;
+}
+
+.optionalLabel {
+  color: #9da9b2;
+  font-weight: 450;
+}
+
+.dialogNote {
+  margin: 1px 0 0;
+  color: #94a1ab;
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.dialogActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin: 2px -25px -25px;
+  padding: 15px 25px;
+  border-top: 1px solid #edf0f3;
+  border-radius: 0 0 17px 17px;
+  background: #fbfcfd;
+}
+
+.cancelButton,
+.submitButton,
+.closeSessionButton,
+.manualButton {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border: 1px solid #e2e8ed;
+  border-radius: 8px;
+  background: #fff;
+  color: #607586;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.submitButton {
+  border-color: #0b2f4a;
+  background: #0b2f4a;
+  color: #fff;
+}
+
+.submitButton:hover {
+  border-color: #164a6b;
+  background: #164a6b;
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.closeSessionButton {
+  border-color: #f0cbd2;
+  background: #fff7f8;
+  color: #b43e5a;
+}
+
+.closeSessionButton:hover {
+  border-color: #e6aeb9;
+  background: #fff0f3;
+}
+
+.detailDialog {
+  width: min(100%, 570px);
+}
+
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 15px;
+  margin-top: 19px;
+  padding: 13px 0;
+  border-top: 1px solid #edf0f3;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.detailMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #758794;
+  font-size: 9px;
+}
+
+.detailMeta svg {
+  color: #8096a3;
+}
+
+.detailProgress {
+  display: grid;
+  gap: 9px;
+  margin-top: 17px;
+}
+
+.detailProgressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #778996;
+  font-size: 9px;
+}
+
+.detailProgressHeader strong {
+  color: #24485e;
+  font-size: 12px;
+}
+
+.detailProgressHeader small {
+  color: #9aa6af;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.detailProgress .progressTrack {
+  height: 6px;
+  background: #edf1f3;
+}
+
+.detailProgress .progressTrack > span {
+  background: linear-gradient(90deg, #2b7690, #4d9d8c);
+}
+
+.rosterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 21px;
+}
+
+.rosterHeader h3 {
+  margin: 0 0 4px;
+  color: #304b5e;
+  font-size: 11px;
+}
+
+.rosterHeader p {
+  margin: 0;
+  color: #96a1aa;
+  font-size: 8px;
+}
+
+.manualButton {
+  min-height: 31px;
+  flex: 0 0 auto;
+  border-color: #d9e5eb;
+  color: #38617a;
+}
+
+.manualButton:hover {
+  background: #f7fafb;
+}
+
+.manualForm {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 13px;
+  padding: 12px;
+  border: 1px solid #e6edf1;
+  border-radius: 10px;
+  background: #f9fbfc;
+}
+
+.manualForm label {
+  font-size: 9px;
+}
+
+.manualForm select {
+  font-size: 9px;
+}
+
+.manualActions {
+  display: flex;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.rosterList {
+  display: grid;
+  max-height: 260px;
+  overflow-y: auto;
+  margin-top: 12px;
+  border-top: 1px solid #edf0f3;
+}
+
+.rosterRow {
+  display: flex;
+  min-height: 51px;
+  align-items: center;
+  gap: 9px;
+  border-bottom: 1px solid #f0f3f5;
+}
+
+.memberAvatar {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: #eaf1f5;
+  color: #426b81;
+  font-size: 8px;
+  font-weight: 750;
+}
+
+.memberDetails {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.memberDetails strong {
+  overflow: hidden;
+  color: #3e5869;
+  font-size: 9px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberDetails small {
+  overflow: hidden;
+  color: #98a3ac;
+  font-size: 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attendanceBadge {
+  display: inline-flex;
+  min-height: 21px;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 0 7px;
+  border-radius: 99px;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.attendancePresent {
+  background: #eaf7f0;
+  color: #21865e;
+}
+
+.attendanceExcused {
+  background: #f1effb;
+  color: #7365a5;
+}
+
+.attendanceSick {
+  background: #fff3e8;
+  color: #a97538;
+}
+
+.attendanceAbsent {
+  background: #fcecef;
+  color: #b44b61;
+}
+
+.attendancePending {
+  background: #f0f3f5;
+  color: #7d8c97;
+}
+
+.methodLabel {
+  color: #9aa5ae;
+  font-size: 8px;
+}
+
+.sessionNotes {
+  margin: 12px 0 0;
+  padding: 10px 11px;
+  border-radius: 8px;
+  background: #f6f8f9;
+  color: #778894;
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.detailActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 17px;
+  padding-top: 14px;
+  border-top: 1px solid #edf0f3;
+}
+
+.startBlocked {
+  width: 100%;
+  margin: 0;
+  color: #a97835;
+  font-size: 9px;
+  text-align: right;
+}
+
+.confirmPanel {
+  position: absolute;
+  inset: auto 18px 18px;
+  z-index: 1;
+  padding: 18px;
+  border: 1px solid #e5ebef;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 35px rgb(9 28 41 / 17%);
+}
+
+.confirmPanel h3 {
+  margin: 6px 0;
+  color: #28465a;
+  font-size: 14px;
+}
+
+.confirmPanel p {
+  margin: 0;
+  color: #798995;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.confirmPanel .manualActions {
+  margin-top: 14px;
+}
+
+@media (max-width: 1050px) {
+  .metricsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .activeBanner {
+    gap: 17px;
+    padding: 20px;
+  }
+
+  .activeProgress {
+    width: 138px;
+  }
+}
+
+@media (max-width: 760px) {
+  .activeBanner {
+    flex-wrap: wrap;
+  }
+
+  .activeBannerCopy {
+    flex-basis: calc(100% - 155px);
+  }
+
+  .activeProgress {
+    width: 138px;
+  }
+
+  .bannerAction {
+    margin-left: auto;
+  }
+
+  .panelHeading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .attendancePage {
+    gap: 16px;
+  }
+
+  .pageHeading {
+    align-items: flex-start;
+  }
+
+  .pageHeading p {
+    max-width: 235px;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .createButton {
+    min-height: 37px;
+    gap: 5px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+
+  .activeBanner {
+    align-items: flex-start;
+    gap: 15px 11px;
+    padding: 17px;
+  }
+
+  .activeBannerCopy {
+    flex-basis: 100%;
+  }
+
+  .activeBannerCopy h2 {
+    font-size: 18px;
+  }
+
+  .activeMeta {
+    display: grid;
+    gap: 7px;
+  }
+
+  .activeProgress {
+    width: min(100%, 170px);
+    padding: 10px 11px;
+  }
+
+  .bannerAction {
+    min-height: 35px;
+    margin-top: auto;
+    padding: 0 9px;
+    font-size: 9px;
+  }
+
+  .emptyBanner {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .emptyIcon {
+    width: 38px;
+    height: 38px;
+  }
+
+  .emptyBanner > div {
+    flex-basis: calc(100% - 54px);
+  }
+
+  .emptyBanner p {
+    font-size: 9px;
+    line-height: 1.5;
+  }
+
+  .emptyAction {
+    min-height: 34px;
+    margin-left: auto;
+  }
+
+  .metricsGrid {
+    gap: 9px;
+  }
+
+  .metricCard {
+    column-gap: 8px;
+    padding: 12px;
+  }
+
+  .metricIcon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .metricCard > strong {
+    font-size: 18px;
+  }
+
+  .panelHeading {
+    padding: 17px 15px 13px;
+  }
+
+  .filterTabs {
+    padding: 0 12px;
+  }
+
+  .tableScroller {
+    overflow: visible;
+  }
+
+  .sessionsTable,
+  .sessionsTable tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .sessionsTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .sessionsTable tbody {
+    display: grid;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .sessionsTable tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 5px 0;
+    border: 1px solid #edf0f3;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .sessionsTable tbody td {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 9px;
+    padding: 7px 11px;
+    border: 0;
+    text-align: right;
+  }
+
+  .sessionsTable tbody td::before {
+    color: #9aa5ae;
+    content: attr(data-label);
+    font-size: 8px;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .sessionsTable tbody td:first-child {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+    padding: 8px 11px 9px;
+    border-bottom: 1px solid #f0f3f5;
+  }
+
+  .sessionsTable tbody td:first-child::before {
+    display: none;
+  }
+
+  .sessionsTable tbody td:last-child {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    padding: 7px 11px 8px;
+    border-top: 1px solid #f0f3f5;
+  }
+
+  .sessionsTable tbody td:last-child::before {
+    margin-right: auto;
+  }
+
+  .sessionsTable tbody td .scheduleCell {
+    text-align: right;
+  }
+
+  .sessionsTable tbody td .sessionName {
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .sessionsTable tbody td .sessionName strong {
+    white-space: normal;
+  }
+
+  .demoNotice {
+    font-size: 8px;
+    text-align: left;
+  }
+
+  .sessionForm,
+  .manualForm {
+    gap: 11px;
+  }
+
+  .formRow,
+  .manualForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .manualActions {
+    grid-column: auto;
+  }
+
+  .dialogActions {
+    margin: 2px -20px -20px;
+    padding: 13px 20px;
+  }
+
+  .detailMeta {
+    gap: 9px 12px;
+  }
+
+  .methodLabel {
+    display: none;
+  }
+
+  .confirmPanel {
+    inset: auto 12px 12px;
+    padding: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .createButton,
+  .emptyAction,
+  .bannerAction,
+  .progressTrack > span {
+    transition: none;
+  }
+}

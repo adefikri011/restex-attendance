@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  OPERATOR
+  MEMBER
+
+  @@map("user_role")
+}
+
+enum MembershipStatus {
+  ACTIVE
+  ON_LEAVE
+  EXITED
+  ALUMNI
+
+  @@map("membership_status")
+}
+
+enum ActivityType {
+  ROUTINE
+  WORKSHOP
+  SEMINAR
+  INTERNAL
+  OTHER
+
+  @@map("activity_type")
+}
+
+enum SessionStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+
+  @@map("session_status")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  EXCUSED
+  SICK
+  ABSENT
+
+  @@map("attendance_status")
+}
+
+enum AttendanceMethod {
+  QR
+  MANUAL
+
+  @@map("attendance_method")
+}
+
+model Period {
+  id          String       @id @default(uuid()) @db.Uuid
+  name        String       @unique @db.VarChar(20)
+  startDate   DateTime     @map("start_date") @db.Date
+  endDate     DateTime     @map("end_date") @db.Date
+  isActive    Boolean      @default(false) @map("is_active")
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  memberships Membership[]
+  sessions    Session[]
+
+  @@index([isActive])
+  @@map("periods")
+}
+
+model User {
+  id            String      @id @default(uuid()) @db.Uuid
+  name          String      @db.VarChar(120)
+  email         String      @unique @db.VarChar(254)
+  passwordHash  String      @map("password_hash") @db.VarChar(255)
+  role          UserRole    @default(OPERATOR)
+  isActive      Boolean     @default(true) @map("is_active")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  member        Member?
+  createdSessions Session[] @relation("SessionCreator")
+  attendances   Attendance[] @relation("AttendanceRecorder")
+  auditLogs     AuditLog[]
+
+  @@index([role, isActive])
+  @@map("users")
+}
+
+model Member {
+  id           String       @id @default(uuid()) @db.Uuid
+  memberCode   String       @unique @map("member_code") @db.VarChar(24)
+  fullName     String       @map("full_name") @db.VarChar(160)
+  nim          String       @unique @db.VarChar(32)
+  cohort       String       @db.VarChar(4)
+  photoUrl     String?      @map("photo_url") @db.VarChar(2048)
+  qrTokenHash  String?      @unique @map("qr_token_hash") @db.VarChar(128)
+  qrIssuedAt   DateTime?    @map("qr_issued_at") @db.Timestamptz(3)
+  qrRevokedAt  DateTime?    @map("qr_revoked_at") @db.Timestamptz(3)
+  userId       String?      @unique @map("user_id") @db.Uuid
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  memberships  Membership[]
+  attendances  Attendance[]
+
+  @@index([fullName])
+  @@index([cohort])
+  @@map("members")
+}
+
+model Membership {
+  id        String           @id @default(uuid()) @db.Uuid
+  memberId  String           @map("member_id") @db.Uuid
+  periodId  String           @map("period_id") @db.Uuid
+  division  String           @db.VarChar(100)
+  status    MembershipStatus @default(ACTIVE)
+  joinedAt  DateTime         @default(now()) @map("joined_at") @db.Timestamptz(3)
+  endedAt   DateTime?        @map("ended_at") @db.Timestamptz(3)
+  member    Member           @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  period    Period           @relation(fields: [periodId], references: [id], onDelete: Restrict)
+
+  @@unique([memberId, periodId])
+  @@index([periodId, status])
+  @@index([periodId, division])
+  @@map("memberships")
+}
+
+model Session {
+  id          String        @id @default(uuid()) @db.Uuid
+  periodId    String        @map("period_id") @db.Uuid
+  title       String        @db.VarChar(120)
+  type        ActivityType
+  scheduledAt DateTime      @map("scheduled_at") @db.Timestamptz(3)
+  location    String        @db.VarChar(160)
+  notes       String?       @db.VarChar(1000)
+  status      SessionStatus @default(DRAFT)
+  createdById String        @map("created_by_id") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  period      Period        @relation(fields: [periodId], references: [id], onDelete: Restrict)
+  createdBy   User          @relation("SessionCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  attendances Attendance[]
+
+  @@index([periodId, status, scheduledAt])
+  @@index([createdById])
+  @@map("sessions")
+}
+
+model Attendance {
+  id           String           @id @default(uuid()) @db.Uuid
+  sessionId    String           @map("session_id") @db.Uuid
+  memberId     String           @map("member_id") @db.Uuid
+  status       AttendanceStatus
+  method       AttendanceMethod
+  reason       String?          @db.VarChar(240)
+  recordedAt   DateTime         @default(now()) @map("recorded_at") @db.Timestamptz(3)
+  recordedById String?          @map("recorded_by_id") @db.Uuid
+  session      Session          @relation(fields: [sessionId], references: [id], onDelete: Restrict)
+  member       Member           @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  recordedBy   User?            @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@unique([sessionId, memberId])
+  @@index([memberId, recordedAt])
+  @@index([sessionId, status])
+  @@map("attendances")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String?  @map("user_id") @db.Uuid
+  action      String   @db.VarChar(80)
+  entity      String   @db.VarChar(80)
+  entityId    String?  @map("entity_id") @db.VarChar(80)
+  oldValue    Json?    @map("old_value") @db.JsonB
+  newValue    Json?    @map("new_value") @db.JsonB
+  occurredAt  DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([occurredAt])
+  @@index([entity, entityId])
+  @@index([userId, occurredAt])
+  @@map("audit_logs")
+}

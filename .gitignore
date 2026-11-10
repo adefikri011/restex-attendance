@@ -44,6 +44,9 @@ yarn-error.log*
 /prisma/*.sqlite
 /prisma/*.sqlite-journal
 
+# generated Prisma client
+/src/generated/prisma
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -1,5 +1,32 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Database (Neon PostgreSQL)
+
+The Prisma schema is in `prisma/schema.prisma`. Runtime queries use Neon's pooled
+connection, while Prisma migrations should use the direct, non-pooled connection.
+
+1. Rotate any database password that has been shared outside a secret manager.
+2. Copy `.env.example` to `.env` and set `DATABASE_URL` to Neon's pooled connection
+   string and `DIRECT_URL` to its direct connection string. Never commit `.env`.
+3. Generate the Prisma client and validate the schema:
+
+   ```bash
+   npm run db:generate
+   npm run db:validate
+   ```
+
+4. Apply migrations to a development database:
+
+   ```bash
+   npm run db:migrate
+   ```
+
+   Use `npm run db:deploy` to apply committed migrations in a deployment environment.
+
+Do not run migrations against production until the schema and migration have been
+reviewed and the database has a backup. The current UI still uses local preview data;
+the Prisma client is the server-side foundation for the next integration step.
+
 ## Getting Started
 
 First, run the development server:

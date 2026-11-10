@@ -4,9 +4,9 @@
 |---|---|
 | **Produk** | RESTEX Attendance |
 | **Organisasi** | UKM Rekayasa Teknologi (RESTEX), Universitas Nusa Putra |
-| **Versi** | 0.2 (Draft MVP + Multi-Periode & Siklus Keanggotaan) |
-| **Tanggal** | 9 November 2026 |
-| **Status** | Draft diperbarui untuk diusulkan ke pengurus |
+| **Versi** | 0.3 (Draft MVP + Portal Anggota) |
+| **Tanggal** | 10 November 2026 |
+| **Status** | Draft diperbarui dengan role dan portal Anggota untuk diusulkan ke pengurus |
 
 ---
 
@@ -51,7 +51,9 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
 ## 4. Ruang Lingkup
 
 ### Termasuk (MVP)
-- Login pengurus dengan hak akses berbasis role (RBAC).
+- Login pengurus dan anggota dengan hak akses berbasis role (RBAC).
+- Portal anggota baca-saja untuk melihat profil, riwayat, dan ringkasan absensi pribadi.
+- Akun anggota dibuat melalui undangan pengurus dan ditautkan ke data anggota yang sudah terdaftar.
 - **Manajemen Periode Kepengurusan** (misal: 2026-2027) dan arsip historis.
 - **Manajemen Status Anggota Detail** (Aktif, Cuti, Keluar/Resign, Alumni/Demisioner).
 - Fitur **Transisi Periode / Demisioner Massal**.
@@ -65,9 +67,9 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
 - Penanganan anggota yang lupa lanyard atau QR rusak.
 
 ### Tidak termasuk (MVP)
-- Login dan akun anggota (database disiapkan, fiturnya belakangan).
 - Pertanyaan verifikasi, quiz, atau foto bukti kehadiran.
 - Absensi mandiri oleh anggota.
+- Pengajuan koreksi absensi dari portal anggota.
 - Status "Terlambat".
 - Notifikasi (WhatsApp/email).
 - Aplikasi mobile native.
@@ -78,10 +80,10 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
 
 | Role | Deskripsi | Hak akses |
 |---|---|---|
-| **Super Admin** | Ketua / Pengelola Utama Sistem | Akses penuh: kelola akun pengurus, role, periode kepengurusan, transisi periode, anggota, sesi, laporan, dan pengaturan |
-| **Admin** | Pengurus Administrasi (mis. Sekretaris) | Kelola data anggota, status keanggotaan, sesi absensi, ubah status absensi, dan cetak laporan |
+| **Super Admin** | Ketua / Pengelola Utama Sistem | Akses penuh: kelola akun pengurus dan anggota, role, periode kepengurusan, transisi periode, anggota, sesi, laporan, dan pengaturan |
+| **Admin** | Pengurus Administrasi (mis. Sekretaris) | Kelola data anggota dan undangan akun anggota, status keanggotaan, sesi absensi, ubah status absensi, dan cetak laporan |
 | **Operator** | Pengurus bertugas scanning | Membuka scanner pada sesi aktif, memindai QR, melihat rekap sesi berjalan |
-| **Anggota** | Anggota RESTEX | Tidak memiliki akun di MVP. Hanya memiliki QR pada lanyard |
+| **Anggota** | Anggota RESTEX | Melihat profil sendiri dan riwayat/ringkasan absensi pribadi; tidak dapat mengubah data anggota atau catatan absensi |
 
 ---
 
@@ -129,9 +131,9 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 ### 7.1 Autentikasi dan Manajemen Role
 | ID | Kebutuhan | Prioritas |
 |---|---|---|
-| FR-01 | Pengurus dapat login dengan email/username dan password | P0 |
-| FR-02 | Sistem menerapkan RBAC dengan tiga role (Super Admin, Admin, Operator) | P0 |
-| FR-03 | Super Admin dapat membuat, menonaktifkan, dan mengubah role akun pengurus | P0 |
+| FR-01 | Pengguna yang memiliki akun dapat login dengan email dan password | P0 |
+| FR-02 | Sistem menerapkan RBAC dengan empat role (Super Admin, Admin, Operator, Anggota) | P0 |
+| FR-03 | Super Admin dapat membuat, menonaktifkan, dan mengubah role akun pengurus; Super Admin/Admin dapat mengundang dan menonaktifkan akun anggota | P0 |
 | FR-04 | Sesi login berakhir otomatis setelah tidak aktif dalam waktu tertentu | P1 |
 | FR-05 | Pengguna dapat mengubah password sendiri | P1 |
 
@@ -195,6 +197,15 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 | FR-63 | Export rekap ke format Excel (.xlsx) | P0 |
 | FR-64 | Audit log mencatat seluruh aksi krusial (ubah status keanggotaan, absensi manual, demisioner massal, regenerate QR, ubah role) | P0 |
 
+### 7.8 Portal Anggota
+| ID | Kebutuhan | Prioritas |
+|---|---|---|
+| FR-70 | Super Admin/Admin dapat mengirim undangan akun kepada anggota yang sudah terdaftar; undangan ditautkan ke satu data anggota dan dapat digunakan satu kali dalam batas waktu tertentu | P0 |
+| FR-71 | Anggota dapat melihat profil dan status keanggotaannya sendiri, termasuk riwayat lintas periode | P0 |
+| FR-72 | Anggota dapat melihat riwayat absensinya sendiri dengan periode, sesi, tanggal, status, dan metode pencatatan | P0 |
+| FR-73 | Anggota dapat melihat ringkasan jumlah Hadir/Izin/Sakit/Alpha dan persentase Hadir per periode; persentase dihitung dari sesi yang ditutup saat anggota berstatus Aktif | P0 |
+| FR-74 | Anggota tidak dapat melihat data pribadi atau riwayat absensi anggota lain, serta tidak dapat mengubah data anggota maupun catatan absensi | P0 |
+
 ---
 
 ## 8. Kebutuhan Non-Fungsional
@@ -204,7 +215,7 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 | **Kemudahan** | Pengurus baru dapat menggunakan scanner tanpa pelatihan panjang. Mobile-first UI untuk scanner |
 | **Performa** | Hasil scan tampil ≤ 2 detik pada koneksi normal |
 | **Keamanan** | Password di-hash (Bcrypt/Argon2), wajib HTTPS (kamera browser mensyaratkan HTTPS), RBAC ketat |
-| **Privasi** | QR hanya berisi token acak. Data sensitif tersimpan di server |
+| **Privasi** | QR hanya berisi token acak. Data sensitif tersimpan di server. Akses portal anggota dibatasi server-side ke identitas anggota yang terhubung ke akun tersebut |
 | **Integritas Data** | Perubahan status keanggotaan tidak menghapus riwayat absensi terdahulu |
 | **Kompatibilitas** | Browser modern di Android/iOS (Chrome, Safari) dan Desktop |
 | **Skalabilitas** | Mendukung ratusan anggota dan multi-periode kepengurusan tanpa penumpukan data yang memperlambat sistem |
@@ -214,8 +225,9 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 ## 9. Model Data (Skema Relasional Disesuaikan)
 
 - **periods**: `id`, `name` (e.g., "2026-2027"), `is_active` (boolean), `start_date`, `end_date`, `created_at`
-- **users**: `id`, `nama`, `email`, `password_hash`, `role` (super_admin/admin/operator), `status_aktif`
-- **members**: `id`, `member_code` (RTX-YYYY-NNN), `nama`, `nim`, `divisi`, `angkatan`, `status` (aktif, cuti, keluar, alumni), `period_id` (FK ke periods), `qr_token`, `user_id` (nullable)
+- **users**: `id`, `name`, `email`, `password_hash`, `role` (super_admin/admin/operator/member), `is_active`
+- **members**: `id`, `member_code` (RTX-YYYY-NNN), `full_name`, `nim`, `cohort`, `photo_url`, `qr_token_hash`, `user_id` (nullable, unique FK ke users)
+- **memberships**: `id`, `member_id`, `period_id`, `division`, `status` (active/on_leave/exited/alumni), `joined_at`, `ended_at`. Data keanggotaan disimpan per periode agar riwayat tidak tertimpa.
 - **sessions**: `id`, `period_id` (FK ke periods), `nama`, `jenis`, `tanggal`, `waktu_mulai`, `status` (draft/aktif/ditutup), `dibuat_oleh`
 - **attendances**: `id`, `session_id`, `member_id`, `status` (hadir/izin/sakit/alpha), `metode` (scan/manual), `keterangan`, `waktu_tercatat`, `dicatat_oleh`. Constraint unik: `(session_id, member_id)`
 - **audit_logs**: `id`, `user_id`, `aksi`, `entitas`, `nilai_lama`, `nilai_baru`, `waktu`
@@ -231,6 +243,9 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 5. Perubahan status keanggotaan (misal dari Aktif menjadi Keluar) tidak menghapus catatan absensi yang sudah terjadi di masa lalu.
 6. Regenerate QR membuat token QR lama hangus secara otomatis.
 7. Semua tindakan manual (absen manual, ubah status, demisioner massal) tercatat di Audit Log.
+8. Role akun menentukan hak akses aplikasi, sedangkan status keanggotaan berlaku per periode; keduanya tidak saling menggantikan.
+9. Akun Anggota hanya ditautkan ke satu data anggota. Anggota yang menjadi Alumni tetap dapat mengakses riwayat pribadinya selama akun belum dinonaktifkan.
+10. Setiap permintaan portal anggota hanya boleh membaca data anggota yang terhubung ke sesi login; pemeriksaan akses wajib dilakukan di server.
 
 ---
 
@@ -247,9 +262,9 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 
 | Fase | Isi |
 |---|---|
-| **MVP (V0.2)** | Fitur P0 lengkap: RBAC, Manajemen Periode Aktif, Transisi Status Anggota (Aktif/Cuti/Keluar/Alumni), QR, Scanner Kamera Browser, Auto-Alpha, Absen Manual, Audit Log, Rekap & Export Excel |
+| **MVP (V0.2)** | Fitur P0 lengkap: RBAC empat role, undangan akun Anggota, portal Anggota baca-saja (profil, riwayat, ringkasan absensi pribadi), Manajemen Periode Aktif, Transisi Status Anggota (Aktif/Cuti/Keluar/Alumni), QR, Scanner Kamera Browser, Auto-Alpha, Absen Manual, Audit Log, Rekap & Export Excel |
 | **Rilis 2** | Fitur P1: Regenerate QR, Arsip Laporan Multi-Periode, Persentase Kehadiran Tahunan, Custom Alerting |
-| **Pengembangan Lanjutan** | Akun Anggota, Cetak Kartu Lanyard Otomatis, Dashboard Analytics Keaktifan Anggota |
+| **Pengembangan Lanjutan** | Pengajuan koreksi absensi oleh Anggota, notifikasi, Cetak Kartu Lanyard Otomatis, Dashboard Analytics Keaktifan Anggota |
 
 ---
 

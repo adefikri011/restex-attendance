@@ -32,7 +32,7 @@ type NavigationItem = {
 
 const primaryNavigation: NavigationItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
-  { label: "Sesi Absensi", icon: CalendarDays },
+  { label: "Sesi Absensi", icon: CalendarDays, href: "/attendance" },
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
   { label: "Periode", icon: CalendarRange },

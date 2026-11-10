@@ -6,6 +6,7 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const pageTitles: Record<string, string> = {
     "/": "Dashboard",
+    "/attendance": "Sesi Absensi",
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
   };

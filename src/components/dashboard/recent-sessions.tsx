@@ -17,7 +17,7 @@ export function RecentSessions() {
           <h2>Sesi absensi terbaru</h2>
           <p>Aktivitas sesi pada periode ini</p>
         </div>
-        <Link href="#recent-sessions" className={styles.viewAllLink}>
+        <Link href="/attendance" className={styles.viewAllLink}>
           Lihat semua
           <ArrowRight size={15} aria-hidden="true" />
         </Link>
