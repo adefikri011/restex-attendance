@@ -40,7 +40,7 @@ const primaryNavigation: NavigationItem[] = [
 ];
 
 const managementNavigation: NavigationItem[] = [
-  { label: "Audit Log", icon: ScrollText },
+  { label: "Audit Log", icon: ScrollText, href: "/audit-log" },
   { label: "Akun Pengurus", icon: Activity },
 ];
 

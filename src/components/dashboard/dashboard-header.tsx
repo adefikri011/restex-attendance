@@ -12,6 +12,7 @@ export function DashboardHeader() {
     "/lanyard-card": "Kartu Lanyard",
     "/periods": "Periode",
     "/reports": "Laporan",
+    "/audit-log": "Audit Log",
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"
