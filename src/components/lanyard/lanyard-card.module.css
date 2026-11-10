@@ -68,6 +68,33 @@
   gap: 20px;
 }
 
+.emptyMembers {
+  display: grid;
+  min-height: 260px;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 28px;
+  border: 1px solid var(--ui-border);
+  border-radius: 15px;
+  background: var(--ui-surface);
+  text-align: center;
+}
+
+.emptyMembers h2 {
+  margin: 0;
+  color: var(--ui-text-accent);
+  font-size: 17px;
+}
+
+.emptyMembers p {
+  max-width: 430px;
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
 .formPanel,
 .previewPanel {
   min-width: 0;

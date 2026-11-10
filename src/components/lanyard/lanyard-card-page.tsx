@@ -3,15 +3,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { Download, RefreshCw, ShieldCheck } from "lucide-react";
-import { initialMembers, type Member } from "@/components/members/member-data";
+import type { Member } from "@/components/members/member-data";
 import { exportLanyardCard } from "./export-lanyard-card";
 import { LanyardCardForm } from "./lanyard-card-form";
 import { LanyardCardPreview } from "./lanyard-card-preview";
+import { renderLanyardCard } from "./render-lanyard-card";
 import styles from "./lanyard-card.module.css";
 import type { LanyardCardDetails } from "./types";
 
-const activeMembers = initialMembers.filter((member) => member.status === "Aktif");
-const initialMember = activeMembers[0];
 const qrOptions = {
   errorCorrectionLevel: "H" as const,
   margin: 1,
@@ -41,19 +40,35 @@ function getCardDetails(member: Member): LanyardCardDetails {
   };
 }
 
-export function LanyardCardPage() {
+type LanyardCardPageProps = {
+  members: Member[];
+  periodName: string | null;
+};
+
+function LanyardCardWorkspace({
+  activeMembers,
+  periodName,
+}: {
+  activeMembers: Member[];
+  periodName: string;
+}) {
+  const initialMember = activeMembers[0];
   const [selectedMemberId, setSelectedMemberId] = useState(initialMember.id);
   const [details, setDetails] = useState(() => getCardDetails(initialMember));
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [qrError, setQrError] = useState("");
+  const [renderedCard, setRenderedCard] = useState<
+    { front: string; back: string; key: string } | null
+  >(null);
+  const [renderError, setRenderError] = useState<{ key: string; message: string } | null>(null);
   const [downloadError, setDownloadError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [photoUrl, setPhotoUrl] = useState("");
   const [photoName, setPhotoName] = useState("");
   const requestId = useRef(0);
   const photoUrlRef = useRef("");
-  const frontFaceRef = useRef<HTMLElement | null>(null);
-  const backFaceRef = useRef<HTMLElement | null>(null);
+  const renderKey = JSON.stringify([details, photoUrl, qrDataUrl]);
+  const currentRenderedCard = renderedCard?.key === renderKey ? renderedCard : null;
 
   const generateQr = useCallback(async () => {
     const currentRequest = ++requestId.current;
@@ -105,6 +120,30 @@ export function LanyardCardPage() {
     },
     [],
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!qrDataUrl) return;
+
+    renderLanyardCard(details, photoUrl, qrDataUrl)
+      .then((card) => {
+        if (!cancelled) setRenderedCard({ ...card, key: renderKey });
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          console.error("Gagal merender pratinjau kartu anggota.", error);
+          setRenderError({
+            key: renderKey,
+            message: "Pratinjau kartu gagal dibuat. Silakan coba lagi.",
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [details, photoUrl, qrDataUrl, renderKey]);
 
   function updateField(field: keyof LanyardCardDetails, value: string) {
     setDetails((current) => ({ ...current, [field]: value }));
@@ -160,10 +199,7 @@ export function LanyardCardPage() {
   }
 
   async function downloadCard() {
-    const frontFace = frontFaceRef.current;
-    const backFace = backFaceRef.current;
-
-    if (!frontFace || !backFace) {
+    if (!currentRenderedCard) {
       setDownloadError("Pratinjau kartu belum siap. Coba muat ulang halaman.");
       return;
     }
@@ -172,7 +208,7 @@ export function LanyardCardPage() {
     setDownloadError("");
 
     try {
-      await exportLanyardCard(frontFace, backFace, details.id);
+      await exportLanyardCard(currentRenderedCard.front, currentRenderedCard.back, details.id);
     } catch (error) {
       console.error("Gagal mengunduh PDF kartu anggota.", error);
       setDownloadError("PDF kartu gagal dibuat. Silakan coba lagi.");
@@ -185,7 +221,9 @@ export function LanyardCardPage() {
     <div className={styles.page}>
       <header className={styles.pageHeading}>
         <div>
-          <span className={styles.eyebrow}>IDENTITAS ANGGOTA · PERIODE 2026—2027</span>
+          <span className={styles.eyebrow}>
+            IDENTITAS ANGGOTA · PERIODE {periodName.replace("-", "—")}
+          </span>
           <h1>Kartu Lanyard</h1>
           <p>Sesuaikan identitas anggota dan lihat pratinjau kartu secara langsung.</p>
         </div>
@@ -217,14 +255,17 @@ export function LanyardCardPage() {
           <div className={styles.previewStage}>
             <LanyardCardPreview
               details={details}
-              photoUrl={photoUrl}
-              qrDataUrl={qrDataUrl}
-              frontFaceRef={frontFaceRef}
-              backFaceRef={backFaceRef}
+              frontImage={currentRenderedCard?.front ?? ""}
+              backImage={currentRenderedCard?.back ?? ""}
             />
             {qrError && (
               <p className={styles.qrError} role="alert">
                 {qrError}
+              </p>
+            )}
+            {renderError?.key === renderKey && (
+              <p className={styles.downloadError} role="alert">
+                {renderError.message}
               </p>
             )}
             {downloadError && (
@@ -252,7 +293,7 @@ export function LanyardCardPage() {
               type="button"
               className={styles.primaryButton}
               onClick={() => void downloadCard()}
-              disabled={!qrDataUrl || isDownloading}
+              disabled={!currentRenderedCard || isDownloading}
             >
               <Download size={16} aria-hidden="true" />
               {isDownloading ? "Menyiapkan PDF..." : "Unduh kartu (PDF)"}
@@ -272,5 +313,34 @@ export function LanyardCardPage() {
         </section>
       </div>
     </div>
+  );
+}
+
+export function LanyardCardPage({ members, periodName }: LanyardCardPageProps) {
+  const activeMembers = members.filter((member) => member.status === "Aktif");
+
+  if (!periodName || activeMembers.length === 0) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.pageHeading}>
+          <div>
+            <span className={styles.eyebrow}>IDENTITAS ANGGOTA</span>
+            <h1>Kartu Lanyard</h1>
+            <p>Buat kartu dari data anggota yang terdaftar pada periode aktif.</p>
+          </div>
+        </header>
+        <section className={styles.emptyMembers} role="status">
+          <h2>Belum ada anggota aktif</h2>
+          <p>
+            Tambahkan anggota aktif pada periode berjalan terlebih dahulu, lalu
+            kembali ke halaman ini untuk membuat kartu lanyard.
+          </p>
+        </section>
+      </div>
+    );
+  }
+
+  return (
+    <LanyardCardWorkspace activeMembers={activeMembers} periodName={periodName} />
   );
 }
