@@ -1,16 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   ArrowRight,
   CalendarDays,
   Check,
   CircleAlert,
   Clock3,
-  FilePlus2,
   FileText,
   MapPin,
-  Plus,
   Search,
   UsersRound,
 } from "lucide-react";
@@ -21,14 +20,8 @@ import {
   formatSessionDate,
   getActiveMembers,
   getSessionCounts,
-  type AttendanceSession,
-  type NewSessionInput,
   type SessionStatus,
 } from "./attendance-data";
-import {
-  CreateSessionDialog,
-  SessionDetailDialog,
-} from "./session-dialogs";
 
 const filters: Array<{ label: string; value: SessionStatus | "Semua" }> = [
   { label: "Semua sesi", value: "Semua" },
@@ -38,30 +31,14 @@ const filters: Array<{ label: string; value: SessionStatus | "Semua" }> = [
 ];
 
 const activeMembers = getActiveMembers(initialMembers);
-
-function getCurrentTime() {
-  return new Intl.DateTimeFormat("id-ID", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(new Date());
-}
+const sessions = createInitialSessions(initialMembers);
 
 export function AttendancePage() {
-  const [sessions, setSessions] = useState(() =>
-    createInitialSessions(initialMembers),
-  );
   const [selectedFilter, setSelectedFilter] =
     useState<SessionStatus | "Semua">("Semua");
   const [search, setSearch] = useState("");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
-  const [notice, setNotice] = useState("");
 
   const activeSession = sessions.find((session) => session.status === "Aktif");
-  const selectedSession = sessions.find(
-    (session) => session.id === selectedSessionId,
-  );
   const normalizedSearch = search.trim().toLocaleLowerCase("id");
   const filteredSessions = useMemo(
     () =>
@@ -76,7 +53,7 @@ export function AttendancePage() {
             .includes(normalizedSearch);
         return matchesStatus && matchesSearch;
       }),
-    [normalizedSearch, selectedFilter, sessions],
+    [normalizedSearch, selectedFilter],
   );
 
   const activeCount = sessions.filter(
@@ -95,124 +72,19 @@ export function AttendancePage() {
           return total + (counts.totalActive ? (counts.hadir / counts.totalActive) * 100 : 0);
         }, 0) / closedSessions.length,
       )
-    : 0;
-
-  function createSession(input: NewSessionInput) {
-    const newSession: AttendanceSession = {
-      ...input,
-      id: `SES-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}`,
-      status: "Draft",
-      attendance: [],
-    };
-
-    setSessions((current) => [newSession, ...current]);
-    setIsCreateOpen(false);
-    setSelectedFilter("Semua");
-    setSearch("");
-    setNotice(`${newSession.title} tersimpan sebagai draft di pratinjau.`);
-  }
-
-  function startSession(sessionId: string) {
-    const existingActiveSession = sessions.find(
-      (session) => session.status === "Aktif" && session.id !== sessionId,
-    );
-
-    if (existingActiveSession) {
-      setNotice(
-        `Tutup sesi "${existingActiveSession.title}" sebelum memulai sesi lain.`,
-      );
-      return;
-    }
-
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === sessionId ? { ...session, status: "Aktif" } : session,
-      ),
-    );
-    setNotice("Sesi dimulai pada pratinjau lokal.");
-  }
-
-  function closeSession(sessionId: string) {
-    setSessions((current) =>
-      current.map((session) => {
-        if (session.id !== sessionId) return session;
-
-        const recordedMemberIds = new Set(
-          session.attendance.map((entry) => entry.memberId),
-        );
-        const alphaEntries = activeMembers
-          .filter((member) => !recordedMemberIds.has(member.id))
-          .map((member) => ({
-            memberId: member.id,
-            status: "Alpha" as const,
-          }));
-
-        return {
-          ...session,
-          status: "Ditutup",
-          attendance: [...session.attendance, ...alphaEntries],
-        };
-      }),
-    );
-    setSelectedSessionId(null);
-    setNotice(
-      "Sesi ditutup. Anggota aktif yang belum tercatat ditandai Alpha pada pratinjau.",
-    );
-  }
-
-  function recordManualAttendance(
-    sessionId: string,
-    memberId: string,
-    reason: string,
-  ) {
-    setSessions((current) =>
-      current.map((session) =>
-        session.id === sessionId
-          ? {
-              ...session,
-              attendance: [
-                ...session.attendance,
-                {
-                  memberId,
-                  status: "Hadir",
-                  method: "Manual",
-                  reason,
-                  time: getCurrentTime(),
-                },
-              ],
-            }
-          : session,
-      ),
-    );
-    const member = activeMembers.find((item) => item.id === memberId);
-    setNotice(
-      `Kehadiran manual ${member?.name ?? "anggota"} dicatat dengan alasan: ${reason}.`,
-    );
-  }
+      : 0;
 
   return (
-    <div className={styles.attendancePage}>
-      <header className={styles.pageHeading}>
+      <div className={styles.attendancePage}>
+        <header className={styles.pageHeading}>
         <div>
           <span className={styles.pageEyebrow}>
-            KEGIATAN · PERIODE 2026—2027
+            MONITORING · PERIODE 2026—2027
           </span>
-          <h1>Sesi Absensi</h1>
-          <p>Atur pertemuan, pantau kehadiran, dan kelola rekap sesi.</p>
+          <h1>Monitoring Absensi</h1>
+          <p>Pantau sesi yang berlangsung dan tinjau rekap kehadiran anggota.</p>
         </div>
-        <button
-          type="button"
-          className={styles.createButton}
-          onClick={() => setIsCreateOpen(true)}
-        >
-          <Plus size={17} aria-hidden="true" />
-          Buat sesi
-        </button>
       </header>
-
-      <p className={styles.liveNotice} role="status" aria-live="polite">
-        {notice}
-      </p>
 
       {activeSession ? (
         <section className={styles.activeBanner} aria-label="Sesi sedang berjalan">
@@ -246,14 +118,13 @@ export function AttendancePage() {
               />
             </div>
           </div>
-          <button
-            type="button"
+          <Link
+            href={`/attendance/${activeSession.id}`}
             className={styles.bannerAction}
-            onClick={() => setSelectedSessionId(activeSession.id)}
           >
-            Kelola sesi
+            Pantau detail
             <ArrowRight size={16} aria-hidden="true" />
-          </button>
+          </Link>
         </section>
       ) : (
         <section className={styles.emptyBanner} aria-label="Tidak ada sesi aktif">
@@ -262,16 +133,8 @@ export function AttendancePage() {
           </span>
           <div>
             <h2>Belum ada sesi yang berjalan</h2>
-            <p>Buat sesi baru atau mulai salah satu draft yang sudah tersedia.</p>
+            <p>Sesi aktif akan muncul di sini setelah Operator memulainya.</p>
           </div>
-          <button
-            type="button"
-            className={styles.emptyAction}
-            onClick={() => setIsCreateOpen(true)}
-          >
-            <Plus size={15} aria-hidden="true" />
-            Buat sesi
-          </button>
         </section>
       )}
 
@@ -288,17 +151,17 @@ export function AttendancePage() {
           <span className={`${styles.metricIcon} ${styles.metricIconGreen}`}>
             <span aria-hidden="true" />
           </span>
-          <span className={styles.metricLabel}>Sedang aktif</span>
+          <span className={styles.metricLabel}>Sedang dipantau</span>
           <strong>{activeCount}</strong>
-          <small>{activeCount ? "Pemindaian dibuka" : "Tidak ada sesi aktif"}</small>
+          <small>{activeCount ? "Sesi berlangsung" : "Tidak ada sesi aktif"}</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconAmber}`}>
-            <FilePlus2 size={17} aria-hidden="true" />
+            <Clock3 size={17} aria-hidden="true" />
           </span>
           <span className={styles.metricLabel}>Draft</span>
           <strong>{draftCount}</strong>
-          <small>Menunggu dimulai</small>
+          <small>Menunggu Operator memulai</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconRose}`}>
@@ -315,7 +178,7 @@ export function AttendancePage() {
           <div>
             <span className={styles.panelEyebrow}>RIWAYAT KEGIATAN</span>
             <h2 id="sessions-title">Semua sesi</h2>
-            <p>Daftar sesi pada periode kepengurusan aktif.</p>
+            <p>Admin memiliki akses baca untuk seluruh sesi pada periode aktif.</p>
           </div>
           <label className={styles.searchBox}>
             <Search size={16} aria-hidden="true" />
@@ -359,13 +222,12 @@ export function AttendancePage() {
                 <th scope="col">Jadwal</th>
                 <th scope="col">Kehadiran</th>
                 <th scope="col">Status</th>
-                <th scope="col" aria-label="Aksi" />
+                <th scope="col" aria-label="Detail" />
               </tr>
             </thead>
             <tbody>
               {filteredSessions.map((session) => {
                 const counts = getSessionCounts(session, activeMembers.length);
-                const isBlocked = session.status === "Draft" && Boolean(activeSession);
                 const statusClass =
                   session.status === "Aktif"
                     ? styles.statusActive
@@ -413,31 +275,14 @@ export function AttendancePage() {
                         {session.status}
                       </span>
                     </td>
-                    <td data-label="Aksi">
-                      {session.status === "Draft" ? (
-                        <button
-                          type="button"
-                          className={styles.rowAction}
-                          disabled={isBlocked}
-                          title={
-                            isBlocked
-                              ? "Tutup sesi aktif sebelum memulai sesi lain"
-                              : undefined
-                          }
-                          onClick={() => startSession(session.id)}
-                        >
-                          Mulai
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          className={styles.detailsAction}
-                          onClick={() => setSelectedSessionId(session.id)}
-                        >
-                          Detail
-                          <ArrowRight size={13} aria-hidden="true" />
-                        </button>
-                      )}
+                    <td data-label="Detail">
+                      <Link
+                        href={`/attendance/${session.id}`}
+                        className={styles.detailsAction}
+                      >
+                        Detail
+                        <ArrowRight size={13} aria-hidden="true" />
+                      </Link>
                     </td>
                   </tr>
                 );
@@ -455,26 +300,8 @@ export function AttendancePage() {
       </section>
 
       <p className={styles.demoNotice}>
-        Data dan tindakan pada halaman ini hanya simulasi lokal; belum tersimpan ke server.
+        Tampilan ini menggunakan data pratinjau lokal. Sesi dan absensi dikelola Operator.
       </p>
-
-      {isCreateOpen && (
-        <CreateSessionDialog
-          onClose={() => setIsCreateOpen(false)}
-          onSubmit={createSession}
-        />
-      )}
-      {selectedSession && (
-        <SessionDetailDialog
-          session={selectedSession}
-          members={initialMembers}
-          onClose={() => setSelectedSessionId(null)}
-          canStart={!activeSession || activeSession.id === selectedSession.id}
-          onStart={startSession}
-          onCloseSession={closeSession}
-          onManualAttendance={recordManualAttendance}
-        />
-      )}
     </div>
   );
 }

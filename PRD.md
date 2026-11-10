@@ -81,8 +81,8 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
 | Role | Deskripsi | Hak akses |
 |---|---|---|
 | **Super Admin** | Ketua / Pengelola Utama Sistem | Akses penuh: kelola akun pengurus dan anggota, role, periode kepengurusan, transisi periode, anggota, sesi, laporan, dan pengaturan |
-| **Admin** | Pengurus Administrasi (mis. Sekretaris) | Kelola data anggota dan undangan akun anggota, status keanggotaan, sesi absensi, ubah status absensi, dan cetak laporan |
-| **Operator** | Pengurus bertugas scanning | Membuka scanner pada sesi aktif, memindai QR, melihat rekap sesi berjalan |
+| **Admin** | Pengurus Administrasi (mis. Sekretaris) | Kelola data anggota dan undangan akun anggota, status keanggotaan, lihat sesi dan rekap absensi (monitoring baca-saja), serta cetak laporan; tidak membuka/menutup sesi atau mencatat kehadiran |
+| **Operator** | Pengurus bertugas scanning | Membuat, membuka, dan menutup sesi; membuka scanner, memindai QR, melakukan pencatatan manual yang beralasan, dan melihat rekap sesi berjalan |
 | **Anggota** | Anggota RESTEX | Melihat profil sendiri dan riwayat/ringkasan absensi pribadi; tidak dapat mengubah data anggota atau catatan absensi |
 
 ---
@@ -92,7 +92,7 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
 ### 6.1 Alur Absensi (Akhir Pertemuan)
 1. Admin/Super Admin memastikan **Periode Aktif** sudah sesuai (misal: 2026-2027).
 2. Pertemuan berlangsung seperti biasa.
-3. Admin membuat atau mengaktifkan sesi absensi.
+3. Operator membuat dan mengaktifkan sesi absensi.
 4. Di akhir pertemuan, Operator membuka halaman scanner pada sesi aktif.
 5. Anggota menunjukkan lanyard, Operator memindai QR Code.
 6. Sistem memvalidasi:
@@ -100,7 +100,7 @@ Dengan adanya lanyard card anggota, QR Code dapat dimanfaatkan sebagai identitas
    - Anggota berstatus **Aktif** di periode berjalan (bukan Nonaktif/Keluar/Alumni).
    - Anggota belum absen pada sesi tersebut.
 7. Jika valid, kehadiran dicatat (ID anggota, nama, sesi, tanggal, waktu) dan layar menampilkan konfirmasi.
-8. Setelah selesai, Admin menutup sesi.
+8. Setelah selesai, Operator menutup sesi; Admin dapat memantau status sesi dan rekapnya.
 9. Saat sesi ditutup, seluruh anggota **Aktif** yang belum tercatat Hadir, Izin, atau Sakit ditandai **Alpha** secara otomatis. (Anggota Cuti/Keluar/Alumni diabaikan).
 
 ### 6.2 Alur Anggota Lupa Lanyard atau QR Rusak
@@ -169,12 +169,12 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 ### 7.5 Sesi Absensi
 | ID | Kebutuhan | Prioritas |
 |---|---|---|
-| FR-30 | Admin dapat membuat sesi: nama, jenis kegiatan, tanggal, waktu | P0 |
+| FR-30 | Operator dapat membuat sesi: nama, jenis kegiatan, tanggal, waktu; Admin dapat melihat detail dan rekap sesi | P0 |
 | FR-31 | Jenis kegiatan fleksibel (Rutin, Workshop, Seminar, Internal, Lainnya) | P0 |
 | FR-32 | Sesi memiliki status: Draft, Aktif, Ditutup | P0 |
 | FR-33 | Scanning hanya dapat dilakukan pada sesi berstatus Aktif | P0 |
 | FR-34 | Saat sesi ditutup, anggota **Aktif** tanpa catatan kehadiran otomatis berstatus **Alpha** | P0 |
-| FR-35 | Admin dapat membuka kembali sesi yang sudah ditutup (tercatat di audit log) | P1 |
+| FR-35 | Operator dapat membuka kembali sesi yang sudah ditutup (tercatat di audit log) | P1 |
 | FR-36 | Hanya satu sesi yang dapat aktif pada satu waktu | P1 |
 
 ### 7.6 Scanning & Validasi Status
@@ -186,7 +186,7 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 | FR-43 | Ditolak jika QR tidak dikenal atau anggota berstatus **Nonaktif/Keluar/Alumni** | P0 |
 | FR-44 | Umpan balik audio & visual saat scanning | P1 |
 | FR-45 | Penghitung real-time (Hadir / Total Anggota Aktif) pada sesi berjalan | P1 |
-| FR-46 | Pencatatan manual sebagai cadangan dengan kewajiban mengisi alasan | P0 |
+| FR-46 | Operator dapat mencatat kehadiran secara manual sebagai cadangan dengan kewajiban mengisi alasan | P0 |
 
 ### 7.7 Rekap, Laporan & Audit Log
 | ID | Kebutuhan | Prioritas |

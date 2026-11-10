@@ -6,11 +6,13 @@ export function DashboardHeader() {
   const pathname = usePathname();
   const pageTitles: Record<string, string> = {
     "/": "Dashboard",
-    "/attendance": "Sesi Absensi",
+    "/attendance": "Monitoring Absensi",
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
   };
-  const pageTitle = pageTitles[pathname] ?? "Dashboard";
+  const pageTitle = pathname.startsWith("/attendance/")
+    ? "Detail Sesi"
+    : pageTitles[pathname] ?? "Dashboard";
 
   return (
     <header className={styles.pageHeader}>
