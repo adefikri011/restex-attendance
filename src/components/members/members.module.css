@@ -1,0 +1,347 @@
+.membersPage {
+  display: grid;
+  gap: 20px;
+  color: #172b3a;
+}
+
+.visuallyHidden {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.pageHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: -6px;
+}
+
+.pageEyebrow {
+  color: #9aa7b2;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.pageHeading h1 {
+  margin: 7px 0 5px;
+  color: #19374b;
+  font-size: 29px;
+  font-weight: 730;
+  letter-spacing: -0.045em;
+}
+
+.pageHeading p {
+  margin: 0;
+  color: #7d8c99;
+  font-size: 12px;
+}
+
+.exportTopButton {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid #e0e7ec;
+  border-radius: 9px;
+  background: #fff;
+  color: #496174;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.exportTopButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.summaryStrip {
+  display: flex;
+  min-height: 91px;
+  align-items: center;
+  gap: 21px;
+  padding: 15px 20px;
+  border: 1px solid #e7edf2;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
+}
+
+.summaryItem {
+  display: flex;
+  min-width: 115px;
+  align-items: center;
+  gap: 11px;
+}
+
+.summaryIcon {
+  display: grid;
+  width: 37px;
+  height: 37px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.summaryIconNavy {
+  background: #edf3f7;
+  color: #1d5e7a;
+}
+
+.summaryIconGreen {
+  background: #e9f7f0;
+}
+
+.summaryIconAmber {
+  background: #fff5e5;
+}
+
+.summaryIconGray {
+  background: #f0f3f5;
+  color: #748594;
+}
+
+.summaryStatusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2da371;
+  box-shadow: 0 0 0 4px rgb(45 163 113 / 12%);
+}
+
+.summaryIconAmber .summaryStatusDot {
+  background: #d29634;
+  box-shadow: 0 0 0 4px rgb(210 150 52 / 12%);
+}
+
+.summaryItem > div:last-child {
+  display: grid;
+  gap: 3px;
+}
+
+.summaryItem > div:last-child > span {
+  color: #82919d;
+  font-size: 10px;
+}
+
+.summaryItem strong {
+  color: #203c50;
+  font-size: 17px;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 34px;
+  flex: 0 0 auto;
+  background: #edf0f3;
+}
+
+.summaryPeriod {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-left: auto;
+  padding-left: 14px;
+  color: #8896a2;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.summaryPeriod strong {
+  color: #496274;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.periodLiveDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2da371;
+}
+
+.membersCard {
+  overflow: hidden;
+  border: 1px solid #e7edf2;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
+}
+
+.cardIntro {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 21px 22px 16px;
+}
+
+.cardIntro h2 {
+  margin: 0;
+  color: #213d50;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.cardIntro p {
+  margin: 5px 0 0;
+  color: #95a1ac;
+  font-size: 10px;
+}
+
+.currentPeriodBadge {
+  padding: 6px 9px;
+  border: 1px solid #e8edf1;
+  border-radius: 7px;
+  color: #607588;
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.memberAvatar {
+  display: grid;
+  width: 35px;
+  height: 35px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  font-size: 9px;
+  font-weight: 750;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.statusBadge > span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.activeBadge {
+  background: #eaf7f0;
+  color: #278760;
+}
+
+.leaveBadge {
+  background: #fff4e3;
+  color: #ad7928;
+}
+
+.exitedBadge {
+  background: #fcecef;
+  color: #bd4660;
+}
+
+.alumniBadge {
+  background: #f0f2f4;
+  color: #7a8792;
+}
+
+.mockDataNote {
+  margin: -10px 0 0;
+  color: #a1adb7;
+  font-size: 9px;
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .summaryStrip {
+    gap: 13px;
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+  .summaryItem {
+    min-width: 98px;
+    gap: 8px;
+  }
+  .summaryPeriod {
+    gap: 5px;
+    padding-left: 7px;
+  }
+}
+
+@media (max-width: 760px) {
+  .membersPage {
+    gap: 17px;
+  }
+  .summaryStrip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 12px;
+    padding: 15px;
+  }
+  .summaryDivider {
+    display: none;
+  }
+  .summaryPeriod {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 10px 0 0;
+    border-top: 1px solid #edf0f3;
+  }
+  .cardIntro {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageHeading {
+    align-items: flex-start;
+  }
+  .pageHeading h1 {
+    font-size: 25px;
+  }
+  .pageHeading p {
+    max-width: 240px;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  .exportTopButton {
+    min-height: 35px;
+    padding: 0 8px;
+    font-size: 0;
+  }
+  .exportTopButton svg {
+    width: 16px;
+    height: 16px;
+  }
+  .summaryItem {
+    min-width: 0;
+  }
+  .summaryIcon {
+    width: 33px;
+    height: 33px;
+  }
+  .summaryItem > div:last-child > span {
+    font-size: 9px;
+  }
+  .summaryItem strong {
+    font-size: 15px;
+  }
+  .currentPeriodBadge {
+    font-size: 8px;
+  }
+}

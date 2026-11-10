@@ -1,0 +1,883 @@
+.dashboardPage {
+  display: grid;
+  gap: 22px;
+}
+
+.pageIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 2px;
+}
+
+.eyebrow {
+  margin: 0 0 9px;
+  color: #91a0ad;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+}
+
+.pageIntro h1 {
+  margin: 0;
+  color: #19374b;
+  font-size: clamp(24px, 2.2vw, 30px);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+}
+
+.pageIntro h1 span {
+  color: #d83f63;
+  font-size: 20px;
+  vertical-align: 3px;
+}
+
+.introDescription {
+  margin: 8px 0 0;
+  color: #778796;
+  font-size: 13px;
+}
+
+.quickAction {
+  display: inline-flex;
+  min-height: 39px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  border: 1px solid #dfe7ed;
+  border-radius: 10px;
+  background: #fff;
+  color: #344e62;
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.quickAction:hover {
+  border-color: #b7c8d4;
+  background: #fbfcfd;
+}
+
+.quickActionDot {
+  width: 6px;
+  height: 6px;
+}
+
+.quickAction > svg {
+  display: none;
+}
+
+.welcomePanel {
+  position: relative;
+  display: flex;
+  min-height: 206px;
+  align-items: center;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 27px 33px;
+  border-radius: 19px;
+  background:
+    radial-gradient(ellipse at 82% 18%, rgb(32 98 125 / 47%), transparent 34%),
+    linear-gradient(112deg, #08263d 0%, #0b2f4a 58%, #123e59 100%);
+  color: #fff;
+}
+
+.welcomeCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 510px;
+}
+
+.welcomeTag {
+  color: #98c0d0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.welcomeCopy h2 {
+  margin: 12px 0 8px;
+  font-size: clamp(23px, 2.4vw, 30px);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+  line-height: 1.17;
+}
+
+.welcomeCopy p {
+  max-width: 400px;
+  margin: 0;
+  color: #bfd0dc;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.welcomeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.welcomeLink > span {
+  color: #f08099;
+  font-size: 17px;
+}
+
+.welcomeSummary {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  width: 200px;
+  min-height: 151px;
+  align-content: center;
+  gap: 5px;
+  overflow: hidden;
+  padding: 17px 20px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 14px;
+  background: rgb(255 255 255 / 8%);
+  backdrop-filter: blur(8px);
+}
+
+.summaryIcon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  margin-bottom: 5px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgb(255 255 255 / 12%);
+  color: #d8e8f0;
+}
+
+.summaryLabel {
+  color: #a9c2d0;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.welcomeSummary > strong {
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.summaryNote {
+  color: #c3d2db;
+  font-size: 10px;
+}
+
+.welcomeDecoration {
+  position: absolute;
+  top: -76px;
+  right: 107px;
+  width: 270px;
+  height: 270px;
+  border: 1px solid rgb(197 226 240 / 10%);
+  border-radius: 50%;
+}
+
+.welcomeDecoration::before,
+.welcomeDecoration::after {
+  position: absolute;
+  inset: 25px;
+  border: 1px solid rgb(197 226 240 / 8%);
+  border-radius: inherit;
+  content: "";
+}
+
+.welcomeDecoration::after {
+  inset: 57px;
+}
+
+.decorativeOrbit {
+  position: absolute;
+  right: 24px;
+  bottom: 20px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e26981;
+  box-shadow: 0 0 19px 6px rgb(226 105 129 / 28%);
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.statCard,
+.panel {
+  border: 1px solid #e7edf2;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 3px 12px rgb(25 55 75 / 2%);
+}
+
+.statCard {
+  min-height: 157px;
+  padding: 17px 18px 15px;
+}
+
+.statTopline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: 11px;
+}
+
+.navy {
+  background: #edf3f7;
+  color: #1c5975;
+}
+
+.green {
+  background: #e9f7f0;
+  color: #239266;
+}
+
+.rose {
+  background: #fcecef;
+  color: #c84060;
+}
+
+.amber {
+  background: #fff5e5;
+  color: #ba8124;
+}
+
+.statTrend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: #269568;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.statLabel {
+  margin: 15px 0 4px;
+  color: #7e8d9b;
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.statValue {
+  color: #1a374a;
+  font-size: 25px;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1.1;
+}
+
+.statCaption {
+  overflow: hidden;
+  margin: 7px 0 0;
+  color: #9aa6b1;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insightsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(290px, 0.88fr);
+  gap: 16px;
+}
+
+.panel {
+  min-width: 0;
+  padding: 19px 20px;
+}
+
+.panelHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.panelHeading h2 {
+  margin: 0;
+  color: #213d50;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.panelHeading p {
+  margin: 5px 0 0;
+  color: #98a4af;
+  font-size: 10px;
+}
+
+.chartPeriod {
+  padding: 6px 8px;
+  border: 1px solid #edf0f3;
+  border-radius: 7px;
+  color: #738392;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+.chart {
+  display: grid;
+  height: 164px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+  padding: 0 6px;
+}
+
+.chartColumn {
+  display: grid;
+  grid-template-rows: 18px minmax(0, 1fr) 20px;
+  justify-items: center;
+  gap: 5px;
+}
+
+.chartValue {
+  color: #7c8c99;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.chartTrack {
+  display: flex;
+  width: 100%;
+  max-width: 32px;
+  height: 100%;
+  align-items: flex-end;
+  overflow: hidden;
+  border-radius: 6px 6px 3px 3px;
+  background: #f0f4f6;
+}
+
+.chartBar {
+  width: 100%;
+  border-radius: 6px 6px 3px 3px;
+  background: linear-gradient(180deg, #2f7894, #0b3e5b);
+}
+
+.chartColumn:last-child .chartBar {
+  background: linear-gradient(180deg, #df6a83, #c23a59);
+}
+
+.chartLabel {
+  color: #8896a2;
+  font-size: 9px;
+}
+
+.chartFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #eff2f4;
+  color: #7f8e9b;
+  font-size: 9px;
+}
+
+.chartFooter > span,
+.chartFooter > strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chartFooter > strong {
+  color: #29956b;
+  font-weight: 650;
+}
+
+.legendDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 3px;
+  background: #205774;
+}
+
+.sessionPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.liveBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: #eaf7f0;
+  color: #21865e;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.liveBadge > span {
+  width: 6px;
+  height: 6px;
+}
+
+.sessionDetails {
+  margin-top: 20px;
+}
+
+.sessionType {
+  color: #bd5870;
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.11em;
+}
+
+.sessionDetails h3 {
+  margin: 7px 0 11px;
+  color: #1a374a;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.sessionMeta {
+  display: grid;
+  gap: 7px;
+}
+
+.sessionMeta span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #7d8c99;
+  font-size: 10px;
+}
+
+.sessionMeta svg {
+  color: #a1adb7;
+}
+
+.attendanceProgress {
+  margin-top: 16px;
+  padding: 12px 0 10px;
+  border-top: 1px solid #eff2f4;
+  border-bottom: 1px solid #eff2f4;
+}
+
+.progressLabels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #778896;
+  font-size: 9px;
+}
+
+.progressLabels > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.progressLabels strong {
+  color: #244257;
+  font-size: 11px;
+}
+
+.progressLabels strong span {
+  color: #93a0ab;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.progressTrack {
+  height: 6px;
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: #edf1f3;
+}
+
+.progressTrack span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #2b7690, #4d9d8c);
+}
+
+.attendanceProgress p {
+  margin: 7px 0 0;
+  color: #97a3ad;
+  font-size: 9px;
+}
+
+.textLink,
+.viewAllLink {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 7px;
+  color: #1c617e;
+  font-size: 10px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.textLink {
+  margin-top: auto;
+  padding-top: 12px;
+}
+
+.textLink:hover,
+.viewAllLink:hover {
+  color: #d04463;
+}
+
+.recentPanel {
+  padding-bottom: 8px;
+}
+
+.viewAllLink {
+  margin-top: 1px;
+  white-space: nowrap;
+}
+
+.tableScroller {
+  overflow-x: auto;
+  margin-top: 15px;
+}
+
+.sessionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sessionsTable th {
+  padding: 11px 10px;
+  border-top: 1px solid #eff2f4;
+  border-bottom: 1px solid #eff2f4;
+  color: #95a1ac;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.sessionsTable th:first-child,
+.sessionsTable td:first-child {
+  padding-left: 3px;
+}
+
+.sessionsTable td {
+  padding: 12px 10px;
+  border-bottom: 1px solid #f0f3f5;
+  color: #667887;
+  font-size: 10px;
+}
+
+.sessionsTable tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.sessionNameCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sessionRowIcon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: #f1f5f7;
+  color: #547287;
+}
+
+.sessionNameCell > span:last-child {
+  display: grid;
+  gap: 4px;
+}
+
+.sessionNameCell strong {
+  color: #324b5d;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.sessionNameCell small {
+  color: #99a5af;
+  font-size: 9px;
+}
+
+.dateCell {
+  display: table-cell;
+}
+
+.dateCell svg {
+  margin-right: 6px;
+  vertical-align: -3px;
+  color: #9aa7b1;
+}
+
+.attendanceCell {
+  color: #354e60 !important;
+  font-weight: 650;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+.completedStatus {
+  background: #eaf7f0;
+  color: #20865d;
+}
+
+.activeStatus {
+  background: #edf5fa;
+  color: #286d8b;
+}
+
+.draftStatus {
+  background: #f2f4f6;
+  color: #748391;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.mockDataNote {
+  margin: -7px 0 0;
+  color: #a3aeb8;
+  font-size: 9px;
+  text-align: right;
+}
+
+@media (max-width: 1100px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .insightsGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sessionPanel {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboardPage {
+    gap: 17px;
+  }
+
+  .pageIntro {
+    align-items: flex-start;
+  }
+
+  .introDescription {
+    max-width: 350px;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .quickAction {
+    min-height: 36px;
+    flex: 0 0 auto;
+    padding: 0 9px;
+    font-size: 0;
+  }
+
+  .quickActionDot {
+    display: none;
+  }
+
+  .quickAction > svg {
+    display: block;
+  }
+
+  .welcomePanel {
+    min-height: 190px;
+    padding: 23px;
+  }
+
+  .welcomeCopy {
+    max-width: 66%;
+  }
+
+  .welcomeCopy p {
+    font-size: 10px;
+  }
+
+  .welcomeSummary {
+    width: 138px;
+    min-height: 132px;
+    padding: 13px;
+  }
+
+  .summaryLabel {
+    font-size: 7px;
+  }
+
+  .welcomeDecoration {
+    right: -120px;
+  }
+
+  .statsGrid {
+    gap: 10px;
+  }
+
+  .statCard {
+    min-height: 145px;
+    padding: 14px;
+  }
+
+  .panel {
+    padding: 17px 15px;
+  }
+
+  .chart {
+    gap: 9px;
+  }
+
+  .recentPanel {
+    padding-right: 0;
+    padding-left: 15px;
+  }
+
+  .recentPanel > .panelHeading {
+    padding-right: 15px;
+  }
+
+  .sessionsTable {
+    min-width: 590px;
+  }
+
+  .mockDataNote {
+    font-size: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pageIntro {
+    align-items: center;
+  }
+
+  .eyebrow {
+    font-size: 8px;
+  }
+
+  .pageIntro h1 {
+    font-size: 21px;
+  }
+
+  .pageIntro h1 span {
+    font-size: 16px;
+  }
+
+  .introDescription {
+    max-width: 240px;
+    font-size: 10px;
+  }
+
+  .quickAction {
+    width: 36px;
+    height: 36px;
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .welcomePanel {
+    min-height: 180px;
+    padding: 20px 17px;
+  }
+
+  .welcomeCopy {
+    max-width: 100%;
+  }
+
+  .welcomeCopy h2 {
+    font-size: 24px;
+  }
+
+  .welcomeCopy p {
+    max-width: 220px;
+  }
+
+  .welcomeSummary {
+    display: none;
+  }
+
+  .statsGrid {
+    gap: 9px;
+  }
+
+  .statCard {
+    min-height: 137px;
+    padding: 12px;
+  }
+
+  .statIcon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .statLabel {
+    margin-top: 12px;
+    font-size: 9px;
+  }
+
+  .statValue {
+    font-size: 23px;
+  }
+
+  .statCaption {
+    font-size: 8px;
+  }
+
+  .panelHeading h2 {
+    font-size: 12px;
+  }
+
+  .chartPeriod {
+    font-size: 8px;
+  }
+
+  .chartFooter {
+    font-size: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quickAction {
+    transition: none;
+  }
+}

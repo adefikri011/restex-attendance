@@ -1,0 +1,251 @@
+.statusTabs {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 22px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.statusTab {
+  position: relative;
+  display: inline-flex;
+  min-height: 43px;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8795a1;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 550;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.statusTab > span {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: #f1f4f6;
+  color: #83919c;
+  font-size: 8px;
+}
+
+.selectedStatusTab {
+  color: #164b67;
+  font-weight: 700;
+}
+
+.selectedStatusTab::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #d83f63;
+  content: "";
+}
+
+.selectedStatusTab > span {
+  background: #fcecef;
+  color: #a93c56;
+}
+
+.toolbar {
+  display: flex;
+  min-height: 70px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 11px;
+  padding: 14px 22px;
+}
+
+.searchField {
+  display: flex;
+  width: min(100%, 286px);
+  height: 37px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 10px;
+  border: 1px solid #e6ebef;
+  border-radius: 8px;
+  background: #fff;
+  color: #95a2ad;
+}
+
+.searchField:focus-within {
+  border-color: #9fb6c4;
+  box-shadow: 0 0 0 3px rgb(29 92 124 / 8%);
+}
+
+.searchField input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #293f50;
+  font: inherit;
+  font-size: 12px;
+}
+
+.searchField input::placeholder {
+  color: #a5afb8;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.divisionSelectLabel select {
+  width: 136px;
+  height: 37px;
+  padding: 0 25px 0 10px;
+  border: 1px solid #e6ebef;
+  border-radius: 8px;
+  outline-color: #8caebe;
+  background: #fff;
+  color: #607486;
+  font: inherit;
+  font-size: 11px;
+}
+
+.importButton,
+.exportButton,
+.addButton {
+  display: inline-flex;
+  min-height: 37px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid #e3e9ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #587083;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.importButton:hover,
+.exportButton:not(:disabled):hover {
+  border-color: #c6d4dd;
+  background: #fbfcfd;
+}
+
+.exportButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.importButton input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+}
+
+.addButton {
+  border-color: #0b2f4a;
+  background: #0b2f4a;
+  color: #fff;
+}
+
+.addButton:hover {
+  border-color: #154767;
+  background: #154767;
+}
+
+.importNote {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  margin: 0;
+  color: #788997;
+  font-size: 9px;
+}
+
+.importNote strong {
+  color: #3c5668;
+  font-weight: 650;
+}
+
+@media (max-width: 760px) {
+  .statusTabs {
+    gap: 17px;
+    overflow-x: auto;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+  .toolbar {
+    align-items: stretch;
+    padding: 13px 16px;
+  }
+  .searchField {
+    width: 100%;
+  }
+  .toolbarActions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .divisionSelectLabel {
+    flex: 1 1 135px;
+  }
+  .divisionSelectLabel select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .statusTabs {
+    gap: 15px;
+  }
+  .statusTab {
+    font-size: 10px;
+  }
+  .toolbarActions {
+    gap: 6px;
+  }
+  .importButton,
+  .exportButton,
+  .addButton {
+    min-height: 35px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .importButton,
+  .exportButton,
+  .addButton {
+    transition: none;
+  }
+}
