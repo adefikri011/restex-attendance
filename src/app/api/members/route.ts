@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getApiUser } from "@/lib/auth-guard";
+import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { createMembers } from "@/lib/member-service";
 
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const validation = validateMemberInput(body);
+  const validation = validateMemberInput(body, await getDivisionNames());
   if (validation.input === null) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }
@@ -51,6 +52,9 @@ export async function POST(request: Request) {
       error instanceof Error &&
       error.message.startsWith("Tidak ada periode aktif.")
     ) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    if (error instanceof Error && error.message.startsWith("Divisi ")) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
     if (code === "P2002") {

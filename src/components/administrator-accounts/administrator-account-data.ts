@@ -17,13 +17,6 @@ export type AdministratorAccount = {
   lastActiveAt: string | null;
 };
 
-export const organizationDivisions = [
-  "Software Development",
-  "Network & Security",
-  "UI/UX Design",
-  "Research & Development",
-] as const;
-
 export function getAdministratorInitials(name: string) {
   return name
     .split(" ")

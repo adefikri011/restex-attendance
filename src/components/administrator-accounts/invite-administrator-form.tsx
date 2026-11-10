@@ -6,7 +6,6 @@ import { generateMemberEmail, getPeriodEmailCode } from "@/components/members/me
 import { initialAccountPassword } from "@/lib/account-credentials";
 import {
   administratorRoles,
-  organizationDivisions,
   type AdministratorAccount,
   type AdministratorRole,
 } from "./administrator-account-data";
@@ -68,7 +67,7 @@ export function InviteAdministratorForm({
 }: InviteAdministratorFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState<AdministratorRole>("Admin");
-  const [division, setDivision] = useState<string>(availableDivisions[0] ?? organizationDivisions[0]);
+  const [division, setDivision] = useState<string>(availableDivisions[0] ?? "");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const emailPreview = previewEmail(name, role, division, periodName);

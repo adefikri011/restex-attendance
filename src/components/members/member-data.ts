@@ -16,14 +16,12 @@ export type MemberCredential = Member & {
   initialPassword: string;
 };
 
-const divisionEmailCodes: Record<string, string> = {
+const legacyDivisionEmailCodes: Record<string, string> = {
   "Software Development": "sd",
   "Network & Security": "ns",
   "UI/UX Design": "ux",
   "Research & Development": "rd",
 };
-
-export const memberDivisions = Object.keys(divisionEmailCodes);
 
 export function getPeriodEmailCode(periodName: string) {
   const years = periodName.match(/\d{4}/g);
@@ -50,7 +48,17 @@ export function generateMemberEmail(
     .toLocaleLowerCase("id")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
-  const divisionCode = divisionEmailCodes[division];
+  const divisionCode =
+    legacyDivisionEmailCodes[division] ??
+    division
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLocaleLowerCase("id")
+      .split(/[^a-z0-9]+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 4);
 
   if (!nameSlug || !divisionCode) return "";
   const periodSuffix = periodName ? `_${getPeriodEmailCode(periodName)}` : "";
@@ -61,9 +69,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-001",
     name: "Aisyah Putri Ramadhani",
-    email: generateMemberEmail("Aisyah Putri Ramadhani", "Software Development"),
+    email: generateMemberEmail("Aisyah Putri Ramadhani", "Programing"),
     nim: "2024001042",
-    division: "Software Development",
+    division: "Programing",
     cohort: "2024",
     status: "Aktif",
     attendance: 96,
@@ -72,9 +80,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-002",
     name: "Rizky Aditya Pratama",
-    email: generateMemberEmail("Rizky Aditya Pratama", "Network & Security"),
+    email: generateMemberEmail("Rizky Aditya Pratama", "Wiring & Electrical"),
     nim: "2024001087",
-    division: "Network & Security",
+    division: "Wiring & Electrical",
     cohort: "2024",
     status: "Aktif",
     attendance: 92,
@@ -83,9 +91,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-003",
     name: "Nadia Safitri",
-    email: generateMemberEmail("Nadia Safitri", "UI/UX Design"),
+    email: generateMemberEmail("Nadia Safitri", "Research"),
     nim: "2024001125",
-    division: "UI/UX Design",
+    division: "Research",
     cohort: "2024",
     status: "Aktif",
     attendance: 88,
@@ -94,9 +102,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-004",
     name: "Fajar Maulana",
-    email: generateMemberEmail("Fajar Maulana", "Software Development"),
+    email: generateMemberEmail("Fajar Maulana", "Programing"),
     nim: "2023000931",
-    division: "Software Development",
+    division: "Programing",
     cohort: "2023",
     status: "Aktif",
     attendance: 84,
@@ -105,9 +113,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-005",
     name: "Putri Maharani",
-    email: generateMemberEmail("Putri Maharani", "Research & Development"),
+    email: generateMemberEmail("Putri Maharani", "Research"),
     nim: "2024001183",
-    division: "Research & Development",
+    division: "Research",
     cohort: "2024",
     status: "Aktif",
     attendance: 81,
@@ -116,9 +124,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-006",
     name: "Dimas Alfarizi",
-    email: generateMemberEmail("Dimas Alfarizi", "Network & Security"),
+    email: generateMemberEmail("Dimas Alfarizi", "Manufacture & Mechanical"),
     nim: "2023000968",
-    division: "Network & Security",
+    division: "Manufacture & Mechanical",
     cohort: "2023",
     status: "Aktif",
     attendance: 76,
@@ -127,9 +135,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-007",
     name: "Naufal Hidayat",
-    email: generateMemberEmail("Naufal Hidayat", "Software Development"),
+    email: generateMemberEmail("Naufal Hidayat", "Programing"),
     nim: "2025002014",
-    division: "Software Development",
+    division: "Programing",
     cohort: "2025",
     status: "Aktif",
     attendance: 73,
@@ -138,9 +146,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-008",
     name: "Salsabila Putri",
-    email: generateMemberEmail("Salsabila Putri", "UI/UX Design"),
+    email: generateMemberEmail("Salsabila Putri", "Wiring & Electrical"),
     nim: "2024001220",
-    division: "UI/UX Design",
+    division: "Wiring & Electrical",
     cohort: "2024",
     status: "Cuti",
     attendance: 68,
@@ -149,9 +157,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2025-041",
     name: "Bagas Prakoso",
-    email: generateMemberEmail("Bagas Prakoso", "Research & Development"),
+    email: generateMemberEmail("Bagas Prakoso", "Research"),
     nim: "2022000872",
-    division: "Research & Development",
+    division: "Research",
     cohort: "2022",
     status: "Keluar",
     attendance: 61,
@@ -160,9 +168,9 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2024-026",
     name: "Intan Permatasari",
-    email: generateMemberEmail("Intan Permatasari", "Network & Security"),
+    email: generateMemberEmail("Intan Permatasari", "Manufacture & Mechanical"),
     nim: "2021000564",
-    division: "Network & Security",
+    division: "Manufacture & Mechanical",
     cohort: "2021",
     status: "Alumni",
     attendance: 89,

@@ -10,6 +10,7 @@ import {
   type MembershipStatus,
 } from "@/components/members/member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { getDivisionNames } from "@/lib/division-service";
 import { prisma } from "@/lib/prisma";
 
 export type NewMemberInput = {
@@ -37,14 +38,17 @@ const statusFromDatabase: Record<DatabaseMembershipStatus, MembershipStatus> = {
 };
 
 export async function getMembersPageData() {
-  const activePeriod = await prisma.period.findFirst({
-    where: { isActive: true },
-    orderBy: { startDate: "desc" },
-    select: { id: true, name: true, startDate: true, endDate: true },
-  });
+  const [activePeriod, divisions] = await Promise.all([
+    prisma.period.findFirst({
+      where: { isActive: true },
+      orderBy: { startDate: "desc" },
+      select: { id: true, name: true, startDate: true, endDate: true },
+    }),
+    getDivisionNames(),
+  ]);
 
   if (!activePeriod) {
-    return { periodName: null, members: [] as Member[] };
+    return { periodName: null, members: [] as Member[], divisions };
   }
 
   const rows = await prisma.member.findMany({
@@ -70,6 +74,7 @@ export async function getMembersPageData() {
 
   return {
     periodName: activePeriod.name,
+    divisions,
     members: rows.flatMap((row) => {
       const membership = row.memberships[0];
       if (!membership) return [];
@@ -133,6 +138,16 @@ async function createMembersTransaction(inputs: NewMemberInput[]) {
 
       if (!activePeriod) {
         throw new Error("Tidak ada periode aktif. Buat periode sebelum menambah anggota.");
+      }
+
+      const activeDivisions = await transaction.division.findMany({
+        where: { isActive: true, name: { in: inputs.map(({ division }) => division) } },
+        select: { name: true },
+      });
+      const availableDivisions = new Set(activeDivisions.map(({ name }) => name));
+      const unavailableDivision = inputs.find(({ division }) => !availableDivisions.has(division));
+      if (unavailableDivision) {
+        throw new Error(`Divisi "${unavailableDivision.division}" tidak aktif atau tidak ditemukan.`);
       }
 
       const nims = inputs.map(({ nim }) => nim);
@@ -258,6 +273,13 @@ export async function updateMember(
   });
   if (!activePeriod) {
     throw new Error("Tidak ada periode aktif.");
+  }
+  const divisionExists = await prisma.division.findUnique({
+    where: { name: input.division },
+    select: { id: true },
+  });
+  if (!divisionExists) {
+    throw new Error("Divisi tidak ditemukan.");
   }
 
   const member = await prisma.member.findUnique({

@@ -449,6 +449,10 @@ export async function renderLanyardCard(
     qrDataUrl ? loadImage(qrDataUrl) : Promise.resolve(null),
   ]);
   const divisionLabels: Record<string, string> = {
+    "Wiring & Electrical": "WIRING & ELECTRICAL",
+    Programing: "PROGRAMMING",
+    Research: "RESEARCH",
+    "Manufacture & Mechanical": "MANUFACTURE & MECHANICAL",
     "Software Development": "PROGRAMMING",
     "Network & Security": "NETWORKING",
     "UI/UX Design": "UI/UX DESIGN",

@@ -4,10 +4,10 @@ import { hashPassword } from "better-auth/crypto";
 import { Prisma } from "@/generated/prisma/client";
 import { generateMemberEmail, getPeriodEmailCode } from "@/components/members/member-data";
 import {
-  organizationDivisions,
   type AdministratorAccount,
 } from "@/components/administrator-accounts/administrator-account-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { getDivisionNames } from "@/lib/division-service";
 import { prisma } from "@/lib/prisma";
 
 export type NewAdministratorInput = {
@@ -30,11 +30,14 @@ function formatDate(value: Date | null) {
 }
 
 export async function getAdministratorAccountsPageData() {
-  const activePeriod = await prisma.period.findFirst({
-    where: { isActive: true },
-    orderBy: { startDate: "desc" },
-    select: { id: true, name: true },
-  });
+  const [activePeriod, divisions] = await Promise.all([
+    prisma.period.findFirst({
+      where: { isActive: true },
+      orderBy: { startDate: "desc" },
+      select: { id: true, name: true },
+    }),
+    getDivisionNames(),
+  ]);
   const [users, memberCounts] = await Promise.all([
     prisma.user.findMany({
       where: { role: { in: ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD"] } },
@@ -77,13 +80,13 @@ export async function getAdministratorAccountsPageData() {
     lastActiveAt: formatDate(user.authSessions[0]?.createdAt ?? null),
   }));
   const divisionMemberCounts = Object.fromEntries(
-    organizationDivisions.map((division) => [
+    divisions.map((division) => [
       division,
       memberCounts.find((row) => row.division === division)?._count._all ?? 0,
     ]),
-  ) as Record<(typeof organizationDivisions)[number], number>;
+  ) as Record<string, number>;
 
-  return { accounts, divisionMemberCounts, periodName: activePeriod?.name ?? null };
+  return { accounts, divisions, divisionMemberCounts, periodName: activePeriod?.name ?? null };
 }
 
 function accountEmailBase(name: string, role: NewAdministratorInput["role"], division: string | null, periodName: string) {
@@ -106,10 +109,7 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
   }
   if (
     (input.role === "admin" && input.division !== null) ||
-    (input.role === "ketua-divisi" &&
-      !organizationDivisions.includes(
-        input.division as (typeof organizationDivisions)[number],
-      ))
+    (input.role === "ketua-divisi" && !input.division)
   ) {
     throw new Error("Jabatan atau divisi tidak valid.");
   }
@@ -125,10 +125,18 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
     if (!activePeriod) throw new Error("Tidak ada periode aktif.");
 
     if (input.role === "ketua-divisi") {
+      const division = input.division;
+      if (!division) throw new Error("Jabatan atau divisi tidak valid.");
+      const activeDivision = await transaction.division.findFirst({
+        where: { name: division, isActive: true },
+        select: { id: true },
+      });
+      if (!activeDivision) throw new Error("Jabatan atau divisi tidak valid.");
+
       const currentLead = await transaction.user.findFirst({
         where: {
           role: "DIVISION_LEAD",
-          managedDivision: input.division,
+          managedDivision: division,
           isActive: true,
         },
         select: { id: true },

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getApiUser } from "@/lib/auth-guard";
+import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { updateMember } from "@/lib/member-service";
 
@@ -27,7 +28,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Format permintaan tidak valid." }, { status: 400 });
   }
 
-  const validation = validateMemberInput(body);
+  const validation = validateMemberInput(body, await getDivisionNames(false));
   if (!validation.input) {
     return NextResponse.json({ error: validation.error }, { status: 400 });
   }

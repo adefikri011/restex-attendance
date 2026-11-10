@@ -2,7 +2,6 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import {
   generateMemberEmail,
-  memberDivisions,
   membershipStatuses,
   type Member,
   type MembershipStatus,
@@ -13,6 +12,7 @@ import styles from "./member-dialog.module.css";
 import { MemberDialog } from "./member-dialog";
 
 type AddMemberDialogProps = {
+  divisions: string[];
   periodName: string;
   onClose: () => void;
   onSubmit: (
@@ -21,13 +21,14 @@ type AddMemberDialogProps = {
 };
 
 export function AddMemberDialog({
+  divisions,
   periodName,
   onClose,
   onSubmit,
 }: AddMemberDialogProps) {
   const [name, setName] = useState("");
   const [nim, setNim] = useState("");
-  const [division, setDivision] = useState(memberDivisions[0]);
+  const [division, setDivision] = useState(divisions[0] ?? "");
   const [cohort, setCohort] = useState("2026");
   const [status, setStatus] = useState<MembershipStatus>("Aktif");
   const [error, setError] = useState("");
@@ -100,8 +101,13 @@ export function AddMemberDialog({
           <div className={styles.formRow}>
             <label>
               Divisi
-              <select value={division} onChange={(event) => setDivision(event.target.value)}>
-                {memberDivisions.map((item) => (
+              <select
+                required
+                value={division}
+                onChange={(event) => setDivision(event.target.value)}
+                disabled={!divisions.length}
+              >
+                {divisions.map((item) => (
                   <option value={item} key={item}>{item}</option>
                 ))}
               </select>
@@ -140,9 +146,14 @@ export function AddMemberDialog({
           </label>
 
           <p className={styles.dialogNote}>
-            Akun dibuat dengan role Anggota. Email memakai nama, kode divisi,
+            {divisions.length
+              ? "Akun dibuat dengan role Anggota. Email memakai nama, kode divisi,"
+              : "Belum ada divisi aktif. Aktifkan atau tambahkan divisi terlebih dahulu."}
+            {divisions.length > 0 && <>
+            {" "}
             dan kode periode. Password awal semua anggota adalah
             <strong> {initialAccountPassword}</strong>.
+            </>}
           </p>
           {error && <p className={styles.formError} role="alert">{error}</p>}
           <div className={styles.dialogActions}>
@@ -152,7 +163,7 @@ export function AddMemberDialog({
             <button
               type="submit"
               className={`${memberStyles.addButton} ${styles.dialogSubmitButton}`}
-              disabled={isSubmitting || !generatedEmail}
+              disabled={isSubmitting || !generatedEmail || !divisions.length}
             >
               {isSubmitting ? "Menyimpan..." : "Tambahkan anggota"}
             </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDownToLine, Copy, KeyRound, UserRoundX, UsersRound, X } from "lucide-react";
+import { ArrowDownToLine, Building2, Copy, KeyRound, UserRoundX, UsersRound, X } from "lucide-react";
 import { AddMemberDialog } from "./add-member-dialog";
 import { EditMemberDialog } from "./edit-member-dialog";
 import { initialAccountPassword } from "@/lib/account-credentials";
@@ -15,11 +15,14 @@ import { MemberDetailDialog } from "./member-detail-dialog";
 import { MemberStatusTabs, type StatusFilter } from "./member-status-tabs";
 import { MemberTable } from "./member-table";
 import { MemberToolbar } from "./member-toolbar";
+import { DivisionManager } from "./division-manager";
 import styles from "./members.module.css";
+import type { DivisionSummary } from "@/lib/division-service";
 
 const pageSize = 8;
 
 type MembersPageProps = {
+  initialDivisions: DivisionSummary[];
   initialMembers: Member[];
   periodName: string | null;
 };
@@ -92,13 +95,18 @@ function downloadCredentials(credentials: MemberCredential[]) {
   URL.revokeObjectURL(url);
 }
 
-export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
+export function MembersPage({ initialDivisions, initialMembers, periodName }: MembersPageProps) {
   const [members, setMembers] = useState(initialMembers);
+  const [divisionRecords, setDivisionRecords] = useState(initialDivisions);
+  const divisionNames = divisionRecords
+    .filter(({ isActive }) => isActive)
+    .map(({ name }) => name);
   const [search, setSearch] = useState("");
   const [division, setDivision] = useState("Semua");
   const [status, setStatus] = useState<StatusFilter>("Semua");
   const [page, setPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isDivisionManagerOpen, setIsDivisionManagerOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isImporting, setIsImporting] = useState(false);
@@ -107,8 +115,8 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
   const [credentials, setCredentials] = useState<MemberCredential[]>([]);
 
   const divisions = useMemo(
-    () => [...new Set(members.map((member) => member.division))].sort(),
-    [members],
+    () => [...new Set([...divisionNames, ...members.map((member) => member.division)])].sort(),
+    [divisionNames, members],
   );
 
   const filteredMembers = useMemo(() => {
@@ -317,11 +325,49 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
           <h1>Anggota</h1>
           <p>Data anggota pada periode aktif, tersimpan di database RESTEX.</p>
         </div>
-        <button type="button" className={styles.exportTopButton} disabled title="Export belum tersedia">
-          <ArrowDownToLine size={16} aria-hidden="true" />
-          Export Excel
-        </button>
+        <div className={styles.headingActions}>
+          <button
+            type="button"
+            className={styles.exportTopButton}
+            aria-expanded={isDivisionManagerOpen}
+            onClick={() => setIsDivisionManagerOpen((open) => !open)}
+          >
+            <Building2 size={16} aria-hidden="true" />
+            Kelola divisi
+          </button>
+          <button type="button" className={styles.exportTopButton} disabled title="Export belum tersedia">
+            <ArrowDownToLine size={16} aria-hidden="true" />
+            Export Excel
+          </button>
+        </div>
       </header>
+
+      {isDivisionManagerOpen && (
+        <DivisionManager
+          initialDivisions={divisionRecords}
+          onDivisionsChange={(updated) => {
+            for (const previous of divisionRecords) {
+              const next = updated.find(({ id }) => id === previous.id);
+              if (next && next.name !== previous.name) {
+                setMembers((current) =>
+                  current.map((member) =>
+                    member.division === previous.name
+                      ? { ...member, division: next.name }
+                      : member,
+                  ),
+                );
+              }
+            }
+            if (
+              division !== "Semua" &&
+              !updated.some(({ name, isActive }) => name === division && isActive)
+            ) {
+              setDivision("Semua");
+            }
+            setDivisionRecords(updated);
+          }}
+        />
+      )}
 
       <section className={styles.summaryStrip} aria-label="Ringkasan keanggotaan">
         <div className={styles.summaryItem}>
@@ -469,6 +515,7 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
 
       {isAddDialogOpen && periodName && (
         <AddMemberDialog
+          divisions={divisionNames}
           periodName={periodName}
           onClose={() => setIsAddDialogOpen(false)}
           onSubmit={addMember}
@@ -482,6 +529,7 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
       )}
       {editingMember && periodName && (
         <EditMemberDialog
+          divisions={divisionNames}
           member={editingMember}
           periodName={periodName}
           onClose={() => setEditingMember(null)}

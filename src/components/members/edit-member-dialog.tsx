@@ -4,7 +4,6 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import {
   generateMemberEmail,
-  memberDivisions,
   membershipStatuses,
   type Member,
   type MembershipStatus,
@@ -16,6 +15,7 @@ import { MemberDialog } from "./member-dialog";
 type EditableMember = Pick<Member, "name" | "nim" | "division" | "cohort" | "status">;
 
 type EditMemberDialogProps = {
+  divisions: string[];
   member: Member;
   periodName: string;
   onClose: () => void;
@@ -23,6 +23,7 @@ type EditMemberDialogProps = {
 };
 
 export function EditMemberDialog({
+  divisions,
   member,
   periodName,
   onClose,
@@ -106,7 +107,7 @@ export function EditMemberDialog({
               value={division}
               onChange={(event) => setDivision(event.target.value)}
             >
-              {memberDivisions.map((item) => (
+              {[...new Set([member.division, ...divisions])].map((item) => (
                 <option value={item} key={item}>
                   {item}
                 </option>

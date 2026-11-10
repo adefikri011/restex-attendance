@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { getApiUser } from "@/lib/auth-guard";
+import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { createMembers, type NewMemberInput } from "@/lib/member-service";
 
@@ -138,6 +139,7 @@ export async function POST(request: Request) {
 
   const inputs: { row: number; input: NewMemberInput }[] = [];
   const issues: ImportIssue[] = [];
+  const divisions = await getDivisionNames();
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
     const row = worksheet.getRow(rowNumber);
     const rawStatus = cellText(row, columns.status);
@@ -151,7 +153,7 @@ export async function POST(request: Request) {
     if (Object.values(raw).every((value) => !value)) continue;
     if (!raw.status) raw.status = "Aktif";
 
-    const validation = validateMemberInput(raw);
+    const validation = validateMemberInput(raw, divisions);
     if (validation.input === null) {
       if (validation.error) {
         issues.push({ row: rowNumber, message: validation.error });
@@ -197,6 +199,9 @@ export async function POST(request: Request) {
       error instanceof Error &&
       error.message.startsWith("Tidak ada periode aktif.")
     ) {
+      return NextResponse.json({ error: error.message }, { status: 409 });
+    }
+    if (error instanceof Error && error.message.startsWith("Divisi ")) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
     const code =

@@ -1,8 +1,4 @@
-import {
-  memberDivisions,
-  membershipStatuses,
-  type MembershipStatus,
-} from "@/components/members/member-data";
+import { membershipStatuses, type MembershipStatus } from "@/components/members/member-data";
 import type { NewMemberInput } from "@/lib/member-service";
 
 type ValidationResult =
@@ -17,7 +13,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
-export function validateMemberInput(value: unknown): ValidationResult {
+export function validateMemberInput(value: unknown, divisions: string[]): ValidationResult {
   if (!isRecord(value)) {
     return { input: null, error: "Format data anggota tidak valid." };
   }
@@ -41,7 +37,7 @@ export function validateMemberInput(value: unknown): ValidationResult {
   if (!nim || nim.length > 32) {
     return { input: null, error: "NIM harus terdiri dari 1–32 karakter." };
   }
-  if (!memberDivisions.includes(division)) {
+  if (!divisions.includes(division)) {
     return { input: null, error: "Divisi tidak dikenal." };
   }
   if (!/^\d{4}$/.test(cohort)) {

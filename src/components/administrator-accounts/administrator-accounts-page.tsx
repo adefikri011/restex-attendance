@@ -21,7 +21,6 @@ import { initialAccountPassword } from "@/lib/account-credentials";
 import {
   getAdministratorInitials,
   administratorRoles,
-  organizationDivisions,
   type AdministratorAccount,
   type AdministratorAccountStatus,
   type AdministratorRole,
@@ -33,7 +32,8 @@ type StatusFilter = "Semua" | AdministratorAccountStatus;
 
 type AdministratorAccountsPageProps = {
   accounts: AdministratorAccount[];
-  divisionMemberCounts: Record<(typeof organizationDivisions)[number], number>;
+  divisions: string[];
+  divisionMemberCounts: Record<string, number>;
   periodName: string | null;
 };
 
@@ -87,6 +87,7 @@ function getStatusClass(status: AdministratorAccountStatus) {
 
 export function AdministratorAccountsPage({
   accounts: initialAccounts,
+  divisions,
   divisionMemberCounts,
   periodName,
 }: AdministratorAccountsPageProps) {
@@ -122,11 +123,12 @@ export function AdministratorAccountsPage({
   const divisionLeadCount = accounts.filter(
     (account) =>
       account.role === "Ketua Divisi" &&
-      account.status === "Aktif",
+      account.status === "Aktif" &&
+      divisions.includes(account.division ?? ""),
   ).length;
-  const divisionLeads = organizationDivisions.map((division) => ({
+  const divisionLeads = divisions.map((division) => ({
     division,
-    memberCount: divisionMemberCounts[division],
+    memberCount: divisionMemberCounts[division] ?? 0,
     account: accounts.find(
       (account) =>
         account.role === "Ketua Divisi" &&
@@ -134,7 +136,7 @@ export function AdministratorAccountsPage({
         account.status === "Aktif",
     ),
   }));
-  const availableDivisions = organizationDivisions.filter(
+  const availableDivisions = divisions.filter(
     (division) =>
       !accounts.some(
         (account) =>
@@ -280,7 +282,7 @@ export function AdministratorAccountsPage({
           </span>
           <div>
             <span>Ketua Divisi aktif</span>
-            <strong>{divisionLeadCount}<small> / {organizationDivisions.length}</small></strong>
+            <strong>{divisionLeadCount}<small> / {divisions.length}</small></strong>
           </div>
           <small>Penanggung jawab divisi</small>
         </article>
@@ -295,7 +297,7 @@ export function AdministratorAccountsPage({
           </div>
           <span className={styles.coverageBadge}>
             <Check size={13} aria-hidden="true" />
-            {divisionLeads.filter((item) => item.account).length} dari {organizationDivisions.length} terisi
+            {divisionLeads.filter((item) => item.account).length} dari {divisions.length} terisi
           </span>
         </div>
         <div className={styles.divisionGrid}>
