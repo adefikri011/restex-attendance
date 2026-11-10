@@ -246,3 +246,140 @@ export async function createMembers(inputs: NewMemberInput[]) {
     throw error;
   }
 }
+
+export async function updateMember(
+  memberCode: string,
+  input: NewMemberInput,
+): Promise<Member> {
+  const activePeriod = await prisma.period.findFirst({
+    where: { isActive: true },
+    orderBy: { startDate: "desc" },
+    select: { id: true, name: true },
+  });
+  if (!activePeriod) {
+    throw new Error("Tidak ada periode aktif.");
+  }
+
+  const member = await prisma.member.findUnique({
+    where: { memberCode },
+    select: {
+      id: true,
+      userId: true,
+      fullName: true,
+      nim: true,
+      cohort: true,
+      user: { select: { name: true, email: true, isActive: true } },
+      memberships: {
+        where: { periodId: activePeriod.id },
+        take: 1,
+        select: { id: true, joinedAt: true, division: true, status: true },
+      },
+    },
+  });
+  const membership = member?.memberships[0];
+  if (!member || !membership) {
+    throw new Error("Anggota tidak ditemukan pada periode aktif.");
+  }
+
+  const currentStatus = statusFromDatabase[membership.status];
+  if (
+    member.fullName === input.name &&
+    member.nim === input.nim &&
+    member.cohort === input.cohort &&
+    membership.division === input.division &&
+    currentStatus === input.status
+  ) {
+    return {
+      id: memberCode,
+      name: member.fullName,
+      email: member.user?.email ?? "",
+      nim: member.nim,
+      division: membership.division,
+      cohort: member.cohort,
+      status: currentStatus,
+      attendance: null,
+      joinedAt: new Intl.DateTimeFormat("id-ID", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "Asia/Jakarta",
+      }).format(membership.joinedAt),
+    };
+  }
+
+  const duplicateNim = await prisma.member.findFirst({
+    where: { nim: input.nim, id: { not: member.id } },
+    select: { id: true },
+  });
+  if (duplicateNim) {
+    throw new Error(`NIM sudah terdaftar: ${input.nim}.`);
+  }
+
+  let email: string | null = null;
+  if (member.userId) {
+    const baseEmail = generateMemberEmail(input.name, input.division, activePeriod.name);
+    if (!baseEmail) {
+      throw new Error("Email anggota tidak dapat dibuat dari nama dan divisi.");
+    }
+
+    const [localPart, domain] = baseEmail.split("@");
+    email = baseEmail;
+    if (email.toLowerCase() !== member.user?.email.toLowerCase()) {
+      const existingUsers = await prisma.user.findMany({
+        where: { id: { not: member.userId } },
+        select: { email: true },
+      });
+      const usedEmails = new Set(existingUsers.map(({ email: value }) => value.toLowerCase()));
+      let suffix = 2;
+      while (usedEmails.has(email.toLowerCase())) {
+        email = `${localPart}_${suffix}@${domain}`;
+        suffix += 1;
+      }
+    }
+  }
+
+  await prisma.$transaction(async (transaction) => {
+    await transaction.member.update({
+      where: { id: member.id },
+      data: {
+        fullName: input.name,
+        nim: input.nim,
+        cohort: input.cohort,
+      },
+    });
+    await transaction.membership.update({
+      where: { id: membership.id },
+      data: {
+        division: input.division,
+        status: statusToDatabase[input.status],
+      },
+    });
+    if (member.userId && email) {
+      await transaction.user.update({
+        where: { id: member.userId },
+        data: {
+          name: input.name,
+          email,
+          isActive: input.status === "Aktif",
+        },
+      });
+    }
+  });
+
+  return {
+    id: memberCode,
+    name: input.name,
+    email: email ?? "",
+    nim: input.nim,
+    division: input.division,
+    cohort: input.cohort,
+    status: input.status,
+    attendance: null,
+    joinedAt: new Intl.DateTimeFormat("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "Asia/Jakarta",
+    }).format(membership.joinedAt),
+  };
+}

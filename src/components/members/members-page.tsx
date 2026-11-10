@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ArrowDownToLine, Copy, KeyRound, UserRoundX, UsersRound, X } from "lucide-react";
 import { AddMemberDialog } from "./add-member-dialog";
+import { EditMemberDialog } from "./edit-member-dialog";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import {
   membershipStatuses,
@@ -48,6 +49,22 @@ function isMemberCredential(value: unknown): value is MemberCredential {
   );
 }
 
+function isMember(value: unknown): value is Member {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.email === "string" &&
+    typeof value.nim === "string" &&
+    typeof value.division === "string" &&
+    typeof value.cohort === "string" &&
+    typeof value.status === "string" &&
+    isMembershipStatus(value.status) &&
+    (typeof value.attendance === "number" || value.attendance === null) &&
+    typeof value.joinedAt === "string"
+  );
+}
+
 function withoutCredential({ id, name, email, nim, division, cohort, status, attendance, joinedAt }: MemberCredential): Member {
   return { id, name, email, nim, division, cohort, status, attendance, joinedAt };
 }
@@ -83,6 +100,7 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
   const [page, setPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [notice, setNotice] = useState("");
   const [isNoticeError, setIsNoticeError] = useState(false);
@@ -163,6 +181,50 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
       return {};
     } catch {
       return { error: "Layanan tidak dapat dihubungi. Periksa koneksi lalu coba kembali." };
+    }
+  }
+
+  async function saveMember(
+    memberDetails: Pick<Member, "name" | "nim" | "division" | "cohort" | "status">,
+  ) {
+    if (!editingMember) return { error: "Anggota yang dipilih tidak ditemukan." };
+
+    try {
+      const response = await fetch(
+        `/api/members/${encodeURIComponent(editingMember.id)}`,
+        {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(memberDetails),
+        },
+      );
+      const result: unknown = await response.json();
+
+      if (!response.ok) {
+        return {
+          error:
+            isRecord(result) && typeof result.error === "string"
+              ? result.error
+              : "Data anggota gagal diperbarui.",
+        };
+      }
+
+      if (!isRecord(result) || !isMember(result.member)) {
+        return { error: "Respons server tidak valid. Muat ulang halaman." };
+      }
+      const updatedMember = result.member;
+
+      setMembers((currentMembers) =>
+        currentMembers.map((member) =>
+          member.id === updatedMember.id ? updatedMember : member,
+        ),
+      );
+      setEditingMember(null);
+      setNotice(`${updatedMember.name} berhasil diperbarui.`);
+      setIsNoticeError(false);
+      return {};
+    } catch {
+      return { error: "Layanan tidak dapat dihubungi. Coba kembali." };
     }
   }
 
@@ -397,6 +459,11 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
           hasAnyMembers={members.length > 0}
           onPageChange={setPage}
           onViewMember={setSelectedMember}
+          onEditMember={(member) => {
+            setNotice("");
+            setIsNoticeError(false);
+            setEditingMember(member);
+          }}
         />
       </section>
 
@@ -411,6 +478,14 @@ export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
         <MemberDetailDialog
           member={selectedMember}
           onClose={() => setSelectedMember(null)}
+        />
+      )}
+      {editingMember && periodName && (
+        <EditMemberDialog
+          member={editingMember}
+          periodName={periodName}
+          onClose={() => setEditingMember(null)}
+          onSave={saveMember}
         />
       )}
     </div>

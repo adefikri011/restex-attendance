@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MoreHorizontal, UsersRound } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, UsersRound } from "lucide-react";
 import {
   getInitials,
   type Member,
@@ -23,6 +23,7 @@ type MemberTableProps = {
   hasAnyMembers: boolean;
   onPageChange: (page: number) => void;
   onViewMember: (member: Member) => void;
+  onEditMember: (member: Member) => void;
 };
 
 export function MemberTable({
@@ -34,6 +35,7 @@ export function MemberTable({
   hasAnyMembers,
   onPageChange,
   onViewMember,
+  onEditMember,
 }: MemberTableProps) {
   const pageCount = Math.max(1, Math.ceil(totalFiltered / pageSize));
   const firstItem = totalFiltered === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -126,10 +128,10 @@ export function MemberTable({
                     <button
                       type="button"
                       className={styles.rowAction}
-                      aria-label={`Lihat detail ${member.name}`}
-                      onClick={() => onViewMember(member)}
+                      aria-label={`Edit ${member.name}`}
+                      onClick={() => onEditMember(member)}
                     >
-                      <MoreHorizontal size={18} />
+                      <Pencil size={16} />
                     </button>
                   </td>
                 </tr>
