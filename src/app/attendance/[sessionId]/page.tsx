@@ -5,6 +5,7 @@ import { AttendanceSessionDetail } from "@/components/attendance/attendance-sess
 import { createInitialSessions } from "@/components/attendance/attendance-data";
 import { initialMembers } from "@/components/members/member-data";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { requirePageUser } from "@/lib/auth-guard";
 
 export const metadata: Metadata = {
   title: "Detail Sesi | RESTEX Attendance",
@@ -13,17 +14,17 @@ export const metadata: Metadata = {
 
 const sessions = createInitialSessions(initialMembers);
 
-export function generateStaticParams() {
-  return sessions.map(({ id }) => ({ sessionId: id }));
-}
+export const instant = false;
 
-export default function AttendanceSessionRoute({
+export default async function AttendanceSessionRoute({
   params,
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
+  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi"]);
+
   return (
-    <DashboardShell>
+    <DashboardShell role={user.role} displayName={user.name}>
       <Suspense fallback={<p role="status" aria-busy="true">Memuat detail sesi...</p>}>
         <AttendanceSessionContent params={params} />
       </Suspense>

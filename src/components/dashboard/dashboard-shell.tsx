@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Activity,
   CalendarDays,
@@ -17,11 +17,16 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useState } from "react";
+import { appRoles, type AppRoleId } from "@/components/auth/role-config";
+import { authClient } from "@/lib/auth-client";
+import { LogOut } from "lucide-react";
 import { DashboardHeader } from "./dashboard-header";
 import styles from "./dashboard-shell.module.css";
 
 type DashboardShellProps = {
   children: React.ReactNode;
+  role: AppRoleId;
+  displayName: string;
 };
 
 type NavigationItem = {
@@ -31,7 +36,7 @@ type NavigationItem = {
 };
 
 const primaryNavigation: NavigationItem[] = [
-  { label: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
   { label: "Sesi Absensi", icon: CalendarDays, href: "/attendance" },
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
@@ -56,7 +61,9 @@ function NavigationGroup({
   return (
     <ul className={styles.navigationList}>
       {items.map(({ label, icon: Icon, href }) => {
-        const isActive = pathname === href;
+        const isActive =
+          pathname === href ||
+          (label === "Dashboard" && Boolean(href && pathname.startsWith(`${href}/`)));
 
         return (
           <li key={label}>
@@ -91,12 +98,67 @@ function NavigationGroup({
   );
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({
+  children,
+  role,
+  displayName,
+}: DashboardShellProps) {
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const pathname = usePathname();
+  const router = useRouter();
+  const activeRole = appRoles.find((item) => item.id === role)!;
+
+  const dashboardItem = {
+    ...primaryNavigation[0],
+    label: activeRole.id === "anggota" ? "Portal Anggota" : "Dashboard",
+    href: activeRole.dashboardPath,
+  };
+  const visiblePrimaryNavigation =
+    activeRole.id === "super-admin"
+      ? [dashboardItem, ...primaryNavigation.slice(1)]
+      : activeRole.id === "admin"
+        ? [dashboardItem, ...primaryNavigation.slice(1)]
+        : activeRole.id === "ketua-divisi"
+          ? [
+              dashboardItem,
+              ...primaryNavigation.filter(({ label }) =>
+                ["Sesi Absensi", "Kartu Lanyard", "Laporan"].includes(label),
+              ),
+            ]
+          : [dashboardItem];
+  const visibleManagementNavigation =
+    activeRole.id === "super-admin"
+      ? managementNavigation
+      : activeRole.id === "admin"
+        ? managementNavigation.filter(({ label }) => label === "Audit Log")
+        : [];
+  const profileInitials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
   function closeNavigation() {
     setIsNavigationOpen(false);
+  }
+
+  async function handleSignOut() {
+    setLogoutError("");
+
+    try {
+      const { error } = await authClient.signOut();
+      if (error) {
+        setLogoutError("Tidak dapat keluar. Silakan coba kembali.");
+        return;
+      }
+
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      setLogoutError("Layanan autentikasi tidak dapat dihubungi.");
+    }
   }
 
   return (
@@ -115,10 +177,14 @@ export function DashboardShell({ children }: DashboardShellProps) {
         aria-label="Navigasi utama"
       >
         <div className={styles.brand}>
-          <Link href="/" className={styles.brandLink} onClick={closeNavigation}>
+          <Link
+            href={activeRole.dashboardPath}
+            className={styles.brandLink}
+            onClick={closeNavigation}
+          >
             <span className={styles.brandMark} aria-hidden="true">
               <Image
-                src="/assets/image/logo.jpg"
+                src="/assets/image/Logo.png"
                 alt=""
                 width={64}
                 height={64}
@@ -152,44 +218,61 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </button>
         </div>
 
-        <div className={styles.periodCard}>
-          <span className={styles.periodLabel}>PERIODE AKTIF</span>
-          <strong>2026 — 2027</strong>
-          <span className={styles.periodStatus}>
-            <span aria-hidden="true" />
-            Sedang berjalan
-          </span>
-        </div>
+        {activeRole.id !== "anggota" && (
+          <div className={styles.periodCard}>
+            <span className={styles.periodLabel}>PERIODE AKTIF</span>
+            <strong>2026 — 2027</strong>
+            <span className={styles.periodStatus}>
+              <span aria-hidden="true" />
+              Sedang berjalan
+            </span>
+          </div>
+        )}
 
         <nav className={styles.navigation}>
           <p className={styles.navigationLabel}>MENU UTAMA</p>
           <NavigationGroup
-            items={primaryNavigation}
+            items={visiblePrimaryNavigation}
             pathname={pathname}
             onNavigate={closeNavigation}
           />
 
-          <p className={`${styles.navigationLabel} ${styles.managementLabel}`}>
-            PENGELOLAAN
-          </p>
-          <NavigationGroup
-            items={managementNavigation}
-            pathname={pathname}
-            onNavigate={closeNavigation}
-          />
+          {visibleManagementNavigation.length > 0 && (
+            <>
+              <p className={`${styles.navigationLabel} ${styles.managementLabel}`}>
+                PENGELOLAAN
+              </p>
+              <NavigationGroup
+                items={visibleManagementNavigation}
+                pathname={pathname}
+                onNavigate={closeNavigation}
+              />
+            </>
+          )}
         </nav>
 
+        {logoutError && (
+          <p className={styles.signOutError} role="alert">
+            {logoutError}
+          </p>
+        )}
         <div className={styles.sidebarFooter}>
           <div className={styles.profileAvatar} aria-hidden="true">
-            FR
+            {profileInitials}
           </div>
           <div className={styles.profileDetails}>
-            <strong>Fikri Ramadhan</strong>
-            <span>Super Admin</span>
+            <strong>{displayName}</strong>
+            <span>{activeRole.label}</span>
           </div>
-          <span className={styles.profileMenu} aria-hidden="true">
-            •••
-          </span>
+          <button
+            type="button"
+            className={styles.profileMenu}
+            aria-label="Keluar dari akun"
+            title="Keluar"
+            onClick={handleSignOut}
+          >
+            <LogOut size={17} aria-hidden="true" />
+          </button>
         </div>
       </aside>
 
@@ -206,7 +289,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
           </button>
           <span>RESTEX Attendance</span>
         </div>
-        <DashboardHeader />
+        <DashboardHeader role={activeRole.id} displayName={displayName} />
         <main className={styles.mainContent}>{children}</main>
       </div>
     </div>

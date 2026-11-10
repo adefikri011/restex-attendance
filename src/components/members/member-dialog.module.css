@@ -98,6 +98,12 @@
   color: #a4afb8;
 }
 
+.memberForm input.generatedEmailInput {
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
+  cursor: not-allowed;
+}
+
 .formRow {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -109,6 +115,13 @@
   color: #94a1ab;
   font-size: 9px;
   line-height: 1.6;
+}
+
+.formError {
+  margin: 0;
+  color: var(--ui-danger-text);
+  font-size: 10px;
+  line-height: 1.5;
 }
 
 .dialogActions {

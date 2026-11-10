@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, MoreHorizontal, UsersRound } from "lucide-react";
 import {
   getInitials,
   type Member,
@@ -20,6 +20,7 @@ type MemberTableProps = {
   page: number;
   pageSize: number;
   activeStatus: MembershipStatus | "Semua";
+  hasAnyMembers: boolean;
   onPageChange: (page: number) => void;
   onViewMember: (member: Member) => void;
 };
@@ -30,6 +31,7 @@ export function MemberTable({
   page,
   pageSize,
   activeStatus,
+  hasAnyMembers,
   onPageChange,
   onViewMember,
 }: MemberTableProps) {
@@ -46,9 +48,15 @@ export function MemberTable({
     >
       {members.length === 0 ? (
         <div className={styles.emptyState}>
-          <span className={styles.emptyIcon}>?</span>
-          <h3>Anggota tidak ditemukan</h3>
-          <p>Coba ubah kata pencarian atau filter yang digunakan.</p>
+          <span className={styles.emptyIcon}>
+            <UsersRound size={18} aria-hidden="true" />
+          </span>
+          <h3>{hasAnyMembers ? "Anggota tidak ditemukan" : "Belum ada anggota"}</h3>
+          <p>
+            {hasAnyMembers
+              ? "Coba ubah kata pencarian atau filter yang digunakan."
+              : "Tambahkan anggota satu per satu atau gunakan template Excel untuk mengimpor banyak anggota."}
+          </p>
         </div>
       ) : (
         <div className={styles.tableScroller}>
@@ -81,6 +89,9 @@ export function MemberTable({
                       <span className={styles.memberNameBlock}>
                         <strong>{member.name}</strong>
                         <small>{member.nim}</small>
+                        <small className={styles.memberEmail} title={member.email}>
+                          {member.email}
+                        </small>
                       </span>
                     </button>
                   </td>

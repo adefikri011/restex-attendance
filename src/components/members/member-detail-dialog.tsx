@@ -1,4 +1,4 @@
-import { CalendarDays, GraduationCap, Hash, UsersRound, X } from "lucide-react";
+import { AtSign, CalendarDays, GraduationCap, Hash, UsersRound, X } from "lucide-react";
 import { getInitials, type Member, type MembershipStatus } from "./member-data";
 import memberStyles from "./members.module.css";
 import styles from "./member-dialog.module.css";
@@ -45,6 +45,7 @@ export function MemberDetailDialog({ member, onClose }: MemberDetailDialogProps)
           <div>
             <h3>{member.name}</h3>
             <span>{member.nim}</span>
+            <span>{member.email}</span>
           </div>
           <span className={`${memberStyles.statusBadge} ${statusClassNames[member.status]} ${styles.detailStatusBadge}`}>
             <span aria-hidden="true" />
@@ -53,6 +54,10 @@ export function MemberDetailDialog({ member, onClose }: MemberDetailDialogProps)
         </div>
 
         <dl className={styles.detailList}>
+          <div>
+            <dt><AtSign size={15} /> Email akun</dt>
+            <dd>{member.email}</dd>
+          </div>
           <div>
             <dt><Hash size={15} /> ID anggota</dt>
             <dd>{member.id}</dd>
@@ -76,8 +81,8 @@ export function MemberDetailDialog({ member, onClose }: MemberDetailDialogProps)
           <strong>{member.attendance === null ? "Belum ada data" : `${member.attendance}%`}</strong>
         </div>
         <p className={styles.dialogNote}>
-          Informasi ini menggunakan data pratinjau. QR anggota akan tersedia setelah backend
-          diintegrasikan.
+          QR anggota dan riwayat kehadiran akan tampil setelah fitur absensi
+          terhubung ke data anggota.
         </p>
     </MemberDialog>
   );

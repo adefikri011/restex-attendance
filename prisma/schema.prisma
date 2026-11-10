@@ -10,7 +10,7 @@ datasource db {
 enum UserRole {
   SUPER_ADMIN
   ADMIN
-  OPERATOR
+  DIVISION_LEAD
   MEMBER
 
   @@map("user_role")
@@ -77,18 +77,70 @@ model User {
   id            String      @id @default(uuid()) @db.Uuid
   name          String      @db.VarChar(120)
   email         String      @unique @db.VarChar(254)
-  passwordHash  String      @map("password_hash") @db.VarChar(255)
-  role          UserRole    @default(OPERATOR)
+  passwordHash  String?     @map("password_hash") @db.VarChar(255)
+  emailVerified Boolean     @default(false) @map("email_verified")
+  image         String?     @db.VarChar(2048)
+  role          UserRole    @default(MEMBER)
   isActive      Boolean     @default(true) @map("is_active")
+  managedDivision String?   @map("managed_division") @db.VarChar(100)
   createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
   updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
   member        Member?
   createdSessions Session[] @relation("SessionCreator")
   attendances   Attendance[] @relation("AttendanceRecorder")
   auditLogs     AuditLog[]
+  authSessions  AuthSession[]
+  accounts      Account[]
 
   @@index([role, isActive])
   @@map("users")
+}
+
+model AuthSession {
+  id        String   @id @default(uuid()) @db.VarChar(191)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(3)
+  token     String   @unique @db.VarChar(191)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  ipAddress String?  @map("ip_address") @db.VarChar(64)
+  userAgent String?  @map("user_agent") @db.VarChar(512)
+  userId    String   @map("user_id") @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid()) @db.VarChar(191)
+  accountId             String    @map("account_id") @db.VarChar(191)
+  providerId            String    @map("provider_id") @db.VarChar(191)
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(3)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(3)
+  scope                 String?   @db.Text
+  password              String?   @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("auth_accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid()) @db.VarChar(191)
+  identifier String   @db.VarChar(191)
+  value      String   @db.Text
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([identifier])
+  @@map("auth_verifications")
 }
 
 model Member {

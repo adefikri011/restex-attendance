@@ -1,12 +1,25 @@
 import { Bell, ChevronDown, ChevronRight } from "lucide-react";
 import { usePathname } from "next/navigation";
+import type { AppRoleId } from "@/components/auth/role-config";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import styles from "./dashboard-shell.module.css";
 
-export function DashboardHeader() {
+export function DashboardHeader({
+  role,
+  displayName,
+}: {
+  role: AppRoleId;
+  displayName: string;
+}) {
   const pathname = usePathname();
+  const initials = displayName
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
   const pageTitles: Record<string, string> = {
-    "/": "Dashboard",
+    "/dashboard": "Dashboard",
     "/attendance": "Monitoring Absensi",
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
@@ -14,10 +27,13 @@ export function DashboardHeader() {
     "/reports": "Laporan",
     "/audit-log": "Audit Log",
     "/administrator-accounts": "Akun Pengurus",
+    "/portal/anggota": "Portal Anggota",
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"
-    : pageTitles[pathname] ?? "Dashboard";
+    : pathname.startsWith("/dashboard/")
+      ? "Dashboard"
+      : pageTitles[pathname] ?? "Dashboard";
 
   return (
     <header className={styles.pageHeader}>
@@ -28,12 +44,16 @@ export function DashboardHeader() {
       </div>
 
       <div className={styles.headerActions}>
-        <div className={styles.headerPeriod}>
-          <span>Periode aktif</span>
-          <strong>2026 — 2027</strong>
-          <ChevronDown size={15} aria-hidden="true" />
-        </div>
-        <span className={styles.headerDivider} aria-hidden="true" />
+        {role !== "anggota" && (
+          <>
+            <div className={styles.headerPeriod}>
+              <span>Periode aktif</span>
+              <strong>2026 — 2027</strong>
+              <ChevronDown size={15} aria-hidden="true" />
+            </div>
+            <span className={styles.headerDivider} aria-hidden="true" />
+          </>
+        )}
         <ThemeSwitcher />
         <button
           type="button"
@@ -44,8 +64,8 @@ export function DashboardHeader() {
           <Bell size={19} strokeWidth={1.8} />
           <span aria-hidden="true" />
         </button>
-        <div className={styles.headerAvatar} aria-label="Fikri Ramadhan">
-          FR
+        <div className={styles.headerAvatar} aria-label={displayName}>
+          {initials}
         </div>
       </div>
     </header>

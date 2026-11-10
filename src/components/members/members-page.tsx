@@ -1,9 +1,15 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDownToLine, UserRoundX, UsersRound } from "lucide-react";
+import { ArrowDownToLine, Copy, KeyRound, UserRoundX, UsersRound, X } from "lucide-react";
 import { AddMemberDialog } from "./add-member-dialog";
-import { initialMembers, type Member } from "./member-data";
+import { initialAccountPassword } from "@/lib/account-credentials";
+import {
+  membershipStatuses,
+  type Member,
+  type MemberCredential,
+  type MembershipStatus,
+} from "./member-data";
 import { MemberDetailDialog } from "./member-detail-dialog";
 import { MemberStatusTabs, type StatusFilter } from "./member-status-tabs";
 import { MemberTable } from "./member-table";
@@ -12,7 +18,64 @@ import styles from "./members.module.css";
 
 const pageSize = 8;
 
-export function MembersPage() {
+type MembersPageProps = {
+  initialMembers: Member[];
+  periodName: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isMembershipStatus(value: string): value is MembershipStatus {
+  return membershipStatuses.some((status) => status === value);
+}
+
+function isMemberCredential(value: unknown): value is MemberCredential {
+  if (!isRecord(value)) return false;
+  return (
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.email === "string" &&
+    typeof value.nim === "string" &&
+    typeof value.division === "string" &&
+    typeof value.cohort === "string" &&
+    typeof value.status === "string" &&
+    isMembershipStatus(value.status) &&
+    (typeof value.attendance === "number" || value.attendance === null) &&
+    typeof value.joinedAt === "string" &&
+    typeof value.initialPassword === "string"
+  );
+}
+
+function withoutCredential({ id, name, email, nim, division, cohort, status, attendance, joinedAt }: MemberCredential): Member {
+  return { id, name, email, nim, division, cohort, status, attendance, joinedAt };
+}
+
+function escapeCsvCell(value: string) {
+  const safeValue = /^[=+\-@]/.test(value) ? `'${value}` : value;
+  return `"${safeValue.replaceAll('"', '""')}"`;
+}
+
+function downloadCredentials(credentials: MemberCredential[]) {
+  const rows = [
+    ["Nama", "Email", "Password awal"],
+    ...credentials.map(({ name, email, initialPassword }) => [
+      name,
+      email,
+      initialPassword,
+    ]),
+  ];
+  const csv = `\uFEFF${rows.map((row) => row.map(escapeCsvCell).join(",")).join("\r\n")}`;
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "kredensial-awal-anggota.csv";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+export function MembersPage({ initialMembers, periodName }: MembersPageProps) {
   const [members, setMembers] = useState(initialMembers);
   const [search, setSearch] = useState("");
   const [division, setDivision] = useState("Semua");
@@ -20,8 +83,10 @@ export function MembersPage() {
   const [page, setPage] = useState(1);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [importName, setImportName] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
   const [notice, setNotice] = useState("");
+  const [isNoticeError, setIsNoticeError] = useState(false);
+  const [credentials, setCredentials] = useState<MemberCredential[]>([]);
 
   const divisions = useMemo(
     () => [...new Set(members.map((member) => member.division))].sort(),
@@ -62,27 +127,120 @@ export function MembersPage() {
     setPage(1);
   }
 
-  function addMember(memberDetails: Omit<Member, "id">) {
-    const newMember: Member = {
-      ...memberDetails,
-      id: `RTX-2026-${String(members.length + 1).padStart(3, "0")}`,
-    };
+  async function addMember(
+    memberDetails: Pick<Member, "name" | "nim" | "division" | "cohort" | "status">,
+  ) {
+    try {
+      const response = await fetch("/api/members", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(memberDetails),
+      });
+      const result: unknown = await response.json();
 
-    setMembers((currentMembers) => [newMember, ...currentMembers]);
-    setStatus("Semua");
-    setDivision("Semua");
-    setSearch("");
-    setPage(1);
-    setIsAddDialogOpen(false);
-    setNotice(`${newMember.name} ditambahkan ke pratinjau. Data belum tersimpan ke server.`);
+      if (!response.ok) {
+        const message =
+          isRecord(result) && typeof result.error === "string"
+            ? result.error
+            : "Anggota gagal disimpan.";
+        return { error: message };
+      }
+
+      if (!isRecord(result) || !isMemberCredential(result.member)) {
+        return { error: "Respons server tidak valid. Muat ulang halaman dan periksa daftar anggota." };
+      }
+
+      const created = result.member;
+      const member = withoutCredential(created);
+      setMembers((currentMembers) => [member, ...currentMembers]);
+      setCredentials([created]);
+      setStatus("Semua");
+      setDivision("Semua");
+      setSearch("");
+      setPage(1);
+      setNotice(`${member.name} berhasil dibuat sebagai Anggota.`);
+      setIsNoticeError(false);
+      return {};
+    } catch {
+      return { error: "Layanan tidak dapat dihubungi. Periksa koneksi lalu coba kembali." };
+    }
   }
 
-  function importFile(file: File | undefined) {
+  async function importFile(file: File | undefined) {
     if (!file) return;
-    setImportName(file.name);
-    setNotice(`File ${file.name} dipilih. Import belum memproses atau mengunggah data.`);
+    setIsImporting(true);
+    setNotice("");
+    setCredentials([]);
+
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const response = await fetch("/api/members/import", {
+        method: "POST",
+        body: formData,
+      });
+      const result: unknown = await response.json();
+
+      if (!response.ok) {
+        const message =
+          isRecord(result) && typeof result.error === "string"
+            ? result.error
+            : "File gagal diimpor.";
+        const issues =
+          isRecord(result) && Array.isArray(result.issues)
+            ? result.issues
+                .filter(
+                  (issue): issue is { row: number; message: string } =>
+                    isRecord(issue) &&
+                    typeof issue.row === "number" &&
+                    typeof issue.message === "string",
+                )
+                .slice(0, 8)
+                .map((issue) => `Baris ${issue.row}: ${issue.message}`)
+            : [];
+        setNotice([message, ...issues].join(" "));
+        setIsNoticeError(true);
+        return;
+      }
+
+      if (
+        !isRecord(result) ||
+        !Array.isArray(result.members) ||
+        !result.members.every(isMemberCredential)
+      ) {
+        setNotice("Respons server tidak valid. Muat ulang halaman dan periksa daftar anggota.");
+        setIsNoticeError(true);
+        return;
+      }
+
+      const created = result.members;
+      setMembers((currentMembers) => [
+        ...created.map(withoutCredential),
+        ...currentMembers,
+      ]);
+      setCredentials(created);
+      setStatus("Semua");
+      setDivision("Semua");
+      setSearch("");
+      setPage(1);
+      setNotice(`${created.length} anggota berhasil dibuat.`);
+      setIsNoticeError(false);
+    } catch {
+      setNotice("File gagal diunggah. Periksa koneksi lalu coba kembali.");
+      setIsNoticeError(true);
+    } finally {
+      setIsImporting(false);
+    }
   }
 
+  function downloadTemplate() {
+    const link = document.createElement("a");
+    link.href = "/api/members/template";
+    link.download = "template-anggota-restex.xlsx";
+    link.click();
+  }
+
+  const periodLabel = periodName?.replace("-", " — ") ?? "Belum diatur";
   const activeCount = members.filter((member) => member.status === "Aktif").length;
   const pausedCount = members.filter((member) => member.status === "Cuti").length;
   const alumniCount = members.filter(
@@ -93,11 +251,11 @@ export function MembersPage() {
     <div className={styles.membersPage}>
       <header className={styles.pageHeading}>
         <div>
-          <span className={styles.pageEyebrow}>KEANGGOTAAN · PERIODE 2026—2027</span>
+          <span className={styles.pageEyebrow}>KEANGGOTAAN · PERIODE {periodLabel}</span>
           <h1>Anggota</h1>
-          <p>Kelola data dan pantau perkembangan anggota RESTEX.</p>
+          <p>Data anggota pada periode aktif, tersimpan di database RESTEX.</p>
         </div>
-        <button type="button" className={styles.exportTopButton} disabled title="Export Excel tersedia setelah backend disambungkan">
+        <button type="button" className={styles.exportTopButton} disabled title="Export belum tersedia">
           <ArrowDownToLine size={16} aria-hidden="true" />
           Export Excel
         </button>
@@ -146,7 +304,7 @@ export function MembersPage() {
         <div className={styles.summaryPeriod}>
           <span className={styles.periodLiveDot} />
           <span>Periode aktif</span>
-          <strong>2026 — 2027</strong>
+          <strong>{periodLabel}</strong>
         </div>
       </section>
 
@@ -156,7 +314,7 @@ export function MembersPage() {
             <h2>Daftar anggota</h2>
             <p>Data keanggotaan pada periode yang sedang berjalan.</p>
           </div>
-          <span className={styles.currentPeriodBadge}>2026 — 2027</span>
+          <span className={styles.currentPeriodBadge}>{periodLabel}</span>
         </div>
 
         <MemberStatusTabs
@@ -168,32 +326,83 @@ export function MembersPage() {
           search={search}
           division={division}
           divisions={divisions}
-          importName={importName}
+          isImporting={isImporting}
           onSearchChange={updateSearch}
           onDivisionChange={updateDivision}
           onImport={importFile}
-          onAddMember={() => setIsAddDialogOpen(true)}
+          onDownloadTemplate={downloadTemplate}
+          onAddMember={() => {
+            setNotice("");
+            setIsNoticeError(false);
+            setIsAddDialogOpen(true);
+          }}
         />
-        <p className={styles.visuallyHidden} role="status" aria-live="polite">
-          {notice}
-        </p>
+        {!periodName && (
+          <p className={styles.importNotice} role="alert">
+            Belum ada periode aktif. Atur periode terlebih dahulu sebelum membuat anggota.
+          </p>
+        )}
+        {notice && (
+          <p
+            className={isNoticeError ? styles.importNotice : styles.successNotice}
+            role={isNoticeError ? "alert" : "status"}
+            aria-live="polite"
+          >
+            {notice}
+          </p>
+        )}
+        {credentials.length > 0 && (
+          <section className={styles.credentialsPanel} aria-labelledby="credentials-heading">
+            <header>
+              <div>
+                <span><KeyRound size={15} aria-hidden="true" /></span>
+                <div>
+                  <h3 id="credentials-heading">Simpan kredensial awal</h3>
+                  <p>Password awal semua akun anggota adalah {initialAccountPassword}.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                aria-label="Tutup kredensial awal"
+                onClick={() => setCredentials([])}
+              >
+                <X size={17} aria-hidden="true" />
+              </button>
+            </header>
+            <div className={styles.credentialsList}>
+              {credentials.map(({ id, name, email, initialPassword }) => (
+                <div className={styles.credentialRow} key={id}>
+                  <strong>{name}</strong>
+                  <span>{email}</span>
+                  <code>{initialPassword}</code>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              className={styles.credentialsDownload}
+              onClick={() => downloadCredentials(credentials)}
+            >
+              <Copy size={14} aria-hidden="true" />
+              Unduh kredensial (.csv)
+            </button>
+          </section>
+        )}
         <MemberTable
           members={visibleMembers}
           totalFiltered={filteredMembers.length}
           page={Math.min(page, pageCount)}
           pageSize={pageSize}
           activeStatus={status}
+          hasAnyMembers={members.length > 0}
           onPageChange={setPage}
           onViewMember={setSelectedMember}
         />
       </section>
 
-      <p className={styles.mockDataNote}>
-        Data contoh untuk pratinjau UI. Perubahan hanya tersimpan sementara di browser.
-      </p>
-
-      {isAddDialogOpen && (
+      {isAddDialogOpen && periodName && (
         <AddMemberDialog
+          periodName={periodName}
           onClose={() => setIsAddDialogOpen(false)}
           onSubmit={addMember}
         />

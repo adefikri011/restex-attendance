@@ -19,7 +19,7 @@ function CardLogo({ className }: { className: string }) {
   return (
     <Image
       className={className}
-      src="/assets/image/logo.jpg"
+      src="/assets/image/Logo.png"
       alt="Logo UKM Rekayasa Teknologi"
       width={64}
       height={64}

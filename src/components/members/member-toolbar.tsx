@@ -1,14 +1,15 @@
-import { FileDown, Plus, Search, Upload } from "lucide-react";
+import { Download, FileDown, Plus, Search, Upload } from "lucide-react";
 import styles from "./member-controls.module.css";
 
 type MemberToolbarProps = {
   search: string;
   division: string;
   divisions: string[];
-  importName: string;
+  isImporting: boolean;
   onSearchChange: (value: string) => void;
   onDivisionChange: (value: string) => void;
-  onImport: (file: File | undefined) => void;
+  onImport: (file: File | undefined) => void | Promise<void>;
+  onDownloadTemplate: () => void;
   onAddMember: () => void;
 };
 
@@ -16,10 +17,11 @@ export function MemberToolbar({
   search,
   division,
   divisions,
-  importName,
+  isImporting,
   onSearchChange,
   onDivisionChange,
   onImport,
+  onDownloadTemplate,
   onAddMember,
 }: MemberToolbarProps) {
   return (
@@ -52,18 +54,31 @@ export function MemberToolbar({
           </select>
         </label>
 
+        <button
+          type="button"
+          className={styles.exportButton}
+          onClick={onDownloadTemplate}
+        >
+          <Download size={15} aria-hidden="true" />
+          <span>Template</span>
+        </button>
+
         <label className={styles.importButton}>
           <Upload size={15} aria-hidden="true" />
-          <span>Import</span>
+          <span>{isImporting ? "Mengimpor..." : "Import Excel"}</span>
           <input
             type="file"
-            accept=".xlsx,.xls"
+            accept=".xlsx"
             aria-label="Pilih file Excel anggota"
-            onChange={(event) => onImport(event.target.files?.[0])}
+            disabled={isImporting}
+            onChange={(event) => {
+              void onImport(event.target.files?.[0]);
+              event.target.value = "";
+            }}
           />
         </label>
 
-        <button type="button" className={styles.exportButton} disabled title="Export tersedia setelah backend disambungkan">
+        <button type="button" className={styles.exportButton} disabled title="Export belum tersedia">
           <FileDown size={15} aria-hidden="true" />
           <span>Export</span>
         </button>
@@ -73,13 +88,6 @@ export function MemberToolbar({
           <span>Tambah anggota</span>
         </button>
       </div>
-
-      {importName && (
-        <p className={styles.importNote} role="status">
-          <FileDown size={14} aria-hidden="true" />
-          File dipilih: <strong>{importName}</strong> — data belum diunggah.
-        </p>
-      )}
     </div>
   );
 }

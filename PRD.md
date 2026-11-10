@@ -133,11 +133,11 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 ### 7.1 Autentikasi dan Manajemen Role
 | ID | Kebutuhan | Prioritas |
 |---|---|---|
-| FR-01 | Pengguna yang memiliki akun dapat login dengan email dan password | P0 |
+| FR-01 | Pengguna login dengan email dan password; role ditentukan otomatis dari akun yang terautentikasi, bukan dipilih pada halaman login | P0 |
 | FR-02 | Sistem menerapkan RBAC dengan empat role (Super Admin, Admin, Ketua Divisi, Anggota); akun Ketua Divisi wajib terikat pada satu divisi | P0 |
 | FR-03 | Super Admin dapat membuat, menonaktifkan, dan mengubah role akun pengurus; setiap divisi memiliki maksimal satu Ketua Divisi aktif pada satu periode; Super Admin/Admin dapat mengundang dan menonaktifkan akun anggota | P0 |
 | FR-04 | Sesi login berakhir otomatis setelah tidak aktif dalam waktu tertentu | P1 |
-| FR-05 | Pengguna dapat mengubah password sendiri | P1 |
+| FR-05 | Pengguna dapat mengubah password sendiri; kredensial awal harus unik per akun dan wajib diganti pada login pertama, bukan menggunakan satu password bersama | P1 |
 
 ### 7.2 Manajemen Periode & Transisi Keanggotaan
 | ID | Kebutuhan | Prioritas |
@@ -150,7 +150,7 @@ Prioritas: **P0** wajib MVP, **P1** penting, **P2** nanti.
 ### 7.3 Manajemen Anggota & Status Keanggotaan
 | ID | Kebutuhan | Prioritas |
 |---|---|---|
-| FR-10 | Admin dapat menambah, mengubah, dan mengelola anggota secara manual | P0 |
+| FR-10 | Admin dapat menambah, mengubah, dan mengelola anggota secara manual; akun anggota mendapat email otomatis dari nama dan kode singkatan divisi dengan domain `@restex.id`, sedangkan keanggotaannya tetap terikat pada periode aktif | P0 |
 | FR-11 | Admin dapat mengimpor anggota dari file Excel (.xlsx) dengan template yang disediakan | P0 |
 | FR-12 | Import menampilkan pratinjau dan daftar error sebelum data disimpan | P0 |
 | FR-13 | Setiap anggota memiliki ID unik (format contoh: `RTX-2026-001`) | P0 |

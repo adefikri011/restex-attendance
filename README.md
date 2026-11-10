@@ -24,8 +24,38 @@ connection, while Prisma migrations should use the direct, non-pooled connection
    Use `npm run db:deploy` to apply committed migrations in a deployment environment.
 
 Do not run migrations against production until the schema and migration have been
-reviewed and the database has a backup. The current UI still uses local preview data;
-the Prisma client is the server-side foundation for the next integration step.
+reviewed and the database has a backup.
+
+## Autentikasi dan akses
+
+Login menggunakan Better Auth dengan sesi yang disimpan di PostgreSQL. Atur
+`BETTER_AUTH_URL` ke origin aplikasi dan isi `BETTER_AUTH_SECRET` dengan nilai
+acak minimal 32 karakter. Pendaftaran publik dinonaktifkan; role hanya dibaca
+dari akun di database dan diverifikasi lagi pada halaman server.
+
+Sebelum login pertama, siapkan backup database lalu terapkan migrasi autentikasi
+ke database yang benar:
+
+```bash
+npm run db:deploy
+```
+
+Untuk membuat Super Admin pertama:
+
+1. Isi `INITIAL_ADMIN_TOKEN` dengan token acak kuat dan `BETTER_AUTH_SECRET`
+   dengan secret autentikasi.
+2. Kirim satu kali permintaan `POST /api/auth/bootstrap` melalui HTTPS dengan
+   header `Authorization: Bearer <INITIAL_ADMIN_TOKEN>` dan JSON berisi `name`,
+   `email`, serta `password` unik minimal 12 karakter.
+3. Hapus `INITIAL_ADMIN_TOKEN` dari environment setelah akun berhasil dibuat.
+
+Endpoint bootstrap hanya aktif dengan token tersebut dan hanya selama belum ada
+Super Admin. Jangan mengirim token atau password lewat chat, commit, atau log.
+Bootstrap hanya membuat Super Admin pertama. Pendaftaran publik dinonaktifkan;
+provisioning akun untuk role lain perlu dihubungkan pada tahap administrasi
+berikutnya. Login saat ini hanya menyediakan email dan password; QR belum
+diimplementasikan. Form data anggota pada modul lain masih berupa pratinjau dan
+belum membuat akun login di database.
 
 ## Tema tampilan
 
@@ -35,6 +65,15 @@ di `src/app/globals.css`, sehingga komponen tidak perlu memiliki palet mode-gela
 masing-masing. Untuk menambahkan tema seperti Halloween atau Kemerdekaan, tambahkan
 pilihannya ke registry dan definisikan nilai tokennya menggunakan atribut
 `[data-theme="nama-tema"]`. Artwork kartu lanyard tetap mempertahankan warna cetaknya.
+
+## Struktur halaman
+
+- `/` disiapkan untuk landing page publik; sementara ini mengarahkan ke `/dashboard`.
+- `/dashboard` adalah halaman utama ruang kerja pengurus.
+- `/login` menyediakan login email/password; role diarahkan otomatis berdasarkan
+  akun database, tanpa pemilih role. Login QR belum tersedia.
+- Halaman administrasi lain berada di `/attendance`, `/members`, `/periods`,
+  `/reports`, `/audit-log`, dan `/administrator-accounts`.
 
 ## Getting Started
 

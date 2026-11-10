@@ -259,11 +259,146 @@
   color: var(--ui-text-muted);
 }
 
-.mockDataNote {
-  margin: -10px 0 0;
-  color: #a1adb7;
+.importNotice {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-danger-text) 24%, var(--ui-border));
+  border-radius: 9px;
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.successNotice {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-success-text) 24%, var(--ui-border));
+  border-radius: 9px;
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.credentialsPanel {
+  display: grid;
+  gap: 12px;
+  margin: 0 22px 16px;
+  padding: 15px;
+  border: 1px solid var(--ui-border);
+  border-radius: 11px;
+  background: var(--ui-surface-subtle);
+}
+
+.credentialsPanel > header,
+.credentialsPanel > header > div {
+  display: flex;
+  align-items: flex-start;
+}
+
+.credentialsPanel > header {
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.credentialsPanel > header > div {
+  gap: 9px;
+}
+
+.credentialsPanel > header > div > span {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.credentialsPanel h3,
+.credentialsPanel p {
+  margin: 0;
+}
+
+.credentialsPanel h3 {
+  color: var(--ui-text-primary);
+  font-size: 11px;
+}
+
+.credentialsPanel p {
+  margin-top: 3px;
+  color: var(--ui-text-muted);
   font-size: 9px;
-  text-align: right;
+  line-height: 1.5;
+}
+
+.credentialsPanel > header > button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  cursor: pointer;
+}
+
+.credentialsList {
+  display: grid;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+}
+
+.credentialRow {
+  display: grid;
+  grid-template-columns: minmax(100px, 0.8fr) minmax(180px, 1fr) minmax(180px, 1fr);
+  gap: 10px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--ui-border-subtle);
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+}
+
+.credentialRow:last-child {
+  border-bottom: 0;
+}
+
+.credentialRow strong {
+  color: var(--ui-text-primary);
+}
+
+.credentialRow span,
+.credentialRow code {
+  overflow-wrap: anywhere;
+}
+
+.credentialRow code {
+  color: var(--ui-text-accent);
+  font-size: 9px;
+}
+
+.credentialsDownload {
+  display: inline-flex;
+  min-height: 34px;
+  justify-self: start;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
 }
 
 @media (max-width: 1100px) {
@@ -283,6 +418,16 @@
 }
 
 @media (max-width: 760px) {
+  .credentialRow {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+  }
+
+  .credentialsPanel {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
   .membersPage {
     gap: 17px;
   }

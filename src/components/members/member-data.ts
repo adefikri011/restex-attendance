@@ -3,6 +3,7 @@ export type MembershipStatus = "Aktif" | "Cuti" | "Keluar" | "Alumni";
 export type Member = {
   id: string;
   name: string;
+  email: string;
   nim: string;
   division: string;
   cohort: string;
@@ -11,10 +12,56 @@ export type Member = {
   joinedAt: string;
 };
 
+export type MemberCredential = Member & {
+  initialPassword: string;
+};
+
+const divisionEmailCodes: Record<string, string> = {
+  "Software Development": "sd",
+  "Network & Security": "ns",
+  "UI/UX Design": "ux",
+  "Research & Development": "rd",
+};
+
+export const memberDivisions = Object.keys(divisionEmailCodes);
+
+export function getPeriodEmailCode(periodName: string) {
+  const years = periodName.match(/\d{4}/g);
+  if (years && years.length >= 2) {
+    return `${years[0].slice(-2)}${years[1].slice(-2)}`;
+  }
+
+  return periodName
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("id")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+export function generateMemberEmail(
+  name: string,
+  division: string,
+  periodName?: string,
+) {
+  const nameSlug = name
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("id")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  const divisionCode = divisionEmailCodes[division];
+
+  if (!nameSlug || !divisionCode) return "";
+  const periodSuffix = periodName ? `_${getPeriodEmailCode(periodName)}` : "";
+  return `${nameSlug}_${divisionCode}${periodSuffix}@restex.id`;
+}
+
 export const initialMembers: Member[] = [
   {
     id: "RTX-2026-001",
     name: "Aisyah Putri Ramadhani",
+    email: generateMemberEmail("Aisyah Putri Ramadhani", "Software Development"),
     nim: "2024001042",
     division: "Software Development",
     cohort: "2024",
@@ -25,6 +72,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-002",
     name: "Rizky Aditya Pratama",
+    email: generateMemberEmail("Rizky Aditya Pratama", "Network & Security"),
     nim: "2024001087",
     division: "Network & Security",
     cohort: "2024",
@@ -35,6 +83,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-003",
     name: "Nadia Safitri",
+    email: generateMemberEmail("Nadia Safitri", "UI/UX Design"),
     nim: "2024001125",
     division: "UI/UX Design",
     cohort: "2024",
@@ -45,6 +94,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-004",
     name: "Fajar Maulana",
+    email: generateMemberEmail("Fajar Maulana", "Software Development"),
     nim: "2023000931",
     division: "Software Development",
     cohort: "2023",
@@ -55,6 +105,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-005",
     name: "Putri Maharani",
+    email: generateMemberEmail("Putri Maharani", "Research & Development"),
     nim: "2024001183",
     division: "Research & Development",
     cohort: "2024",
@@ -65,6 +116,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-006",
     name: "Dimas Alfarizi",
+    email: generateMemberEmail("Dimas Alfarizi", "Network & Security"),
     nim: "2023000968",
     division: "Network & Security",
     cohort: "2023",
@@ -75,6 +127,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-007",
     name: "Naufal Hidayat",
+    email: generateMemberEmail("Naufal Hidayat", "Software Development"),
     nim: "2025002014",
     division: "Software Development",
     cohort: "2025",
@@ -85,6 +138,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2026-008",
     name: "Salsabila Putri",
+    email: generateMemberEmail("Salsabila Putri", "UI/UX Design"),
     nim: "2024001220",
     division: "UI/UX Design",
     cohort: "2024",
@@ -95,6 +149,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2025-041",
     name: "Bagas Prakoso",
+    email: generateMemberEmail("Bagas Prakoso", "Research & Development"),
     nim: "2022000872",
     division: "Research & Development",
     cohort: "2022",
@@ -105,6 +160,7 @@ export const initialMembers: Member[] = [
   {
     id: "RTX-2024-026",
     name: "Intan Permatasari",
+    email: generateMemberEmail("Intan Permatasari", "Network & Security"),
     nim: "2021000564",
     division: "Network & Security",
     cohort: "2021",

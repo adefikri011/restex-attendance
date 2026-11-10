@@ -1,0 +1,566 @@
+.loginPage {
+  display: grid;
+  min-height: 100svh;
+  grid-template-columns: minmax(340px, 0.9fr) minmax(500px, 1.1fr);
+  background: var(--ui-background);
+  color: var(--ui-text-primary);
+}
+
+.brandPanel {
+  position: relative;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: clamp(32px, 5vw, 68px);
+  background:
+    radial-gradient(ellipse at 86% 30%, rgb(33 89 116 / 42%), transparent 34%),
+    linear-gradient(145deg, #08283f 0%, #0b2f4a 56%, #113c57 100%);
+  color: #fff;
+}
+
+.brandGlow {
+  position: absolute;
+  right: -180px;
+  bottom: -240px;
+  width: 580px;
+  height: 580px;
+  border: 1px solid rgb(208 230 241 / 12%);
+  border-radius: 50%;
+}
+
+.brandGlow::before,
+.brandGlow::after {
+  position: absolute;
+  inset: 36px;
+  border: 1px solid rgb(208 230 241 / 8%);
+  border-radius: inherit;
+  content: "";
+}
+
+.brandGlow::after {
+  inset: 86px;
+}
+
+.brandContent,
+.brandFooter {
+  position: relative;
+  z-index: 1;
+}
+
+.brandLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.brandLogo,
+.mobileBrand > img {
+  border: 2px solid rgb(255 255 255 / 72%);
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.wordmark,
+.mobileBrand > span {
+  display: grid;
+  gap: 3px;
+}
+
+.wordmark strong,
+.mobileBrand strong {
+  color: #f7fbfd;
+  font-size: 15px;
+  font-weight: 820;
+  letter-spacing: 0.1em;
+  line-height: 1;
+}
+
+.wordmark strong span,
+.mobileBrand strong span {
+  color: #ef5c77;
+}
+
+.wordmark small,
+.mobileBrand small {
+  color: #abc2d0;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.21em;
+}
+
+.brandMessage {
+  max-width: 470px;
+  margin-top: clamp(72px, 16vh, 156px);
+}
+
+.brandEyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #b7cfda;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+}
+
+.brandEyebrow > span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e85a75;
+  box-shadow: 0 0 0 4px rgb(232 90 117 / 14%);
+}
+
+.brandMessage h1 {
+  margin: 20px 0 14px;
+  color: #fff;
+  font-size: clamp(38px, 5.2vw, 64px);
+  font-weight: 680;
+  letter-spacing: -0.06em;
+  line-height: 1.05;
+}
+
+.brandMessage h1 > span {
+  color: #f05c77;
+}
+
+.brandMessage p {
+  max-width: 380px;
+  margin: 0;
+  color: #c1d0d9;
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.featureList {
+  display: grid;
+  gap: 17px;
+  margin-top: clamp(36px, 7vh, 68px);
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.featureItem > span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 7%);
+  color: #c7dce6;
+}
+
+.featureItem > div {
+  display: grid;
+  gap: 4px;
+}
+
+.featureItem strong {
+  color: #f4f8fa;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.featureItem small {
+  color: #abc0cc;
+  font-size: 9px;
+}
+
+.brandFooter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-top: 40px;
+  color: #a9bfcc;
+  font-size: 8px;
+  letter-spacing: 0.04em;
+}
+
+.brandFooter > span + span::before {
+  margin-right: 12px;
+  color: #718e9f;
+  content: "·";
+}
+
+.decorativeMark {
+  position: absolute;
+  right: 4%;
+  bottom: -11%;
+  color: rgb(255 255 255 / 2.5%);
+  font-size: clamp(300px, 45vw, 610px);
+  font-weight: 850;
+  letter-spacing: -0.12em;
+  line-height: 0.9;
+  pointer-events: none;
+  user-select: none;
+}
+
+.formPanel {
+  display: flex;
+  min-width: 0;
+  min-height: 100svh;
+  flex-direction: column;
+  padding: 27px clamp(24px, 5vw, 68px) 20px;
+}
+
+.topActions {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  font-weight: 550;
+  text-decoration: none;
+  transition: color 150ms ease;
+}
+
+.backLink:hover {
+  color: var(--ui-text-primary);
+}
+
+.loginContent {
+  width: min(100%, 430px);
+  margin: auto;
+  padding: 36px 0;
+}
+
+.mobileBrand {
+  display: none;
+}
+
+.formHeading {
+  margin-bottom: 25px;
+}
+
+.formEyebrow {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.15em;
+}
+
+.formHeading h2 {
+  margin: 8px 0 7px;
+  color: var(--ui-text-primary);
+  font-size: 29px;
+  font-weight: 730;
+  letter-spacing: -0.045em;
+}
+
+.formHeading p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.liveNotice {
+  min-height: 0;
+  margin: 0;
+  color: var(--ui-info-text);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
+.liveNotice:not(:empty) {
+  margin-top: 12px;
+  padding: 10px 11px;
+  border: 1px solid color-mix(in srgb, var(--ui-info-text) 20%, var(--ui-border));
+  border-radius: 8px;
+  background: var(--ui-info-soft);
+}
+
+.loginInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  line-height: 1.55;
+}
+
+.loginInfo > svg {
+  flex: 0 0 auto;
+  color: var(--ui-text-accent);
+}
+
+.credentialsPanel {
+  padding-top: 20px;
+}
+
+.loginForm {
+  display: grid;
+  gap: 16px;
+}
+
+.formLabel {
+  display: grid;
+  gap: 7px;
+  color: var(--ui-text-primary);
+  font-size: 9px;
+  font-weight: 650;
+}
+
+.inputWrap {
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-muted);
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.inputWrap:focus-within {
+  border-color: var(--ui-text-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-text-accent) 12%, transparent);
+}
+
+.inputWrap input {
+  width: 100%;
+  min-width: 0;
+  height: 40px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 10px;
+}
+
+.inputWrap input::placeholder {
+  color: var(--ui-text-muted);
+}
+
+.passwordToggle {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+}
+
+.passwordToggle:hover {
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-primary);
+}
+
+.formOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: -3px;
+}
+
+.rememberOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ui-text-secondary);
+  font-size: 8px;
+  cursor: pointer;
+}
+
+.rememberOption input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.customCheckbox {
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 4px;
+  background: var(--ui-surface);
+  color: transparent;
+}
+
+.rememberOption input:checked + .customCheckbox {
+  border-color: var(--ui-button-primary);
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.rememberOption input:focus-visible + .customCheckbox {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.forgotHelp {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  text-align: right;
+}
+
+.submitButton {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 2px;
+  border: 1px solid var(--ui-button-primary);
+  border-radius: 9px;
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.submitButton:hover {
+  background: var(--ui-button-primary-hover);
+}
+
+.submitButton:active {
+  transform: translateY(1px);
+}
+
+.loginInfo {
+  margin-top: 17px;
+  padding-top: 13px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.securityNote {
+  margin: 19px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  text-align: center;
+}
+
+.formFooter {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 14px;
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+@media (max-width: 900px) {
+  .loginPage {
+    grid-template-columns: minmax(290px, 0.8fr) minmax(440px, 1.2fr);
+  }
+
+  .brandPanel {
+    padding: 34px;
+  }
+
+  .formPanel {
+    padding-right: 34px;
+    padding-left: 34px;
+  }
+
+  .featureList {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 720px) {
+  .loginPage {
+    display: block;
+    min-height: 100svh;
+  }
+
+  .brandPanel {
+    display: none;
+  }
+
+  .formPanel {
+    min-height: 100svh;
+    padding: 16px 21px 17px;
+  }
+
+  .loginContent {
+    width: min(100%, 410px);
+    padding: 31px 0;
+  }
+
+  .mobileBrand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 34px;
+  }
+
+  .mobileBrand > img {
+    border-color: var(--ui-border);
+    border-radius: 10px;
+  }
+
+  .mobileBrand strong {
+    color: var(--ui-text-primary);
+    font-size: 13px;
+  }
+
+  .mobileBrand small {
+    color: var(--ui-text-muted);
+    font-size: 7px;
+  }
+
+  .formHeading h2 {
+    font-size: 27px;
+  }
+
+  .formFooter {
+    padding-top: 14px;
+    border-top: 1px solid var(--ui-border-subtle);
+  }
+}
+
+@media (max-width: 390px) {
+  .formPanel {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .formOptions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .forgotHelp {
+    margin-left: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backLink,
+  .inputWrap,
+  .submitButton {
+    transition: none;
+  }
+}

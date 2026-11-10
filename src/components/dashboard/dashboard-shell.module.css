@@ -217,6 +217,13 @@
   border-top: 1px solid var(--ui-border);
 }
 
+.signOutError {
+  margin: 0;
+  padding: 8px 5px 0;
+  color: var(--ui-danger-text);
+  font-size: 11px;
+}
+
 .profileAvatar,
 .headerAvatar {
   display: grid;

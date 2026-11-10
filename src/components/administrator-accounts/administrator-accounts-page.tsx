@@ -17,11 +17,10 @@ import {
   UsersRound,
 } from "lucide-react";
 import { InviteAdministratorForm } from "./invite-administrator-form";
+import { initialAccountPassword } from "@/lib/account-credentials";
 import {
-  divisionMemberCounts,
   getAdministratorInitials,
   administratorRoles,
-  initialAdministratorAccounts,
   organizationDivisions,
   type AdministratorAccount,
   type AdministratorAccountStatus,
@@ -31,6 +30,12 @@ import styles from "./administrator-accounts.module.css";
 
 type RoleFilter = "Semua" | AdministratorRole;
 type StatusFilter = "Semua" | AdministratorAccountStatus;
+
+type AdministratorAccountsPageProps = {
+  accounts: AdministratorAccount[];
+  divisionMemberCounts: Record<(typeof organizationDivisions)[number], number>;
+  periodName: string | null;
+};
 
 const roleDescriptions: Array<{
   role: AdministratorRole | "Anggota";
@@ -56,7 +61,7 @@ const roleDescriptions: Array<{
   {
     role: "Ketua Divisi",
     title: "Ketua Divisi",
-    description: "Mengelola anggota dan mencatat absensi hanya untuk divisinya.",
+    description: "Memiliki penugasan pada satu divisi yang ditetapkan.",
     icon: UsersRound,
     className: styles.roleDivisionLead,
   },
@@ -77,17 +82,24 @@ function getRoleClass(role: AdministratorRole) {
 
 function getStatusClass(status: AdministratorAccountStatus) {
   if (status === "Aktif") return styles.statusActive;
-  if (status === "Nonaktif") return styles.statusDisabled;
-  return styles.statusInvited;
+  return styles.statusDisabled;
 }
 
-export function AdministratorAccountsPage() {
-  const [accounts, setAccounts] = useState(initialAdministratorAccounts);
+export function AdministratorAccountsPage({
+  accounts: initialAccounts,
+  divisionMemberCounts,
+  periodName,
+}: AdministratorAccountsPageProps) {
+  const [accounts, setAccounts] = useState(initialAccounts);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("Semua");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("Semua");
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [notice, setNotice] = useState("");
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
 
   const filteredAccounts = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase("id");
@@ -106,9 +118,7 @@ export function AdministratorAccountsPage() {
   }, [accounts, roleFilter, search, statusFilter]);
 
   const activeCount = accounts.filter((account) => account.status === "Aktif").length;
-  const invitedCount = accounts.filter(
-    (account) => account.status === "Undangan terkirim",
-  ).length;
+  const inactiveCount = accounts.filter((account) => account.status === "Nonaktif").length;
   const divisionLeadCount = accounts.filter(
     (account) =>
       account.role === "Ketua Divisi" &&
@@ -121,59 +131,68 @@ export function AdministratorAccountsPage() {
       (account) =>
         account.role === "Ketua Divisi" &&
         account.division === division &&
-        account.status !== "Nonaktif",
+        account.status === "Aktif",
     ),
   }));
+  const availableDivisions = organizationDivisions.filter(
+    (division) =>
+      !accounts.some(
+        (account) =>
+          account.role === "Ketua Divisi" &&
+          account.division === division &&
+          account.status === "Aktif",
+      ),
+  );
 
-  function inviteAccount(account: AdministratorAccount) {
-    setAccounts((currentAccounts) => [account, ...currentAccounts]);
+  function addCreatedAccount(result: {
+    account: AdministratorAccount;
+    initialPassword: string;
+  }) {
+    setAccounts((currentAccounts) => [result.account, ...currentAccounts]);
     setIsInviteOpen(false);
     setRoleFilter("Semua");
     setStatusFilter("Semua");
     setSearch("");
-    setNotice(
-      `Undangan untuk ${account.name} disiapkan di pratinjau. Pengiriman email belum terhubung.`,
-    );
+    setCreatedCredentials({
+      email: result.account.email,
+      password: result.initialPassword,
+    });
+    setNotice(`Akun ${result.account.name} berhasil dibuat.`);
   }
 
-  function toggleAccountStatus(accountId: string) {
+  async function toggleAccountStatus(accountId: string) {
     const selectedAccount = accounts.find((account) => account.id === accountId);
     if (!selectedAccount || selectedAccount.role === "Super Admin") return;
 
-    const nextStatus: AdministratorAccountStatus =
-      selectedAccount.status === "Aktif" ? "Nonaktif" : "Aktif";
-    if (
-      nextStatus === "Aktif" &&
-      selectedAccount.role === "Ketua Divisi" &&
-      accounts.some(
-        (account) =>
-          account.id !== selectedAccount.id &&
-          account.role === "Ketua Divisi" &&
-          account.division === selectedAccount.division &&
-          account.status !== "Nonaktif",
-      )
-    ) {
-      setNotice(
-        `${selectedAccount.division} sudah memiliki Ketua Divisi aktif atau undangan yang menunggu.`,
+    const isActive = selectedAccount.status !== "Aktif";
+    try {
+      const response = await fetch(`/api/administrator-accounts/${accountId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        setNotice(
+          typeof result === "object" &&
+            result !== null &&
+            "error" in result &&
+            typeof result.error === "string"
+            ? result.error
+            : "Status akun gagal diperbarui.",
+        );
+        return;
+      }
+      const nextStatus: AdministratorAccountStatus = isActive ? "Aktif" : "Nonaktif";
+      setAccounts((currentAccounts) =>
+        currentAccounts.map((account) =>
+          account.id === accountId ? { ...account, status: nextStatus } : account,
+        ),
       );
-      return;
+      setNotice(`${selectedAccount.name} sekarang ${nextStatus.toLocaleLowerCase("id")}.`);
+    } catch {
+      setNotice("Layanan akun pengurus tidak dapat dihubungi.");
     }
-
-    setAccounts((currentAccounts) =>
-      currentAccounts.map((account) =>
-        account.id === accountId
-          ? {
-              ...account,
-              status: nextStatus,
-            }
-          : account,
-      ),
-    );
-    setNotice(
-      selectedAccount.status === "Undangan terkirim"
-        ? `Undangan ${selectedAccount.name} dibatalkan pada pratinjau.`
-        : `${selectedAccount.name} diubah menjadi ${nextStatus}. Perubahan hanya tersimpan sementara di halaman ini.`,
-    );
   }
 
   return (
@@ -191,25 +210,38 @@ export function AdministratorAccountsPage() {
           className={styles.primaryButton}
           onClick={() => {
             setNotice("");
+            setCreatedCredentials(null);
             setIsInviteOpen((isOpen) => !isOpen);
           }}
         >
           <Plus size={16} aria-hidden="true" />
-          Undang pengurus
+          Buat akun pengurus
         </button>
       </header>
 
       {isInviteOpen && (
         <InviteAdministratorForm
-          accounts={accounts}
+          availableDivisions={availableDivisions}
+          periodName={periodName}
           onCancel={() => setIsInviteOpen(false)}
-          onInvite={inviteAccount}
+          onCreated={addCreatedAccount}
         />
       )}
 
-      <p className={styles.visuallyHidden} role="status" aria-live="polite">
-        {notice}
-      </p>
+      {createdCredentials ? (
+        <aside className={styles.previewNote} role="status">
+          <ShieldCheck size={15} aria-hidden="true" />
+          <p>
+            Akun berhasil dibuat. Email: <strong>{createdCredentials.email}</strong>
+            {" · "}Password awal: <code>{createdCredentials.password}</code>
+            {" "}— berikan kredensial ini langsung kepada pengurus.
+          </p>
+        </aside>
+      ) : (
+        <p className={styles.visuallyHidden} role="status" aria-live="polite">
+          {notice}
+        </p>
+      )}
 
       <section className={styles.summaryGrid} aria-label="Ringkasan akun pengurus">
         <article className={styles.summaryCard}>
@@ -237,10 +269,10 @@ export function AdministratorAccountsPage() {
             <Clock3 size={17} aria-hidden="true" />
           </span>
           <div>
-            <span>Undangan menunggu</span>
-            <strong>{invitedCount}</strong>
+            <span>Akun nonaktif</span>
+            <strong>{inactiveCount}</strong>
           </div>
-          <small>Belum diaktifkan</small>
+          <small>Akses sistem dimatikan</small>
         </article>
         <article className={styles.summaryCard}>
           <span className={`${styles.summaryIcon} ${styles.summaryIconRose}`}>
@@ -259,7 +291,7 @@ export function AdministratorAccountsPage() {
           <div>
             <span className={styles.sectionEyebrow}>STRUKTUR DIVISI</span>
             <h2 id="division-coverage-title">Penanggung jawab per divisi</h2>
-            <p>Ketua Divisi hanya dapat mengelola anggota dan absensi divisinya.</p>
+            <p>Setiap Ketua Divisi dicatat dengan divisi tanggung jawabnya.</p>
           </div>
           <span className={styles.coverageBadge}>
             <Check size={13} aria-hidden="true" />
@@ -281,7 +313,7 @@ export function AdministratorAccountsPage() {
                   <span>{getAdministratorInitials(account.name)}</span>
                   <div>
                     <strong>{account.name}</strong>
-                    <small>{account.status === "Aktif" ? "Ketua Divisi" : "Undangan terkirim"}</small>
+                    <small>Ketua Divisi</small>
                   </div>
                 </div>
               ) : (
@@ -371,7 +403,6 @@ export function AdministratorAccountsPage() {
             >
               <option value="Semua">Semua status</option>
               <option value="Aktif">Aktif</option>
-              <option value="Undangan terkirim">Undangan terkirim</option>
               <option value="Nonaktif">Nonaktif</option>
             </select>
             <ChevronDown size={14} aria-hidden="true" />
@@ -400,8 +431,8 @@ export function AdministratorAccountsPage() {
                   {account.status}
                 </span>
                 <div className={styles.accountLastActive}>
-                  <span>{account.status === "Undangan terkirim" ? "Undangan" : "Aktif terakhir"}</span>
-                  <strong>{account.lastActiveAt ?? account.inviteSentAt}</strong>
+                  <span>Login terakhir</span>
+                  <strong>{account.lastActiveAt ?? "Belum pernah login"}</strong>
                 </div>
                 {account.role === "Super Admin" ? (
                   <span className={styles.protectedAccount}>
@@ -411,11 +442,11 @@ export function AdministratorAccountsPage() {
                 ) : (
                   <button
                     type="button"
-                    className={account.status === "Aktif" ? styles.deactivateButton : account.status === "Undangan terkirim" ? styles.cancelInviteButton : styles.activateButton}
+                    className={account.status === "Aktif" ? styles.deactivateButton : styles.activateButton}
                     onClick={() => toggleAccountStatus(account.id)}
-                    aria-label={`${account.status === "Aktif" ? "Nonaktifkan" : account.status === "Undangan terkirim" ? "Batalkan undangan" : "Aktifkan kembali"} ${account.name}`}
+                    aria-label={`${account.status === "Aktif" ? "Nonaktifkan" : "Aktifkan kembali"} ${account.name}`}
                   >
-                    {account.status === "Aktif" ? "Nonaktifkan" : account.status === "Undangan terkirim" ? "Batalkan undangan" : "Aktifkan"}
+                    {account.status === "Aktif" ? "Nonaktifkan" : "Aktifkan"}
                   </button>
                 )}
               </article>
@@ -433,8 +464,8 @@ export function AdministratorAccountsPage() {
       <aside className={styles.previewNote}>
         <ShieldCheck size={15} aria-hidden="true" />
         <p>
-          Undangan dan perubahan status ini hanya simulasi tampilan. Pembatasan akses
-          Ketua Divisi dan pengiriman email perlu diterapkan di backend sebelum digunakan.
+          Password awal ({initialAccountPassword}) sama untuk seluruh akun baru. Karena semua akun berbagi
+          password sementara ini, sampaikan secara pribadi kepada masing-masing pemilik akun.
         </p>
       </aside>
     </div>

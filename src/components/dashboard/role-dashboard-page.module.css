@@ -1,0 +1,212 @@
+.roleDashboard {
+  display: grid;
+  gap: 20px;
+  color: var(--ui-text-primary);
+}
+
+.welcomePanel {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 21px;
+  border: 1px solid var(--ui-border);
+  border-radius: 15px;
+  background:
+    radial-gradient(ellipse at 92% 10%, color-mix(in srgb, var(--ui-button-primary) 12%, transparent), transparent 40%),
+    var(--ui-surface);
+}
+
+.welcomeIcon,
+.actionIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.welcomePanel > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.eyebrow {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.welcomePanel h1 {
+  margin: 5px 0;
+  color: var(--ui-text-primary);
+  font-size: 22px;
+  font-weight: 730;
+  letter-spacing: -0.035em;
+}
+
+.welcomePanel p,
+.sectionHeading p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.rolePill {
+  max-width: 220px;
+  padding: 7px 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 20px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font-size: 8px;
+  font-weight: 650;
+  text-align: center;
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.sectionHeading h2 {
+  margin: 5px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 16px;
+  font-weight: 720;
+}
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.actionCard {
+  display: grid;
+  min-height: 166px;
+  align-content: start;
+  justify-items: start;
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background: var(--ui-surface);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+
+a.actionCard:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ui-text-accent) 40%, var(--ui-border));
+  box-shadow: 0 8px 20px rgb(25 55 75 / 6%);
+}
+
+.actionIcon {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+}
+
+.actionCard > strong {
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.actionCard > p {
+  margin: 5px 0 12px;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  line-height: 1.55;
+}
+
+.actionLink,
+.comingSoon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: auto;
+  color: var(--ui-text-accent);
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.comingSoon {
+  color: var(--ui-text-muted);
+}
+
+.previewNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 12px 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
+}
+
+.previewNotice > svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--ui-text-accent);
+}
+
+.previewNotice p {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.6;
+}
+
+.previewNotice strong {
+  color: var(--ui-text-secondary);
+}
+
+@media (max-width: 900px) {
+  .actionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .roleDashboard {
+    gap: 15px;
+  }
+
+  .welcomePanel {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+
+  .welcomePanel h1 {
+    font-size: 19px;
+  }
+
+  .rolePill {
+    margin-left: 57px;
+  }
+
+  .actionGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .actionCard {
+    min-height: 145px;
+    padding: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .actionCard {
+    transition: none;
+  }
+}

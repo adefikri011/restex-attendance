@@ -1,33 +1,61 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
-import { membershipStatuses, type Member, type MembershipStatus } from "./member-data";
+import {
+  generateMemberEmail,
+  memberDivisions,
+  membershipStatuses,
+  type Member,
+  type MembershipStatus,
+} from "./member-data";
+import { initialAccountPassword } from "@/lib/account-credentials";
 import memberStyles from "./member-controls.module.css";
 import styles from "./member-dialog.module.css";
 import { MemberDialog } from "./member-dialog";
 
 type AddMemberDialogProps = {
+  periodName: string;
   onClose: () => void;
-  onSubmit: (member: Omit<Member, "id">) => void;
+  onSubmit: (
+    member: Pick<Member, "name" | "nim" | "division" | "cohort" | "status">,
+  ) => Promise<{ error?: string }>;
 };
 
-export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
+export function AddMemberDialog({
+  periodName,
+  onClose,
+  onSubmit,
+}: AddMemberDialogProps) {
   const [name, setName] = useState("");
   const [nim, setNim] = useState("");
-  const [division, setDivision] = useState("Software Development");
+  const [division, setDivision] = useState(memberDivisions[0]);
   const [cohort, setCohort] = useState("2026");
   const [status, setStatus] = useState<MembershipStatus>("Aktif");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const generatedEmail = generateMemberEmail(name, division, periodName);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSubmit({
-      name: name.trim(),
-      nim: nim.trim(),
-      division,
-      cohort,
-      status,
-      attendance: null,
-      joinedAt: "10 Nov 2026",
-    });
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const result = await onSubmit({
+        name: name.trim(),
+        nim: nim.trim(),
+        division,
+        cohort,
+        status,
+      });
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -36,7 +64,7 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
           <div>
             <span className={styles.dialogEyebrow}>DATA ANGGOTA</span>
             <h2 id="add-member-title">Tambah anggota</h2>
-            <p>Lengkapi identitas anggota untuk periode aktif.</p>
+            <p>Lengkapi identitas untuk periode {periodName}.</p>
           </div>
           <button
             type="button"
@@ -56,7 +84,7 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
               required
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Contoh: Nabila Putri"
+              placeholder="Nama lengkap anggota"
             />
           </label>
           <label>
@@ -73,10 +101,9 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
             <label>
               Divisi
               <select value={division} onChange={(event) => setDivision(event.target.value)}>
-                <option>Software Development</option>
-                <option>Network &amp; Security</option>
-                <option>UI/UX Design</option>
-                <option>Research &amp; Development</option>
+                {memberDivisions.map((item) => (
+                  <option value={item} key={item}>{item}</option>
+                ))}
               </select>
             </label>
             <label>
@@ -89,6 +116,15 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
               </select>
             </label>
           </div>
+          <label>
+            Email akun anggota
+            <input
+              className={styles.generatedEmailInput}
+              readOnly
+              value={generatedEmail}
+              placeholder="Isi nama untuk membuat email"
+            />
+          </label>
           <label>
             Status keanggotaan
             <select
@@ -104,8 +140,11 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
           </label>
 
           <p className={styles.dialogNote}>
-            Data hanya ditambahkan pada pratinjau ini dan belum tersimpan ke server.
+            Akun dibuat dengan role Anggota. Email memakai nama, kode divisi,
+            dan kode periode. Password awal semua anggota adalah
+            <strong> {initialAccountPassword}</strong>.
           </p>
+          {error && <p className={styles.formError} role="alert">{error}</p>}
           <div className={styles.dialogActions}>
             <button type="button" className={styles.cancelButton} onClick={onClose}>
               Batal
@@ -113,8 +152,9 @@ export function AddMemberDialog({ onClose, onSubmit }: AddMemberDialogProps) {
             <button
               type="submit"
               className={`${memberStyles.addButton} ${styles.dialogSubmitButton}`}
+              disabled={isSubmitting || !generatedEmail}
             >
-              Tambahkan anggota
+              {isSubmitting ? "Menyimpan..." : "Tambahkan anggota"}
             </button>
           </div>
         </form>
