@@ -6,15 +6,40 @@ import styles from "./periods.module.css";
 type PeriodFormProps = {
   periods: PeriodRecord[];
   onCancel: () => void;
-  onCreate: (period: PeriodRecord) => void;
+  onCreate: (period: Pick<PeriodRecord, "startDate" | "endDate">) => Promise<void>;
 };
 
-export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
-  const [startDate, setStartDate] = useState("2027-07-01");
-  const [endDate, setEndDate] = useState("2028-06-30");
-  const [error, setError] = useState("");
+function getDefaultDates(periods: PeriodRecord[]) {
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const latestEndDate = periods.reduce(
+    (latest, period) => (period.endDate > latest ? period.endDate : latest),
+    today,
+  );
+  const startDate = new Date(`${latestEndDate}T00:00:00.000Z`);
+  startDate.setUTCDate(startDate.getUTCDate() + 1);
+  const endDate = new Date(startDate);
+  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
+  endDate.setUTCDate(endDate.getUTCDate() - 1);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  return {
+    startDate: startDate.toISOString().slice(0, 10),
+    endDate: endDate.toISOString().slice(0, 10),
+  };
+}
+
+export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
+  const [defaults] = useState(() => getDefaultDates(periods));
+  const [startDate, setStartDate] = useState(defaults.startDate);
+  const [endDate, setEndDate] = useState(defaults.endDate);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
@@ -23,7 +48,13 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
       return;
     }
 
-    if (startDate <= new Date().toISOString().slice(0, 10)) {
+    const today = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(new Date());
+    if (startDate <= today) {
       setError("Periode baru harus dimulai setelah hari ini.");
       return;
     }
@@ -36,24 +67,16 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
       return;
     }
 
-    const name = `${new Date(`${startDate}T00:00:00`).getFullYear()} — ${new Date(
-      `${endDate}T00:00:00`,
-    ).getFullYear()}`;
-    if (periods.some((period) => period.name === name)) {
-      setError("Periode dengan tahun tersebut sudah tersedia.");
-      return;
+    setIsSaving(true);
+    try {
+      await onCreate({ startDate, endDate });
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "Periode gagal disimpan. Coba lagi.",
+      );
+    } finally {
+      setIsSaving(false);
     }
-
-    onCreate({
-      id: `${startDate}-${endDate}`,
-      name,
-      startDate,
-      endDate,
-      status: "Akan datang",
-      memberCount: 0,
-      sessionCount: 0,
-      attendanceRate: 0,
-    });
   }
 
   return (
@@ -77,7 +100,7 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
         </button>
       </div>
 
-      <form className={styles.periodForm} onSubmit={handleSubmit}>
+      <form className={styles.periodForm} onSubmit={handleSubmit} aria-busy={isSaving}>
         <label>
           Tanggal mulai
           <input
@@ -97,11 +120,16 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
           />
         </label>
         <div className={styles.formActions}>
-          <button type="button" className={styles.secondaryButton} onClick={onCancel}>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={onCancel}
+            disabled={isSaving}
+          >
             Batal
           </button>
-          <button type="submit" className={styles.primaryButton}>
-            Simpan periode
+          <button type="submit" className={styles.primaryButton} disabled={isSaving}>
+            {isSaving ? "Menyimpan..." : "Simpan periode"}
           </button>
         </div>
         {error && (

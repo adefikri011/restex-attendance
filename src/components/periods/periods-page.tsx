@@ -13,34 +13,13 @@ import {
   Plus,
   UsersRound,
 } from "lucide-react";
-import { createInitialSessions, getActiveMembers } from "@/components/attendance/attendance-data";
-import { initialMembers } from "@/components/members/member-data";
 import { PeriodForm } from "./period-form";
 import {
   formatPeriodDateRange,
-  initialPeriods,
   type PeriodRecord,
   type PeriodStatus,
 } from "./periods-data";
 import styles from "./periods.module.css";
-
-const activeMembers = getActiveMembers(initialMembers);
-const sessions = createInitialSessions(initialMembers);
-const closedSessions = sessions.filter((session) => session.status === "Ditutup");
-const attendanceRate = closedSessions.length
-  ? Math.round(
-      closedSessions.reduce((total, session) => {
-        const present = session.attendance.filter((entry) => entry.status === "Hadir").length;
-        return total + (activeMembers.length ? (present / activeMembers.length) * 100 : 0);
-      }, 0) / closedSessions.length,
-    )
-  : 0;
-const currentPeriodData: PeriodRecord = {
-  ...initialPeriods[0],
-  memberCount: activeMembers.length,
-  sessionCount: sessions.length,
-  attendanceRate,
-};
 
 const statusFilters: Array<"Semua" | PeriodStatus> = [
   "Semua",
@@ -54,17 +33,35 @@ function getStatusClass(status: PeriodStatus) {
   return styles.statusPlanned;
 }
 
-export function PeriodsPage() {
-  const [periods, setPeriods] = useState<PeriodRecord[]>([
-    currentPeriodData,
-    ...initialPeriods.slice(1),
-  ]);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isPeriodRecord(value: unknown): value is PeriodRecord {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.name === "string" &&
+    typeof value.startDate === "string" &&
+    typeof value.endDate === "string" &&
+    (value.status === "Aktif" ||
+      value.status === "Selesai" ||
+      value.status === "Akan datang") &&
+    typeof value.memberCount === "number" &&
+    typeof value.activeMemberCount === "number" &&
+    typeof value.sessionCount === "number" &&
+    typeof value.attendanceRate === "number"
+  );
+}
+
+export function PeriodsPage({ initialPeriods }: { initialPeriods: PeriodRecord[] }) {
+  const [periods, setPeriods] = useState<PeriodRecord[]>(initialPeriods);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState<"Semua" | PeriodStatus>("Semua");
   const [expandedPeriodId, setExpandedPeriodId] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
 
-  const activePeriod = periods.find((period) => period.status === "Aktif")!;
+  const activePeriod = periods.find((period) => period.status === "Aktif");
   const otherPeriods = periods.filter((period) => period.status !== "Aktif");
   const filteredPeriods = useMemo(
     () =>
@@ -74,13 +71,29 @@ export function PeriodsPage() {
   const completedCount = periods.filter((period) => period.status === "Selesai").length;
   const plannedCount = periods.filter((period) => period.status === "Akan datang").length;
 
-  function addPeriod(period: PeriodRecord) {
-    setPeriods((currentPeriods) => [...currentPeriods, period]);
+  async function addPeriod(input: Pick<PeriodRecord, "startDate" | "endDate">) {
+    const response = await fetch("/api/periods", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(input),
+    });
+    const result: unknown = await response.json();
+    if (!response.ok) {
+      const error =
+        isRecord(result) && typeof result.error === "string"
+          ? result.error
+          : "Periode gagal disimpan. Coba lagi.";
+      throw new Error(error);
+    }
+
+    if (!isRecord(result) || !isPeriodRecord(result.period)) {
+      throw new Error("Respons server tidak valid. Muat ulang halaman sebelum melanjutkan.");
+    }
+    const period = result.period;
+    setPeriods((currentPeriods) => [period, ...currentPeriods]);
     setIsFormOpen(false);
     setFilter("Semua");
-    setNotice(
-      `Periode ${period.name} ditambahkan ke pratinjau. Perubahan ini belum tersimpan ke server.`,
-    );
+    setNotice(`Periode ${period.name} berhasil disimpan.`);
   }
 
   function toggleDetails(periodId: string) {
@@ -125,48 +138,64 @@ export function PeriodsPage() {
           <span className={styles.activeIcon} aria-hidden="true">
             <CalendarDays size={20} />
           </span>
-          <span className={`${styles.statusBadge} ${styles.statusActive}`}>
-            <span aria-hidden="true" />
-            Periode aktif
+          <span
+            className={`${styles.statusBadge} ${
+              activePeriod ? styles.statusActive : styles.statusComplete
+            }`}
+          >
+            {activePeriod && <span aria-hidden="true" />}
+            {activePeriod ? "Periode aktif" : "Belum ada periode aktif"}
           </span>
         </div>
         <div className={styles.activeCardContent}>
           <div className={styles.activeCardCopy}>
-            <span className={styles.sectionEyebrow}>SEDANG BERJALAN</span>
-            <h2 id="active-period-title">{activePeriod.name}</h2>
-            <p>{formatPeriodDateRange(activePeriod.startDate, activePeriod.endDate)}</p>
+            <span className={styles.sectionEyebrow}>
+              {activePeriod ? "SEDANG BERJALAN" : "BELUM DITETAPKAN"}
+            </span>
+            <h2 id="active-period-title">
+              {activePeriod?.name ?? "Periode aktif belum tersedia"}
+            </h2>
+            <p>
+              {activePeriod
+                ? formatPeriodDateRange(activePeriod.startDate, activePeriod.endDate)
+                : "Buat rencana periode terlebih dahulu; aktivasi dikelola terpisah."}
+            </p>
           </div>
-          <div className={styles.activeStats} aria-label="Ringkasan periode aktif">
-            <div>
-              <span>Anggota aktif</span>
-              <strong>{activePeriod.memberCount}</strong>
+          {activePeriod && (
+            <div className={styles.activeStats} aria-label="Ringkasan periode aktif">
+              <div>
+                <span>Anggota aktif</span>
+                <strong>{activePeriod.activeMemberCount}</strong>
+              </div>
+              <div>
+                <span>Total sesi</span>
+                <strong>{activePeriod.sessionCount}</strong>
+              </div>
+              <div>
+                <span>Rata-rata hadir</span>
+                <strong>{activePeriod.attendanceRate}%</strong>
+              </div>
             </div>
-            <div>
-              <span>Total sesi</span>
-              <strong>{activePeriod.sessionCount}</strong>
-            </div>
-            <div>
-              <span>Rata-rata hadir</span>
-              <strong>{activePeriod.attendanceRate}%</strong>
-            </div>
-          </div>
+          )}
         </div>
-        <div className={styles.activeCardFooter}>
-          <span>
-            <CheckCircle2 size={15} aria-hidden="true" />
-            Sesi baru akan terhubung ke periode ini
-          </span>
-          <div>
-            <Link href="/members">
-              Keanggotaan
-              <ArrowRight size={14} aria-hidden="true" />
-            </Link>
-            <Link href="/attendance">
-              Lihat sesi
-              <ArrowRight size={14} aria-hidden="true" />
-            </Link>
+        {activePeriod && (
+          <div className={styles.activeCardFooter}>
+            <span>
+              <CheckCircle2 size={15} aria-hidden="true" />
+              Sesi baru akan terhubung ke periode ini
+            </span>
+            <div>
+              <Link href="/members">
+                Keanggotaan
+                <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+              <Link href="/attendance">
+                Lihat sesi
+                <ArrowRight size={14} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       <section className={styles.summaryGrid} aria-label="Ringkasan periode">
@@ -178,7 +207,7 @@ export function PeriodsPage() {
             <span>Total periode</span>
             <strong>{periods.length}</strong>
           </div>
-          <small>Aktif dan arsip</small>
+          <small>Aktif, arsip, dan rencana</small>
         </article>
         <article className={styles.summaryCard}>
           <span className={`${styles.summaryIcon} ${styles.summaryIconComplete}`}>
@@ -322,10 +351,6 @@ export function PeriodsPage() {
         )}
       </section>
 
-      <p className={styles.previewNote}>
-        Pratinjau UI: periode baru hanya tersimpan sementara di halaman ini dan belum
-        terhubung ke database.
-      </p>
     </div>
   );
 }
