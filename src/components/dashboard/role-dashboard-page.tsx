@@ -13,6 +13,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { AppRoleId } from "@/components/auth/role-config";
+import type { SuperAdminDashboardData } from "@/lib/dashboard-service";
 import styles from "./role-dashboard-page.module.css";
 
 type DashboardAction = {
@@ -58,9 +59,11 @@ const roleActions: Record<AppRoleId, DashboardAction[]> = {
 export function RoleDashboardPage({
   roleId,
   displayName,
+  dashboardData,
 }: {
   roleId: AppRoleId;
   displayName: string;
+  dashboardData?: SuperAdminDashboardData;
 }) {
   const actions = roleActions[roleId];
   const isMember = roleId === "anggota";
@@ -115,6 +118,139 @@ export function RoleDashboardPage({
           </span>
         )}
       </header>
+
+      {isSuperAdmin && dashboardData && (
+        <section
+          className={styles.overview}
+          aria-labelledby="organization-overview-title"
+        >
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.eyebrow}>PANTAU ORGANISASI</span>
+              <h2 id="organization-overview-title">Ringkasan periode</h2>
+              <p>
+                {dashboardData.periodName ??
+                  "Belum ada periode aktif. Ringkasan akan tersedia setelah periode dibuat."}
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.metricGrid}>
+            <article className={styles.metricCard}>
+              <span className={styles.metricIcon} aria-hidden="true">
+                <UsersRound size={17} />
+              </span>
+              <span className={styles.metricLabel}>Anggota aktif</span>
+              <strong>{dashboardData.activeMemberCount.toLocaleString("id-ID")}</strong>
+              <span className={styles.metricNote}>di periode ini</span>
+            </article>
+            <article className={styles.metricCard}>
+              <span className={styles.metricIcon} aria-hidden="true">
+                <CalendarDays size={17} />
+              </span>
+              <span className={styles.metricLabel}>Total sesi</span>
+              <strong>{dashboardData.sessionCount.toLocaleString("id-ID")}</strong>
+              <span className={styles.metricNote}>seluruh status</span>
+            </article>
+            <article className={styles.metricCard}>
+              <span className={styles.metricIcon} aria-hidden="true">
+                <ChartNoAxesCombined size={17} />
+              </span>
+              <span className={styles.metricLabel}>Rata-rata hadir</span>
+              <strong>
+                {dashboardData.attendanceRate === null
+                  ? "—"
+                  : `${dashboardData.attendanceRate}%`}
+              </strong>
+              <span className={styles.metricNote}>sesi ditutup · periode ini</span>
+            </article>
+            <article className={styles.metricCard}>
+              <span className={styles.metricIcon} aria-hidden="true">
+                <ClipboardList size={17} />
+              </span>
+              <span className={styles.metricLabel}>Keanggotaan tercatat</span>
+              <strong>{dashboardData.totalMemberCount.toLocaleString("id-ID")}</strong>
+              <span className={styles.metricNote}>aktif dan nonaktif</span>
+            </article>
+          </div>
+
+          <div className={styles.overviewGrid}>
+            <section className={styles.overviewPanel}>
+              <div className={styles.panelHeading}>
+                <div>
+                  <h3>Tren kehadiran</h3>
+                  <p>Persentase hadir dari sesi yang ditutup, 6 bulan terakhir</p>
+                </div>
+                <ChartNoAxesCombined size={18} aria-hidden="true" />
+              </div>
+              {dashboardData.attendanceByMonth.length > 0 ? (
+                <div
+                  className={styles.chart}
+                  role="img"
+                  aria-label="Grafik rata-rata kehadiran per bulan"
+                >
+                  {dashboardData.attendanceByMonth.map((month) => (
+                    <div className={styles.chartColumn} key={month.label}>
+                      <span className={styles.chartValue}>
+                        {month.sessionCount ? `${month.percentage}%` : "—"}
+                      </span>
+                      <div className={styles.chartTrack}>
+                        <span
+                          className={styles.chartBar}
+                          style={{
+                            height: `${Math.max(month.percentage, 3)}%`,
+                          }}
+                        />
+                      </div>
+                      <span className={styles.chartLabel}>{month.label}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.emptyState}>
+                  Belum ada data kehadiran untuk ditampilkan.
+                </p>
+              )}
+            </section>
+
+            <section className={styles.overviewPanel}>
+              <div className={styles.panelHeading}>
+                <div>
+                  <h3>Sesi terbaru</h3>
+                  <p>Aktivitas pada periode aktif</p>
+                </div>
+                <Link href="/attendance" aria-label="Lihat semua sesi absensi">
+                  <ArrowRight size={17} aria-hidden="true" />
+                </Link>
+              </div>
+              {dashboardData.recentSessions.length > 0 ? (
+                <ul className={styles.recentSessionList}>
+                  {dashboardData.recentSessions.map((session) => (
+                    <li key={session.id}>
+                      <div className={styles.sessionSummary}>
+                        <strong>{session.title}</strong>
+                        <span>
+                          {session.division ?? "Seluruh organisasi"} · {session.date}
+                        </span>
+                      </div>
+                      <div className={styles.sessionAttendance}>
+                        <strong>
+                          {session.presentCount}/{session.eligibleMemberCount}
+                        </strong>
+                        <span>{session.status}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className={styles.emptyState}>
+                  Belum ada sesi pada periode ini.
+                </p>
+              )}
+            </section>
+          </div>
+        </section>
+      )}
 
       <section className={styles.sectionHeading} aria-labelledby="role-actions-title">
         <div>

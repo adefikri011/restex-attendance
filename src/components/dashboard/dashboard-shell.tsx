@@ -16,7 +16,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { appRoles, type AppRoleId } from "@/components/auth/role-config";
 import { UserAvatar } from "@/components/avatar/user-avatar";
 import { authClient } from "@/lib/auth-client";
@@ -106,9 +106,50 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [activePeriodName, setActivePeriodName] = useState<string | null>(null);
+  const [periodLoadState, setPeriodLoadState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
   const pathname = usePathname();
   const router = useRouter();
   const activeRole = appRoles.find((item) => item.id === role)!;
+
+  useEffect(() => {
+    if (role === "anggota") return;
+
+    let isCurrent = true;
+
+    async function loadActivePeriod() {
+      try {
+        const response = await fetch("/api/periods/active", {
+          cache: "no-store",
+        });
+        const result: unknown = await response.json();
+        if (
+          !response.ok ||
+          typeof result !== "object" ||
+          result === null ||
+          !("periodName" in result) ||
+          (typeof result.periodName !== "string" && result.periodName !== null)
+        ) {
+          throw new Error("Periode aktif gagal dimuat.");
+        }
+
+        if (isCurrent) {
+          setActivePeriodName(result.periodName);
+          setPeriodLoadState("ready");
+        }
+      } catch (error) {
+        console.error("Active period request failed.", error);
+        if (isCurrent) setPeriodLoadState("error");
+      }
+    }
+
+    void loadActivePeriod();
+    return () => {
+      isCurrent = false;
+    };
+  }, [role]);
 
   const dashboardItem = {
     ...primaryNavigation[0],
@@ -229,10 +270,21 @@ export function DashboardShell({
         {activeRole.id !== "anggota" && (
           <div className={styles.periodCard}>
             <span className={styles.periodLabel}>PERIODE AKTIF</span>
-            <strong>2026 — 2027</strong>
+            <strong>
+              {activePeriodName ??
+                (periodLoadState === "loading"
+                  ? "Memuat..."
+                  : periodLoadState === "error"
+                    ? "Tidak dapat dimuat"
+                    : "Belum ada periode")}
+            </strong>
             <span className={styles.periodStatus}>
-              <span aria-hidden="true" />
-              Sedang berjalan
+              {activePeriodName && <span aria-hidden="true" />}
+              {activePeriodName
+                ? "Sedang berjalan"
+                : periodLoadState === "error"
+                  ? "Status tidak tersedia"
+                  : "Tidak ada periode aktif"}
             </span>
           </div>
         )}
@@ -306,7 +358,18 @@ export function DashboardShell({
           </button>
           <span>RESTEX Attendance</span>
         </div>
-        <DashboardHeader role={activeRole.id} displayName={displayName} />
+        <DashboardHeader
+          role={activeRole.id}
+          displayName={displayName}
+          periodName={
+            activePeriodName ??
+            (periodLoadState === "loading"
+              ? "Memuat..."
+              : periodLoadState === "error"
+                ? "Tidak dapat dimuat"
+                : null)
+          }
+        />
         <main className={styles.mainContent}>{children}</main>
       </div>
     </div>

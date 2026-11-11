@@ -9,9 +9,11 @@ import styles from "./dashboard-shell.module.css";
 export function DashboardHeader({
   role,
   displayName,
+  periodName,
 }: {
   role: AppRoleId;
   displayName: string;
+  periodName: string | null;
 }) {
   const pathname = usePathname();
   const initials = displayName
@@ -51,7 +53,7 @@ export function DashboardHeader({
           <>
             <div className={styles.headerPeriod}>
               <span>Periode aktif</span>
-              <strong>2026 — 2027</strong>
+              <strong>{periodName ?? "Belum ada periode"}</strong>
               <ChevronDown size={15} aria-hidden="true" />
             </div>
             <span className={styles.headerDivider} aria-hidden="true" />
