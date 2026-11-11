@@ -14,10 +14,10 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ divisionId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(["super-admin"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Anda tidak memiliki izin untuk mengubah divisi." },
+      { error: "Hanya Super Admin yang dapat mengubah divisi." },
       { status: access.status },
     );
   }
@@ -77,10 +77,10 @@ export async function DELETE(
   _request: Request,
   context: { params: Promise<{ divisionId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(["super-admin"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Anda tidak memiliki izin untuk menghapus divisi." },
+      { error: "Hanya Super Admin yang dapat menghapus divisi." },
       { status: access.status },
     );
   }

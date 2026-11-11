@@ -17,7 +17,7 @@ export const appRoles = [
     dashboardPath: "/dashboard/admin",
     databaseRole: "ADMIN",
     description:
-      "Mengelola administrasi anggota dan memantau aktivitas seluruh divisi.",
+      "Menjalankan tugas sekretariat: mengelola administrasi anggota serta memantau laporan dan aktivitas organisasi.",
     displayName: "Admin",
     homeTitle: "Administrasi organisasi yang tertata.",
     homeDescription:

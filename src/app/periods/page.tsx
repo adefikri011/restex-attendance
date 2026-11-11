@@ -17,7 +17,10 @@ export default async function PeriodsRoute() {
 
   return (
     <DashboardShell role={user.role} displayName={user.name}>
-      <PeriodsPage initialPeriods={periods} />
+      <PeriodsPage
+        initialPeriods={periods}
+        canManagePeriods={user.role === "super-admin"}
+      />
     </DashboardShell>
   );
 }

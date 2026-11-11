@@ -56,7 +56,7 @@ const roleDescriptions: Array<{
   {
     role: "Admin",
     title: "Admin",
-    description: "Mengelola administrasi anggota dan memantau seluruh divisi.",
+    description: "Menjalankan tugas sekretariat: administrasi anggota, periode, laporan, dan audit.",
     icon: KeyRound,
     className: styles.roleAdmin,
   },

@@ -25,10 +25,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(["super-admin"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Anda tidak memiliki izin untuk membuat periode." },
+      { error: "Hanya Super Admin yang dapat membuat periode." },
       { status: access.status },
     );
   }

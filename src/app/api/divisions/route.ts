@@ -10,7 +10,7 @@ export async function GET() {
   const access = await getApiUser(["super-admin", "admin"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Anda tidak memiliki izin untuk mengelola divisi." },
+      { error: "Anda tidak memiliki izin untuk melihat daftar divisi." },
       { status: access.status },
     );
   }
@@ -19,10 +19,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(["super-admin"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Anda tidak memiliki izin untuk menambah divisi." },
+      { error: "Hanya Super Admin yang dapat menambah divisi." },
       { status: access.status },
     );
   }

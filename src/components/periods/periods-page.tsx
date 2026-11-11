@@ -54,7 +54,13 @@ function isPeriodRecord(value: unknown): value is PeriodRecord {
   );
 }
 
-export function PeriodsPage({ initialPeriods }: { initialPeriods: PeriodRecord[] }) {
+export function PeriodsPage({
+  initialPeriods,
+  canManagePeriods,
+}: {
+  initialPeriods: PeriodRecord[];
+  canManagePeriods: boolean;
+}) {
   const [periods, setPeriods] = useState<PeriodRecord[]>(initialPeriods);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState<"Semua" | PeriodStatus>("Semua");
@@ -106,22 +112,28 @@ export function PeriodsPage({ initialPeriods }: { initialPeriods: PeriodRecord[]
         <div>
           <span className={styles.pageEyebrow}>PENGELOLAAN · SIKLUS KEPENGURUSAN</span>
           <h1>Periode</h1>
-          <p>Kelola periode aktif, arsip kepengurusan, dan rencana periode berikutnya.</p>
+          <p>
+            {canManagePeriods
+              ? "Kelola periode aktif, arsip kepengurusan, dan rencana periode berikutnya."
+              : "Tinjau periode aktif, arsip kepengurusan, dan rencana periode berikutnya."}
+          </p>
         </div>
-        <button
-          type="button"
-          className={styles.primaryButton}
-          onClick={() => {
-            setNotice("");
-            setIsFormOpen((isOpen) => !isOpen);
-          }}
-        >
-          <Plus size={17} aria-hidden="true" />
-          Buat periode
-        </button>
+        {canManagePeriods && (
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={() => {
+              setNotice("");
+              setIsFormOpen((isOpen) => !isOpen);
+            }}
+          >
+            <Plus size={17} aria-hidden="true" />
+            Buat periode
+          </button>
+        )}
       </header>
 
-      {isFormOpen && (
+      {canManagePeriods && isFormOpen && (
         <PeriodForm
           periods={periods}
           onCancel={() => setIsFormOpen(false)}

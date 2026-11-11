@@ -21,7 +21,12 @@ export default async function MembersRoute() {
 
   return (
     <DashboardShell role={user.role} displayName={user.name}>
-      <MembersPage initialDivisions={divisions} initialMembers={members} periodName={periodName} />
+      <MembersPage
+        initialDivisions={divisions}
+        initialMembers={members}
+        periodName={periodName}
+        canManageDivisions={user.role === "super-admin"}
+      />
     </DashboardShell>
   );
 }

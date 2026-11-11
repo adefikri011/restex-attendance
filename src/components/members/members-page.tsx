@@ -25,6 +25,7 @@ type MembersPageProps = {
   initialDivisions: DivisionSummary[];
   initialMembers: Member[];
   periodName: string | null;
+  canManageDivisions: boolean;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -95,7 +96,12 @@ function downloadCredentials(credentials: MemberCredential[]) {
   URL.revokeObjectURL(url);
 }
 
-export function MembersPage({ initialDivisions, initialMembers, periodName }: MembersPageProps) {
+export function MembersPage({
+  initialDivisions,
+  initialMembers,
+  periodName,
+  canManageDivisions,
+}: MembersPageProps) {
   const [members, setMembers] = useState(initialMembers);
   const [divisionRecords, setDivisionRecords] = useState(initialDivisions);
   const divisionNames = divisionRecords
@@ -326,15 +332,17 @@ export function MembersPage({ initialDivisions, initialMembers, periodName }: Me
           <p>Data anggota pada periode aktif, tersimpan di database RESTEX.</p>
         </div>
         <div className={styles.headingActions}>
-          <button
-            type="button"
-            className={styles.exportTopButton}
-            aria-expanded={isDivisionManagerOpen}
-            onClick={() => setIsDivisionManagerOpen((open) => !open)}
-          >
-            <Building2 size={16} aria-hidden="true" />
-            Kelola divisi
-          </button>
+          {canManageDivisions && (
+            <button
+              type="button"
+              className={styles.exportTopButton}
+              aria-expanded={isDivisionManagerOpen}
+              onClick={() => setIsDivisionManagerOpen((open) => !open)}
+            >
+              <Building2 size={16} aria-hidden="true" />
+              Kelola divisi
+            </button>
+          )}
           <button type="button" className={styles.exportTopButton} disabled title="Export belum tersedia">
             <ArrowDownToLine size={16} aria-hidden="true" />
             Export Excel
@@ -342,7 +350,7 @@ export function MembersPage({ initialDivisions, initialMembers, periodName }: Me
         </div>
       </header>
 
-      {isDivisionManagerOpen && (
+      {canManageDivisions && isDivisionManagerOpen && (
         <DivisionManager
           initialDivisions={divisionRecords}
           onDivisionsChange={(updated) => {
