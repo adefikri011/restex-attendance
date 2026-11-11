@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     const period = await createPeriod({
       startDate: body.startDate,
       endDate: body.endDate,
-    });
+    }, access.user.id);
     return NextResponse.json({ period }, { status: 201 });
   } catch (error) {
     if (error instanceof PeriodInputError) {

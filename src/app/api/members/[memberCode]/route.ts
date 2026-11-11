@@ -35,7 +35,7 @@ export async function PATCH(
 
   const { memberCode } = await context.params;
   try {
-    const member = await updateMember(memberCode, validation.input);
+    const member = await updateMember(memberCode, validation.input, access.user.id);
     return NextResponse.json({ member });
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("NIM sudah terdaftar:")) {

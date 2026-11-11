@@ -7,6 +7,7 @@ import {
   type AdministratorAccount,
 } from "@/components/administrator-accounts/administrator-account-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { getDivisionNames } from "@/lib/division-service";
 import { prisma } from "@/lib/prisma";
 
@@ -110,7 +111,10 @@ function accountEmailBase(name: string, role: NewAdministratorInput["role"], div
   return `${nameSlug}_admin_${getPeriodEmailCode(periodName)}@restex.id`;
 }
 
-export async function createAdministratorAccount(input: NewAdministratorInput) {
+export async function createAdministratorAccount(
+  input: NewAdministratorInput,
+  actorId: string,
+) {
   if (input.name.length < 2 || input.name.length > 120) {
     throw new Error("Nama harus terdiri dari 2–120 karakter.");
   }
@@ -197,6 +201,17 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
       },
       select: { id: true, name: true, email: true, role: true, managedDivision: true },
     });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "account.created",
+      entity: "account",
+      entityId: user.id,
+      newValue: {
+        name: user.name,
+        role: user.role,
+        division: user.managedDivision,
+      },
+    });
 
     return {
       id: user.id,
@@ -217,37 +232,58 @@ export async function createAdministratorAccount(input: NewAdministratorInput) {
   return { account, initialPassword: initialAccountPassword };
 }
 
-export async function setAdministratorAccountActive(id: string, isActive: boolean) {
-  const user = await prisma.user.findUnique({
-    where: { id },
-    select: { id: true, role: true, managedDivision: true },
-  });
-  if (!user || !["ADMIN", "DIVISION_LEAD", "DIVISION_PJ"].includes(user.role)) {
-    throw new Error("Akun pengurus tidak ditemukan.");
-  }
-
-  if (
-    isActive &&
-    (user.role === "DIVISION_LEAD" || user.role === "DIVISION_PJ") &&
-    user.managedDivision
-  ) {
-    const existingAssignee = await prisma.user.findFirst({
-      where: {
-        id: { not: id },
-        role: user.role,
-        managedDivision: user.managedDivision,
+export async function setAdministratorAccountActive(
+  id: string,
+  isActive: boolean,
+  actorId: string,
+) {
+  await prisma.$transaction(async (transaction) => {
+    const user = await transaction.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        role: true,
+        managedDivision: true,
         isActive: true,
       },
-      select: { id: true },
     });
-    if (existingAssignee) {
-      throw new Error(
-        user.role === "DIVISION_LEAD"
-          ? "Divisi tersebut sudah memiliki Ketua Divisi aktif."
-          : "Divisi tersebut sudah memiliki PJ aktif.",
-      );
+    if (!user || !["ADMIN", "DIVISION_LEAD", "DIVISION_PJ"].includes(user.role)) {
+      throw new Error("Akun pengurus tidak ditemukan.");
     }
-  }
 
-  await prisma.user.update({ where: { id }, data: { isActive } });
+    if (
+      isActive &&
+      (user.role === "DIVISION_LEAD" || user.role === "DIVISION_PJ") &&
+      user.managedDivision
+    ) {
+      const existingAssignee = await transaction.user.findFirst({
+        where: {
+          id: { not: id },
+          role: user.role,
+          managedDivision: user.managedDivision,
+          isActive: true,
+        },
+        select: { id: true },
+      });
+      if (existingAssignee) {
+        throw new Error(
+          user.role === "DIVISION_LEAD"
+            ? "Divisi tersebut sudah memiliki Ketua Divisi aktif."
+            : "Divisi tersebut sudah memiliki PJ aktif.",
+        );
+      }
+    }
+
+    if (user.isActive === isActive) return;
+    await transaction.user.update({ where: { id }, data: { isActive } });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: isActive ? "account.activated" : "account.deactivated",
+      entity: "account",
+      entityId: user.id,
+      oldValue: { name: user.name, isActive: user.isActive },
+      newValue: { name: user.name, isActive },
+    });
+  });
 }

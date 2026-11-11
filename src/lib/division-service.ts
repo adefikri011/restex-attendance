@@ -1,5 +1,6 @@
 import "server-only";
 import { Prisma } from "@/generated/prisma/client";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
 
 export type DivisionSummary = {
@@ -63,26 +64,37 @@ export async function getDivisionsPageData(): Promise<DivisionSummary[]> {
   }));
 }
 
-export async function createDivision(value: string) {
+export async function createDivision(value: string, actorId: string) {
   const name = normalizeDivisionName(value);
-  const lastDivision = await prisma.division.findFirst({
-    orderBy: { sortOrder: "desc" },
-    select: { sortOrder: true },
-  });
-  return prisma.division.create({
-    data: { name, sortOrder: (lastDivision?.sortOrder ?? 0) + 1 },
-    select: { id: true, name: true, isActive: true, sortOrder: true },
+  return prisma.$transaction(async (transaction) => {
+    const lastDivision = await transaction.division.findFirst({
+      orderBy: { sortOrder: "desc" },
+      select: { sortOrder: true },
+    });
+    const division = await transaction.division.create({
+      data: { name, sortOrder: (lastDivision?.sortOrder ?? 0) + 1 },
+      select: { id: true, name: true, isActive: true, sortOrder: true },
+    });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "division.created",
+      entity: "division",
+      entityId: division.id,
+      newValue: { name: division.name, isActive: division.isActive },
+    });
+    return division;
   });
 }
 
 export async function updateDivision(
   id: string,
   input: { name?: string; isActive?: boolean },
+  actorId: string,
 ) {
   return prisma.$transaction(async (transaction) => {
     const current = await transaction.division.findUnique({
       where: { id },
-      select: { id: true, name: true },
+      select: { id: true, name: true, isActive: true },
     });
     if (!current) throw new Error("Divisi tidak ditemukan.");
 
@@ -122,11 +134,21 @@ export async function updateDivision(
         }),
       ]);
     }
+    if (division.name !== current.name || division.isActive !== current.isActive) {
+      await writeAuditLog(transaction, {
+        actorId,
+        action: "division.updated",
+        entity: "division",
+        entityId: division.id,
+        oldValue: { name: current.name, isActive: current.isActive },
+        newValue: { name: division.name, isActive: division.isActive },
+      });
+    }
     return division;
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
 
-export async function deleteDivision(id: string) {
+export async function deleteDivision(id: string, actorId: string) {
   await prisma.$transaction(async (transaction) => {
     const division = await transaction.division.findUnique({
       where: { id },
@@ -144,5 +166,12 @@ export async function deleteDivision(id: string) {
     }
 
     await transaction.division.delete({ where: { id } });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "division.deleted",
+      entity: "division",
+      entityId: division.id,
+      oldValue: { name: division.name },
+    });
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }

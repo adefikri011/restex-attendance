@@ -10,6 +10,7 @@ import {
   type MembershipStatus,
 } from "@/components/members/member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { getDivisionNames } from "@/lib/division-service";
 import { prisma } from "@/lib/prisma";
 
@@ -139,7 +140,7 @@ function createUniqueEmail(
   return email;
 }
 
-async function createMembersTransaction(inputs: NewMemberInput[]) {
+async function createMembersTransaction(inputs: NewMemberInput[], actorId: string) {
   const passwordHash = await hashPassword(initialAccountPassword);
 
   return prisma.$transaction(
@@ -193,6 +194,7 @@ async function createMembersTransaction(inputs: NewMemberInput[]) {
       const created: CreatedMember[] = [];
       for (const [index, input] of inputs.entries()) {
         const userId = randomUUID();
+        const memberId = randomUUID();
         const email = createUniqueEmail(input, activePeriod.name, usedEmails);
         const memberCode = nextMemberCode(nextSerial + index, year);
         const joinedAt = new Date();
@@ -218,7 +220,7 @@ async function createMembersTransaction(inputs: NewMemberInput[]) {
 
         await transaction.member.create({
           data: {
-            id: randomUUID(),
+            id: memberId,
             memberCode,
             fullName: input.name,
             nim: input.nim,
@@ -233,6 +235,18 @@ async function createMembersTransaction(inputs: NewMemberInput[]) {
                 joinedAt,
               },
             },
+          },
+        });
+        await writeAuditLog(transaction, {
+          actorId,
+          action: "member.created",
+          entity: "member",
+          entityId: memberCode,
+          newValue: {
+            name: input.name,
+            memberCode,
+            division: input.division,
+            status: statusToDatabase[input.status],
           },
         });
 
@@ -261,15 +275,15 @@ async function createMembersTransaction(inputs: NewMemberInput[]) {
   );
 }
 
-export async function createMembers(inputs: NewMemberInput[]) {
+export async function createMembers(inputs: NewMemberInput[], actorId: string) {
   try {
-    return await createMembersTransaction(inputs);
+    return await createMembersTransaction(inputs, actorId);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2034"
     ) {
-      return createMembersTransaction(inputs);
+      return createMembersTransaction(inputs, actorId);
     }
 
     throw error;
@@ -279,6 +293,7 @@ export async function createMembers(inputs: NewMemberInput[]) {
 export async function updateMember(
   memberCode: string,
   input: NewMemberInput,
+  actorId: string,
 ): Promise<Member> {
   const activePeriod = await prisma.period.findFirst({
     where: { isActive: true },
@@ -400,6 +415,22 @@ export async function updateMember(
         },
       });
     }
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "member.updated",
+      entity: "member",
+      entityId: memberCode,
+      oldValue: {
+        name: member.fullName,
+        division: membership.division,
+        status: membership.status,
+      },
+      newValue: {
+        name: input.name,
+        division: input.division,
+        status: statusToDatabase[input.status],
+      },
+    });
   });
 
   return {

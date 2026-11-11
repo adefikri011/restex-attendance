@@ -189,7 +189,10 @@ export async function POST(request: Request) {
   }
 
   try {
-    const members = await createMembers(inputs.map(({ input }) => input));
+    const members = await createMembers(
+      inputs.map(({ input }) => input),
+      access.user.id,
+    );
     return NextResponse.json({ members }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.startsWith("NIM sudah terdaftar:")) {

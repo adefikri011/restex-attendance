@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
 import type { AppRoleId } from "@/components/auth/role-config";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { getMembersPageData } from "@/lib/member-service";
 import { prisma } from "@/lib/prisma";
 import { hashAttendanceQrToken, verifyAttendanceQrToken } from "@/lib/attendance-qr-token";
@@ -378,6 +379,17 @@ export async function createAttendanceSession(
         },
       },
     });
+    await writeAuditLog(transaction, {
+      actorId: viewer.id,
+      action: "session.created",
+      entity: "session",
+      entityId: session.id,
+      newValue: {
+        title: session.title,
+        division: session.division,
+        status: session.status,
+      },
+    });
     return mapSession(session);
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }
@@ -394,7 +406,7 @@ export async function setAttendanceSessionStatus(
   return prisma.$transaction(async (transaction) => {
     const session = await transaction.session.findFirst({
       where: { id: sessionId, division },
-      select: { id: true, periodId: true, division: true, status: true },
+      select: { id: true, periodId: true, division: true, status: true, title: true },
     });
     if (!session) throw new Error("Sesi tidak ditemukan.");
     if (session.status === "CLOSED") {
@@ -438,6 +450,16 @@ export async function setAttendanceSessionStatus(
       where: { id: session.id },
       data: { status },
     });
+    if (session.status !== status) {
+      await writeAuditLog(transaction, {
+        actorId: viewer.id,
+        action: status === "CLOSED" ? "session.closed" : "session.opened",
+        entity: "session",
+        entityId: session.id,
+        oldValue: { status: session.status, title: session.title },
+        newValue: { status, title: session.title },
+      });
+    }
     const updatedSession = await transaction.session.findUnique({
       where: { id: session.id },
       select: {
@@ -485,7 +507,7 @@ export async function recordAttendanceByQr(
     return await prisma.$transaction(async (transaction) => {
       const session = await transaction.session.findFirst({
         where: { id: sessionId, division, status: "ACTIVE" },
-        select: { id: true, periodId: true },
+        select: { id: true, periodId: true, title: true },
       });
       if (!session) throw new Error("Sesi tidak ditemukan atau sudah ditutup.");
 
@@ -514,6 +536,19 @@ export async function recordAttendanceByQr(
           status: "PRESENT",
           method: "QR",
           recordedById: viewer.id,
+        },
+      });
+      await writeAuditLog(transaction, {
+        actorId: viewer.id,
+        action: "attendance.recorded",
+        entity: "attendance",
+        entityId: `${session.id}:${member.id}`,
+        newValue: {
+          title: session.title,
+          memberName: member.fullName,
+          memberCode: member.memberCode,
+          status: "PRESENT",
+          method: "QR",
         },
       });
       return {

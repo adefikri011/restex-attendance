@@ -520,6 +520,38 @@
   font-size: 8px;
 }
 
+.loadError {
+  margin: 0;
+  padding: 10px 19px;
+  border-top: 1px solid var(--ui-border-subtle);
+  color: var(--ui-danger-text);
+  font-size: 9px;
+}
+
+.loadMoreButton {
+  display: block;
+  min-height: 36px;
+  margin: 0 auto 14px;
+  padding: 0 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.loadMoreButton:hover:not(:disabled) {
+  background: var(--ui-surface-muted);
+}
+
+.loadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .privacyNote {
   display: flex;
   align-items: flex-start;

@@ -46,7 +46,7 @@ export async function PATCH(
     if (!isUuid(divisionId)) {
       return NextResponse.json({ error: "ID divisi tidak valid." }, { status: 400 });
     }
-    const division = await updateDivision(divisionId, input);
+    const division = await updateDivision(divisionId, input, access.user.id);
     return NextResponse.json({ division });
   } catch (error) {
     if (
@@ -90,7 +90,7 @@ export async function DELETE(
     if (!isUuid(divisionId)) {
       return NextResponse.json({ error: "ID divisi tidak valid." }, { status: 400 });
     }
-    await deleteDivision(divisionId);
+    await deleteDivision(divisionId, access.user.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Error && error.message.includes("tidak ditemukan")) {

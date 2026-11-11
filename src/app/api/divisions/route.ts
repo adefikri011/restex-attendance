@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const division = await createDivision(body.name);
+    const division = await createDivision(body.name, access.user.id);
     return NextResponse.json({ division }, { status: 201 });
   } catch (error) {
     if (error instanceof Error && error.message.includes("karakter")) {

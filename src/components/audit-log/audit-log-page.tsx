@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -17,14 +17,14 @@ import {
   formatAuditDate,
   formatAuditTime,
   getAuditCategoryClass,
-  sampleAuditEvents,
   type AuditCategory,
+  type AuditEvent,
+  type AuditLogPageData,
   type AuditRange,
 } from "./audit-log-data";
 import styles from "./audit-log.module.css";
 
 const rangeOptions: AuditRange[] = ["7 hari", "30 hari", "Semua"];
-const auditReferenceTime = new Date(sampleAuditEvents[0].timestamp).getTime();
 const categoryStyles: Record<string, string> = {
   membership: styles.categoryMembership,
   attendance: styles.categoryAttendance,
@@ -33,47 +33,152 @@ const categoryStyles: Record<string, string> = {
   access: styles.categoryAccess,
 };
 
-export function AuditLogPage() {
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isAuditEvent(value: unknown): value is AuditEvent {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.timestamp === "string" &&
+    typeof value.actor === "string" &&
+    typeof value.actorRole === "string" &&
+    auditCategories.includes(value.category as AuditCategory) &&
+    typeof value.action === "string" &&
+    typeof value.target === "string" &&
+    typeof value.targetType === "string" &&
+    typeof value.summary === "string" &&
+    (value.before === undefined || typeof value.before === "string") &&
+    (value.after === undefined || typeof value.after === "string") &&
+    (value.reason === undefined || typeof value.reason === "string")
+  );
+}
+
+function isAuditLogPageData(value: unknown): value is AuditLogPageData {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.events) &&
+    value.events.every(isAuditEvent) &&
+    typeof value.totalCount === "number" &&
+    typeof value.filteredCount === "number" &&
+    typeof value.hasMore === "boolean" &&
+    typeof value.nextOffset === "number" &&
+    isRecord(value.metrics) &&
+    typeof value.metrics.totalCount === "number" &&
+    typeof value.metrics.recentCount === "number" &&
+    typeof value.metrics.actorCount === "number" &&
+    typeof value.metrics.categoryCount === "number"
+  );
+}
+
+export function AuditLogPage({ initialData }: { initialData: AuditLogPageData }) {
   const [range, setRange] = useState<AuditRange>("7 hari");
   const [category, setCategory] = useState<"Semua" | AuditCategory>("Semua");
   const [search, setSearch] = useState("");
+  const [data, setData] = useState(initialData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const skippedInitialFetch = useRef(false);
+  const currentFilterKey = JSON.stringify([range, category, search]);
+  const currentFilterKeyRef = useRef(currentFilterKey);
 
-  const filteredEvents = useMemo(() => {
-    const rangeInDays = range === "7 hari" ? 7 : range === "30 hari" ? 30 : null;
-    const normalizedSearch = search.trim().toLocaleLowerCase("id");
+  useEffect(() => {
+    currentFilterKeyRef.current = currentFilterKey;
+  }, [currentFilterKey]);
 
-    return sampleAuditEvents.filter((event) => {
-      const eventTime = new Date(event.timestamp).getTime();
-      const matchesRange =
-        rangeInDays === null ||
-        (eventTime >= auditReferenceTime - rangeInDays * 86400000 &&
-          eventTime <= auditReferenceTime);
-      const matchesCategory = category === "Semua" || event.category === category;
-      const matchesSearch =
-        !normalizedSearch ||
-        [
-          event.actor,
-          event.actorRole,
-          event.action,
-          event.target,
-          event.targetType,
-          event.summary,
-          event.reason ?? "",
-        ]
-          .join(" ")
-          .toLocaleLowerCase("id")
-          .includes(normalizedSearch);
+  useEffect(() => {
+    if (!skippedInitialFetch.current) {
+      skippedInitialFetch.current = true;
+      return;
+    }
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const params = new URLSearchParams({
+          range,
+          category,
+          search,
+          offset: "0",
+        });
+        const response = await fetch(`/api/audit-log?${params}`, {
+          signal: controller.signal,
+        });
+        const result: unknown = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            isRecord(result) && typeof result.error === "string"
+              ? result.error
+              : "Audit log gagal dimuat.",
+          );
+        }
+        if (!isAuditLogPageData(result)) {
+          throw new Error("Respons audit log tidak valid.");
+        }
+        setData(result);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") {
+          return;
+        }
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Audit log gagal dimuat. Coba lagi.",
+        );
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
+    }, search ? 250 : 0);
 
-      return matchesRange && matchesCategory && matchesSearch;
-    });
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
   }, [category, range, search]);
 
-  const recentEvents = sampleAuditEvents.filter(
-    (event) =>
-      new Date(event.timestamp).getTime() >= auditReferenceTime - 7 * 86400000,
-  ).length;
-  const actorCount = new Set(sampleAuditEvents.map((event) => event.actor)).size;
-  const categoryCount = new Set(sampleAuditEvents.map((event) => event.category)).size;
+  async function loadMore() {
+    if (isLoading || !data.hasMore) return;
+    setIsLoading(true);
+    setError("");
+    const requestFilterKey = currentFilterKey;
+    try {
+      const params = new URLSearchParams({
+        range,
+        category,
+        search,
+        offset: String(data.nextOffset),
+      });
+      const response = await fetch(`/api/audit-log?${params}`);
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          isRecord(result) && typeof result.error === "string"
+            ? result.error
+            : "Aktivitas berikutnya gagal dimuat.",
+        );
+      }
+      if (!isAuditLogPageData(result)) {
+        throw new Error("Respons audit log tidak valid.");
+      }
+      if (currentFilterKeyRef.current !== requestFilterKey) return;
+      setData((current) => ({
+        ...result,
+        events: [...current.events, ...result.events],
+      }));
+    } catch (requestError) {
+      if (currentFilterKeyRef.current === requestFilterKey) {
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Aktivitas berikutnya gagal dimuat.",
+        );
+      }
+    } finally {
+      if (currentFilterKeyRef.current === requestFilterKey) setIsLoading(false);
+    }
+  }
 
   return (
     <div className={styles.auditPage}>
@@ -97,7 +202,7 @@ export function AuditLogPage() {
           <h2 id="audit-purpose-title">Apa fungsi Audit Log?</h2>
           <p>
             Audit Log adalah catatan aktivitas penting, seperti perubahan status anggota,
-            absensi manual, perubahan role, dan tindakan pada periode. Gunakan untuk
+            pencatatan QR, perubahan akun, serta tindakan pada periode dan divisi. Gunakan untuk
             menelusuri siapa mengubah apa dan kapan jika perlu pemeriksaan.
           </p>
         </div>
@@ -112,10 +217,10 @@ export function AuditLogPage() {
             <Activity size={17} aria-hidden="true" />
           </span>
           <div>
-            <span>Total contoh aktivitas</span>
-            <strong>{sampleAuditEvents.length}</strong>
+            <span>Total aktivitas</span>
+            <strong>{data.metrics.totalCount}</strong>
           </div>
-          <small>Dalam pratinjau ini</small>
+          <small>Semua waktu</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconGreen}`}>
@@ -123,9 +228,9 @@ export function AuditLogPage() {
           </span>
           <div>
             <span>Aktivitas 7 hari</span>
-            <strong>{recentEvents}</strong>
+            <strong>{data.metrics.recentCount}</strong>
           </div>
-          <small>Dari data contoh</small>
+          <small>Dalam 7 hari terakhir</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconRose}`}>
@@ -133,9 +238,9 @@ export function AuditLogPage() {
           </span>
           <div>
             <span>Pelaku tercatat</span>
-            <strong>{actorCount}</strong>
+            <strong>{data.metrics.actorCount}</strong>
           </div>
-          <small>Akun contoh</small>
+          <small>Akun tercatat</small>
         </article>
         <article className={styles.metricCard}>
           <span className={`${styles.metricIcon} ${styles.metricIconAmber}`}>
@@ -143,9 +248,9 @@ export function AuditLogPage() {
           </span>
           <div>
             <span>Kategori aktivitas</span>
-            <strong>{categoryCount}</strong>
+            <strong>{data.metrics.categoryCount}</strong>
           </div>
-          <small>Jenis aksi penting</small>
+          <small>Kategori dengan aktivitas</small>
         </article>
       </section>
 
@@ -154,9 +259,11 @@ export function AuditLogPage() {
           <div>
             <span className={styles.sectionEyebrow}>CATATAN AKTIVITAS</span>
             <h2 id="activity-list-title">Riwayat perubahan</h2>
-            <p>Buka detail untuk melihat alasan dan nilai sebelum/sesudah perubahan.</p>
+            <p>Buka detail untuk melihat objek dan nilai perubahan yang tersedia.</p>
           </div>
-          <span className={styles.resultCount}>{filteredEvents.length} aktivitas</span>
+          <span className={styles.resultCount}>
+            {data.filteredCount} aktivitas{isLoading ? " · memuat..." : ""}
+          </span>
         </div>
 
         <div className={styles.filters}>
@@ -205,9 +312,10 @@ export function AuditLogPage() {
           </label>
         </div>
 
-        {filteredEvents.length ? (
+        {error && <p className={styles.loadError} role="alert">{error}</p>}
+        {data.events.length ? (
           <div className={styles.eventList}>
-            {filteredEvents.map((event) => {
+            {data.events.map((event) => {
               const categoryClass = categoryStyles[getAuditCategoryClass(event.category)];
 
               return (
@@ -286,9 +394,27 @@ export function AuditLogPage() {
         ) : (
           <div className={styles.emptyState}>
             <Search size={19} aria-hidden="true" />
-            <strong>Tidak ada aktivitas yang cocok</strong>
-            <span>Ubah filter atau kata kunci pencarian.</span>
+            <strong>
+              {data.totalCount === 0
+                ? "Belum ada aktivitas yang tercatat"
+                : "Tidak ada aktivitas yang cocok"}
+            </strong>
+            <span>
+              {data.totalCount === 0
+                ? "Aktivitas baru akan muncul setelah tindakan penting dicatat."
+                : "Ubah filter atau kata kunci pencarian."}
+            </span>
           </div>
+        )}
+        {data.hasMore && (
+          <button
+            type="button"
+            className={styles.loadMoreButton}
+            onClick={() => void loadMore()}
+            disabled={isLoading}
+          >
+            {isLoading ? "Memuat..." : "Muat aktivitas berikutnya"}
+          </button>
         )}
       </section>
 
@@ -296,8 +422,8 @@ export function AuditLogPage() {
         <ShieldCheck size={16} aria-hidden="true" />
         <p>
           Audit Log bersifat baca-saja agar riwayat tidak berubah saat ditinjau.
-          <strong> Data pada halaman ini adalah contoh UI</strong>; pencatatan nyata
-          memerlukan backend dan penyimpanan log di server.
+          <strong> Catatan hanya tersedia sejak pencatatan aktivitas diaktifkan</strong>;
+          perubahan lama tidak dibuat ulang secara retroaktif.
         </p>
       </aside>
     </div>

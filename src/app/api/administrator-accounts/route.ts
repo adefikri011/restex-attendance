@@ -49,7 +49,7 @@ export async function POST(request: Request) {
       name,
       role,
       division,
-    } satisfies NewAdministratorInput);
+    } satisfies NewAdministratorInput, access.user.id);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
     if (error instanceof Error) {

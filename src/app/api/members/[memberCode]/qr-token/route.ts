@@ -2,6 +2,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { NextResponse } from "next/server";
 import { getApiUser } from "@/lib/auth-guard";
 import { createAttendanceQrToken, hashAttendanceQrToken } from "@/lib/attendance-qr-token";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -42,6 +43,8 @@ export async function POST(
         },
         select: {
           id: true,
+          memberCode: true,
+          fullName: true,
           qrTokenHash: true,
           qrIssuedAt: true,
           qrRevokedAt: true,
@@ -64,6 +67,17 @@ export async function POST(
           qrTokenHash: hashAttendanceQrToken(newToken),
           qrIssuedAt: issuedAt,
           qrRevokedAt: null,
+        },
+      });
+      await writeAuditLog(transaction, {
+        actorId: access.user.id,
+        action: "identity.qr_issued",
+        entity: "identity",
+        entityId: member.memberCode,
+        newValue: {
+          name: member.fullName,
+          memberCode: member.memberCode,
+          status: "QR aktif",
         },
       });
       return newToken;

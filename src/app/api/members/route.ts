@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const [member] = await createMembers([validation.input]);
+    const [member] = await createMembers([validation.input], access.user.id);
     return NextResponse.json({ member }, { status: 201 });
   } catch (error) {
     const code =

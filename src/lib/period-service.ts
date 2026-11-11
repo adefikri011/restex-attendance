@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
 import type { PeriodRecord, PeriodStatus } from "@/components/periods/periods-data";
 import { getPeriodName } from "@/components/periods/periods-data";
+import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
 
 export type NewPeriodInput = {
@@ -145,7 +146,7 @@ export async function getPeriodsPageData() {
   };
 }
 
-export async function createPeriod(input: NewPeriodInput) {
+export async function createPeriod(input: NewPeriodInput, actorId: string) {
   if (
     !/^\d{4}-\d{2}-\d{2}$/.test(input.startDate) ||
     !/^\d{4}-\d{2}-\d{2}$/.test(input.endDate)
@@ -199,6 +200,18 @@ export async function createPeriod(input: NewPeriodInput) {
         startDate: true,
         endDate: true,
         isActive: true,
+      },
+    });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "period.created",
+      entity: "period",
+      entityId: period.id,
+      newValue: {
+        name: period.name,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        status: "Akan datang",
       },
     });
     return {

@@ -31,7 +31,7 @@ export async function PATCH(
 
   const { accountId } = await context.params;
   try {
-    await setAdministratorAccountActive(accountId, body.isActive);
+    await setAdministratorAccountActive(accountId, body.isActive, access.user.id);
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof Error && error.message.includes("tidak ditemukan")) {
