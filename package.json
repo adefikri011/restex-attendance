@@ -15,6 +15,7 @@
     "postinstall": "prisma skills sync || exit 0"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1166.0",
     "@base-ui/react": "^1.9.0",
     "@neondatabase/serverless": "^1.2.0",
     "@node-rs/argon2": "^2.2.2",

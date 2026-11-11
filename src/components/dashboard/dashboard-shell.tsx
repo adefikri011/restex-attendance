@@ -264,13 +264,20 @@ export function DashboardShell({
           </p>
         )}
         <div className={styles.sidebarFooter}>
-          <div className={styles.profileAvatar} aria-hidden="true">
-            {profileInitials}
-          </div>
-          <div className={styles.profileDetails}>
-            <strong>{displayName}</strong>
-            <span>{activeRole.label}</span>
-          </div>
+          <Link
+            href="/profile"
+            className={styles.profileLink}
+            aria-current={pathname === "/profile" ? "page" : undefined}
+            onClick={closeNavigation}
+          >
+            <span className={styles.profileAvatar} aria-hidden="true">
+              {profileInitials}
+            </span>
+            <span className={styles.profileDetails}>
+              <strong>{displayName}</strong>
+              <span>{activeRole.label} · Profil saya</span>
+            </span>
+          </Link>
           <button
             type="button"
             className={styles.profileMenu}

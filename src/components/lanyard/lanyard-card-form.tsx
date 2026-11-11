@@ -1,4 +1,3 @@
-import { ImagePlus } from "lucide-react";
 import type { Member } from "@/components/members/member-data";
 import type { LanyardCardDetails } from "./types";
 import styles from "./lanyard-card.module.css";
@@ -7,20 +6,18 @@ type LanyardCardFormProps = {
   members: Member[];
   selectedMemberId: string;
   details: LanyardCardDetails;
-  photoName: string;
+  hasProfilePhoto: boolean;
   onMemberChange: (memberId: string) => void;
   onFieldChange: (field: keyof LanyardCardDetails, value: string) => void;
-  onPhotoChange: (file: File | undefined) => void;
 };
 
 export function LanyardCardForm({
   members,
   selectedMemberId,
   details,
-  photoName,
+  hasProfilePhoto,
   onMemberChange,
   onFieldChange,
-  onPhotoChange,
 }: LanyardCardFormProps) {
   const divisions = [...new Set(members.map((member) => member.division))].sort();
   const cohorts = [...new Set(members.map((member) => member.cohort))].sort().reverse();
@@ -100,24 +97,24 @@ export function LanyardCardForm({
           </select>
         </label>
 
-        <label className={styles.field}>
-          <span>Foto anggota <span className={styles.optional}>(opsional)</span></span>
-          <span className={styles.filePicker}>
-            <ImagePlus size={17} aria-hidden="true" />
-            <span>{photoName || "Pilih foto dari perangkat"}</span>
-            <input
-              type="file"
-              accept="image/*"
-              aria-label="Pilih foto anggota"
-              onChange={(event) => onPhotoChange(event.target.files?.[0])}
-            />
-          </span>
-          <span className={styles.fieldHint}>Foto hanya digunakan di pratinjau pada perangkat ini.</span>
-        </label>
+        <div className={styles.field}>
+          <span>Foto anggota</span>
+          <div className={styles.photoSync}>
+            <span className={styles.photoSyncDot} aria-hidden="true" />
+            <span>
+              <strong>{hasProfilePhoto ? "Foto profil terhubung" : "Belum ada foto profil"}</strong>
+              <small>
+                {hasProfilePhoto
+                  ? "Foto ini otomatis digunakan pada kartu lanyard."
+                  : "Anggota dapat menambahkan foto melalui halaman Profil."}
+              </small>
+            </span>
+          </div>
+        </div>
       </div>
 
       <p className={styles.localNotice}>
-        Data yang diedit di halaman ini hanya untuk pratinjau dan tidak mengubah data anggota.
+        Perubahan data identitas di sini hanya untuk pratinjau. Nama dan foto resmi mengikuti profil anggota.
       </p>
     </section>
   );

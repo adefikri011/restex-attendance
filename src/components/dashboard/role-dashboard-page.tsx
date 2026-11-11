@@ -64,22 +64,39 @@ export function RoleDashboardPage({
 }) {
   const actions = roleActions[roleId];
   const isMember = roleId === "anggota";
+  const isSuperAdmin = roleId === "super-admin";
   const memberFirstName = displayName.split(" ")[0];
 
   return (
     <div className={styles.roleDashboard}>
-      <header className={styles.welcomePanel}>
+      <header
+        className={`${styles.welcomePanel} ${
+          isSuperAdmin ? styles.superAdminWelcome : ""
+        }`}
+      >
         <span className={styles.welcomeIcon} aria-hidden="true">
           {isMember ? <UserRound size={20} /> : <ShieldCheck size={20} />}
         </span>
         <div>
           <span className={styles.eyebrow}>
-            {isMember ? "PORTAL ANGGOTA" : "RUANG KERJA PENGURUS"}
+            {isMember
+              ? "PORTAL ANGGOTA"
+              : isSuperAdmin
+                ? "RUANG KENDALI ORGANISASI"
+                : "RUANG KERJA PENGURUS"}
           </span>
-          <h1>{isMember ? `Halo, ${memberFirstName}` : "Selamat datang kembali"}</h1>
+          <h1>
+            {isMember
+              ? `Halo, ${memberFirstName}`
+              : isSuperAdmin
+                ? `Selamat datang, ${memberFirstName}`
+                : "Selamat datang kembali"}
+          </h1>
           <p>
             {roleId === "anggota"
               ? "Akses informasi keanggotaan dan absensi milikmu."
+              : isSuperAdmin
+                ? "Kelola akses, data anggota, dan aktivitas RESTEX dari satu tempat."
               : "Pilih kebutuhan yang ingin kamu kelola hari ini."}
           </p>
         </div>
@@ -92,45 +109,93 @@ export function RoleDashboardPage({
                 : "Admin"}
           </span>
         )}
+        {isSuperAdmin && (
+          <span className={styles.welcomeDecoration} aria-hidden="true">
+            <ShieldCheck size={116} strokeWidth={0.75} />
+          </span>
+        )}
       </header>
 
       <section className={styles.sectionHeading} aria-labelledby="role-actions-title">
         <div>
-          <span className={styles.eyebrow}>AKSES SESUAI PERAN</span>
+          <span className={styles.eyebrow}>
+            {isSuperAdmin ? "PUSAT PENGELOLAAN" : "AKSES SESUAI PERAN"}
+          </span>
           <h2 id="role-actions-title">
-            {isMember ? "Ruang anggota" : "Akses cepat"}
+            {isMember
+                ? "Ruang anggota"
+                : isSuperAdmin
+                  ? "Kelola organisasi"
+                  : "Akses cepat"}
           </h2>
           <p>
             {isMember
-              ? "Portal ini hanya menampilkan data keanggotaan dan absensimu sendiri."
-              : "Menu ditampilkan sesuai hak akses akun yang terverifikasi."}
+                ? "Portal ini hanya menampilkan data keanggotaan dan absensimu sendiri."
+                : isSuperAdmin
+                  ? "Pilih area kerja untuk melanjutkan pengelolaan."
+                : "Menu ditampilkan sesuai hak akses akun yang terverifikasi."}
           </p>
         </div>
       </section>
 
-      <div className={styles.actionGrid}>
+      <div
+        className={`${styles.actionGrid} ${
+          isSuperAdmin ? styles.superAdminGrid : ""
+        }`}
+      >
         {actions.map(({ title, description, href, actionLabel, icon: Icon }) => {
+          const isFeatured = isSuperAdmin && title === "Akun pengurus";
           const content = (
             <>
-              <span className={styles.actionIcon} aria-hidden="true">
-                <Icon size={18} />
-              </span>
-              <strong>{title}</strong>
-              <p>{description}</p>
-              {href ? (
-                <span className={styles.actionLink}>
-                  {actionLabel}
-                  <ArrowRight size={14} aria-hidden="true" />
+                <span
+                  className={`${styles.actionIcon} ${
+                    isFeatured ? styles.featuredIcon : ""
+                  }`}
+                  aria-hidden="true"
+                >
+                  <Icon size={18} strokeWidth={1.8} />
                 </span>
-              ) : (
-                <span className={styles.comingSoon}>Segera tersedia</span>
-              )}
+                {isFeatured ? (
+                  <div className={styles.featuredCopy}>
+                    <span className={styles.cardEyebrow}>AKSES &amp; KEAMANAN</span>
+                    <strong>{title}</strong>
+                    <p>{description}</p>
+                    <span className={styles.actionLink}>
+                      {actionLabel}
+                      <ArrowRight size={14} aria-hidden="true" />
+                    </span>
+                  </div>
+                ) : (
+                  <>
+                    <strong>{title}</strong>
+                    <p>{description}</p>
+                    {href ? (
+                      <span className={styles.actionLink}>
+                        {actionLabel}
+                        <ArrowRight size={14} aria-hidden="true" />
+                      </span>
+                    ) : (
+                      <span className={styles.comingSoon}>Segera tersedia</span>
+                    )}
+                  </>
+                )}
+                {isFeatured && (
+                  <span className={styles.featuredDecoration} aria-hidden="true">
+                    <ShieldCheck size={86} strokeWidth={0.8} />
+                  </span>
+                )}
             </>
           );
 
           return href ? (
-            <Link className={styles.actionCard} href={href} key={title}>
-              {content}
+            <Link
+                className={`${styles.actionCard} ${
+                  isFeatured ? styles.featuredCard : ""
+                }`}
+                href={href}
+                key={title}
+            >
+                {content}
             </Link>
           ) : (
             <article className={styles.actionCard} key={title}>

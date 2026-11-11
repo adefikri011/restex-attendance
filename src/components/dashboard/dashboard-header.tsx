@@ -1,4 +1,5 @@
 import { Bell, ChevronDown, ChevronRight } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { AppRoleId } from "@/components/auth/role-config";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
@@ -28,6 +29,7 @@ export function DashboardHeader({
     "/audit-log": "Audit Log",
     "/administrator-accounts": "Akun Pengurus",
     "/portal/anggota": "Portal Anggota",
+    "/profile": "Profil Saya",
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"
@@ -64,9 +66,14 @@ export function DashboardHeader({
           <Bell size={19} strokeWidth={1.8} />
           <span aria-hidden="true" />
         </button>
-        <div className={styles.headerAvatar} aria-label={displayName}>
+        <Link
+          href="/profile"
+          className={styles.headerAvatar}
+          aria-label={`Buka profil ${displayName}`}
+          aria-current={pathname === "/profile" ? "page" : undefined}
+        >
           {initials}
-        </div>
+        </Link>
       </div>
     </header>
   );

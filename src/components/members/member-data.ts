@@ -4,6 +4,7 @@ export type Member = {
   id: string;
   name: string;
   email: string;
+  photoUrl?: string | null;
   nim: string;
   division: string;
   cohort: string;

@@ -217,6 +217,27 @@
   border-top: 1px solid var(--ui-border);
 }
 
+.profileLink {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  border-radius: 9px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.profileLink:hover .profileDetails strong,
+.profileLink[aria-current="page"] .profileDetails strong {
+  color: var(--ui-text-primary);
+}
+
+.profileLink:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
 .signOutError {
   margin: 0;
   padding: 8px 5px 0;
@@ -357,6 +378,8 @@
 .headerAvatar {
   width: 34px;
   height: 34px;
+  border: 0;
+  text-decoration: none;
 }
 
 .mainContent {

@@ -1,0 +1,298 @@
+.card {
+  --notification-accent: #38a8c4;
+
+  position: relative;
+  display: grid;
+  width: min(368px, calc(100vw - 32px));
+  grid-template-columns: 58px minmax(0, 1fr) 28px;
+  align-items: center;
+  gap: 13px;
+  overflow: hidden;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 14px 38px rgb(16 39 56 / 15%), 0 2px 7px rgb(16 39 56 / 6%);
+  color: var(--ui-text-primary);
+  animation: arrive 240ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.success {
+  --notification-accent: var(--ui-success-fill);
+}
+
+.error {
+  --notification-accent: var(--ui-danger-text);
+}
+
+.iconFrame {
+  position: relative;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid rgb(88 163 184 / 30%);
+  border-radius: 15px;
+  background: #0b2f4a;
+  box-shadow: 0 5px 14px rgb(11 47 74 / 15%);
+}
+
+.iconFrame::before {
+  position: absolute;
+  z-index: 0;
+  inset: 3px;
+  border-radius: 13px;
+  background: rgb(56 168 196 / 34%);
+  content: "";
+  filter: blur(13px);
+  opacity: 0.2;
+}
+
+.mascotImage {
+  position: relative;
+  z-index: 1;
+  width: 56px;
+  height: 56px;
+  border-radius: 13px;
+  object-fit: cover;
+  object-position: center;
+  will-change: transform;
+}
+
+.mascotImage.loading {
+  animation: working 2.4s ease-in-out infinite;
+}
+
+.mascotImage.success {
+  animation: celebrate 760ms cubic-bezier(0.18, 0.72, 0.3, 1.15) both;
+}
+
+.mascotImage.error {
+  animation: errorReaction 420ms ease-out both;
+}
+
+.statusMark {
+  position: absolute;
+  z-index: 2;
+  right: -5px;
+  bottom: -5px;
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 2px solid var(--ui-surface);
+  border-radius: 50%;
+  background: #38a8c4;
+  color: #fff;
+}
+
+.statusMark svg {
+  width: 12px;
+  height: 12px;
+}
+
+.success .statusMark {
+  background: var(--ui-success-fill);
+}
+
+.error .statusMark {
+  background: var(--ui-danger-text);
+}
+
+.loading .statusMark svg {
+  animation: spin 1.5s linear infinite;
+}
+
+.copy {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.statusLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.statusDot {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--notification-accent);
+}
+
+.loading .statusDot {
+  box-shadow: 0 0 0 3px rgb(56 168 196 / 12%);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.labelDivider {
+  color: var(--ui-border);
+}
+
+.title {
+  overflow: hidden;
+  color: var(--ui-text-primary);
+  font-size: 13px;
+  font-weight: 680;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+}
+
+.description {
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.dismiss {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-text-muted);
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.dismiss:hover {
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-primary);
+}
+
+.dismiss:focus-visible {
+  outline: 2px solid var(--notification-accent);
+  outline-offset: 2px;
+}
+
+.progressTrack {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--notification-accent) 10%, transparent);
+}
+
+.progressTrack > span {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--notification-accent), transparent);
+  animation: progress 1.5s ease-in-out infinite;
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -6px, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes working {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+
+  45% {
+    transform: translateY(-2px) rotate(-1deg);
+  }
+}
+
+@keyframes celebrate {
+  0% {
+    transform: translateY(0) scale(1) rotate(0);
+  }
+
+  34% {
+    transform: translateY(-7px) scale(1.05) rotate(-5deg);
+  }
+
+  62% {
+    transform: translateY(1px) scale(0.97) rotate(3deg);
+  }
+
+  100% {
+    transform: translateY(0) scale(1) rotate(0);
+  }
+}
+
+@keyframes errorReaction {
+  0% {
+    transform: translateX(0) rotate(0);
+  }
+
+  22% {
+    transform: translateX(-3px) rotate(-3deg);
+  }
+
+  44% {
+    transform: translateX(3px) rotate(3deg);
+  }
+
+  66% {
+    transform: translateX(-2px) rotate(-2deg);
+  }
+
+  84% {
+    transform: translateX(1px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--notification-accent) 11%, transparent);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--notification-accent) 5%, transparent);
+  }
+}
+
+@keyframes progress {
+  from {
+    transform: translateX(-120%);
+  }
+
+  to {
+    transform: translateX(320%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .loading .statusMark svg,
+  .mascotImage,
+  .loading .statusDot,
+  .progressTrack > span {
+    animation: none;
+  }
+}

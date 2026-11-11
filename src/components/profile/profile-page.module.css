@@ -1,0 +1,452 @@
+.profilePage {
+  display: grid;
+  gap: 22px;
+  color: var(--ui-text-primary);
+}
+
+.pageHeading {
+  display: grid;
+  gap: 6px;
+}
+
+.eyebrow {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.pageHeading h1 {
+  margin: 0;
+  font-size: clamp(24px, 2.2vw, 29px);
+  font-weight: 730;
+  letter-spacing: -0.04em;
+}
+
+.pageHeading > p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.profileLayout {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.76fr) minmax(0, 1.5fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.photoPanel,
+.detailsPanel {
+  display: grid;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+}
+
+.panelHeading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.headingIcon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.panelHeading h2 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 720;
+}
+
+.panelHeading p {
+  margin: 4px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.photoContent {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 8px 0 2px;
+}
+
+.avatarPreview {
+  position: relative;
+  display: grid;
+  width: 128px;
+  height: 128px;
+  overflow: hidden;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 50%;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+  font-size: 31px;
+  font-weight: 700;
+}
+
+.avatarPreview img {
+  object-fit: cover;
+}
+
+.photoActions {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.uploadButton,
+.removeButton,
+.saveButton {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.uploadButton:hover,
+.removeButton:hover {
+  border-color: color-mix(in srgb, var(--ui-text-accent) 35%, var(--ui-border));
+  background: var(--ui-surface-subtle);
+}
+
+.uploadButton input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.uploadButton:focus-within {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.removeButton {
+  min-height: 31px;
+  border-color: transparent;
+  color: var(--ui-danger-text);
+}
+
+.removeButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.photoHint {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.cropEditor {
+  display: grid;
+  justify-items: center;
+  gap: 13px;
+  padding: 16px 12px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 11px;
+  background: var(--ui-surface-subtle);
+}
+
+.cropHeading {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.cropHeading strong {
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cropHeading span {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.cropFrame {
+  position: relative;
+  width: min(100%, 220px);
+  aspect-ratio: 900 / 1238;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 9px;
+  background-color: #132d42;
+  background-image:
+    linear-gradient(45deg, rgb(255 255 255 / 5%) 25%, transparent 25%),
+    linear-gradient(-45deg, rgb(255 255 255 / 5%) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgb(255 255 255 / 5%) 75%),
+    linear-gradient(-45deg, transparent 75%, rgb(255 255 255 / 5%) 75%);
+  background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+  background-size: 12px 12px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.cropFrame:active {
+  cursor: grabbing;
+}
+
+.cropFrame img {
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.cropFrameBorder {
+  position: absolute;
+  inset: 10px;
+  border: 1px solid rgb(255 255 255 / 25%);
+  border-radius: 5px;
+  pointer-events: none;
+}
+
+.zoomControl {
+  display: flex;
+  width: min(100%, 230px);
+  align-items: center;
+  gap: 9px;
+  color: var(--ui-text-muted);
+}
+
+.zoomControl input {
+  width: 100%;
+  accent-color: var(--ui-button-primary);
+  cursor: pointer;
+}
+
+.cropActions {
+  display: flex;
+  width: 100%;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.cancelCropButton,
+.applyCropButton {
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.applyCropButton {
+  border-color: var(--ui-button-primary);
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.cancelCropButton:focus-visible,
+.applyCropButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.syncNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 11px;
+  border: 1px solid color-mix(in srgb, var(--ui-success-fill) 20%, var(--ui-border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ui-success-fill) 5%, var(--ui-surface));
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.syncNote svg {
+  flex: 0 0 auto;
+  color: var(--ui-success-fill);
+}
+
+.fields {
+  display: grid;
+  gap: 16px;
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.field input {
+  width: 100%;
+  min-height: 41px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  outline: 0;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.field input:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 12%, transparent);
+}
+
+.field input[readonly] {
+  color: var(--ui-text-muted);
+  cursor: default;
+}
+
+.field small {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.errorNotice {
+  border-color: color-mix(in srgb, var(--ui-danger-text) 25%, var(--ui-border));
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.successNotice {
+  border-color: color-mix(in srgb, var(--ui-success-fill) 25%, var(--ui-border));
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 15px;
+  border-top: 1px solid var(--ui-border-subtle);
+}
+
+.formFooter > span {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.saveButton {
+  border-color: var(--ui-button-primary);
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.saveButton:hover:not(:disabled) {
+  background: var(--ui-button-primary-hover);
+}
+
+.saveButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.saveButton:focus-visible,
+.removeButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .profileLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .photoPanel {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .photoPanel .panelHeading {
+    grid-column: 1 / -1;
+  }
+
+  .photoContent {
+    display: contents;
+  }
+
+  .avatarPreview {
+    grid-column: 1;
+    grid-row: 2;
+    width: 88px;
+    height: 88px;
+    font-size: 24px;
+  }
+
+  .photoActions {
+    grid-column: 2;
+    grid-row: 2;
+    justify-items: end;
+  }
+
+  .syncNote {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .photoPanel,
+  .detailsPanel {
+    padding: 15px;
+  }
+
+  .formFooter {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .saveButton {
+    width: 100%;
+  }
+}

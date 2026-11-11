@@ -10,6 +10,7 @@ import { LanyardCardPreview } from "./lanyard-card-preview";
 import { renderLanyardCard } from "./render-lanyard-card";
 import styles from "./lanyard-card.module.css";
 import type { LanyardCardDetails } from "./types";
+import { notifications } from "@/lib/notifications";
 
 const qrOptions = {
   errorCorrectionLevel: "H" as const,
@@ -54,17 +55,15 @@ function LanyardCardWorkspace({
   const [renderError, setRenderError] = useState<{ key: string; message: string } | null>(null);
   const [downloadError, setDownloadError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
-  const [photoUrl, setPhotoUrl] = useState("");
-  const [photoName, setPhotoName] = useState("");
+  const [isRefreshingQr, setIsRefreshingQr] = useState(false);
+  const [photoUrl, setPhotoUrl] = useState(initialMember.photoUrl ?? "");
   const requestId = useRef(0);
-  const photoUrlRef = useRef("");
+  const refreshNotificationId = useRef<string | number | null>(null);
   const renderKey = JSON.stringify([details, photoUrl, qrDataUrl]);
   const currentRenderedCard = renderedCard?.key === renderKey ? renderedCard : null;
 
-  const generateQr = useCallback(async (memberCode: string) => {
+  const generateQr = useCallback(async (memberCode: string, notificationId?: string | number) => {
     const currentRequest = ++requestId.current;
-    setQrDataUrl("");
-    setQrError("");
 
     try {
       const response = await fetch(
@@ -93,30 +92,44 @@ function LanyardCardWorkspace({
       if (currentRequest === requestId.current) {
         setQrDataUrl(dataUrl);
         setQrError("");
+        if (notificationId !== undefined) {
+          notifications.success(
+            "QR berhasil diperbarui",
+            `QR anggota ${memberCode} siap digunakan.`,
+            notificationId,
+          );
+        }
+      } else if (notificationId !== undefined) {
+        notifications.dismiss(notificationId);
       }
     } catch (error) {
       console.error("Gagal menyiapkan QR kartu anggota.", error);
       if (currentRequest === requestId.current) {
-        setQrError(error instanceof Error ? error.message : "QR anggota gagal dibuat.");
+        const message = error instanceof Error ? error.message : "QR anggota gagal dibuat.";
+        setQrError(message);
+        if (notificationId !== undefined) {
+          notifications.error("QR gagal diperbarui", message, notificationId);
+        }
+      } else if (notificationId !== undefined) {
+        notifications.dismiss(notificationId);
+      }
+    } finally {
+      if (notificationId !== undefined && refreshNotificationId.current === notificationId) {
+        refreshNotificationId.current = null;
+        setIsRefreshingQr(false);
       }
     }
   }, []);
 
   useEffect(() => {
-    void generateQr(initialMember.id);
+    const request = window.setTimeout(() => {
+      void generateQr(initialMember.id);
+    }, 0);
     return () => {
+      window.clearTimeout(request);
       requestId.current += 1;
     };
   }, [generateQr, initialMember.id]);
-
-  useEffect(
-    () => () => {
-      if (photoUrlRef.current) {
-        URL.revokeObjectURL(photoUrlRef.current);
-      }
-    },
-    [],
-  );
 
   useEffect(() => {
     let cancelled = false;
@@ -150,35 +163,29 @@ function LanyardCardWorkspace({
     const member = activeMembers.find((item) => item.id === memberId);
     if (!member) return;
 
+    requestId.current += 1;
+    if (refreshNotificationId.current !== null) {
+      notifications.dismiss(refreshNotificationId.current);
+      refreshNotificationId.current = null;
+      setIsRefreshingQr(false);
+    }
     setSelectedMemberId(memberId);
     setDetails(getCardDetails(member));
+    setPhotoUrl(member.photoUrl ?? "");
     setQrDataUrl("");
     setQrError("");
-    setPhotoName("");
-    setPhotoUrl("");
-    if (photoUrlRef.current) {
-      URL.revokeObjectURL(photoUrlRef.current);
-      photoUrlRef.current = "";
-    }
     void generateQr(memberId);
   }
 
-  function selectPhoto(file: File | undefined) {
-    if (photoUrlRef.current) {
-      URL.revokeObjectURL(photoUrlRef.current);
-      photoUrlRef.current = "";
-    }
-
-    if (!file) {
-      setPhotoName("");
-      setPhotoUrl("");
-      return;
-    }
-
-    const objectUrl = URL.createObjectURL(file);
-    photoUrlRef.current = objectUrl;
-    setPhotoName(file.name);
-    setPhotoUrl(objectUrl);
+  function refreshQr() {
+    const notificationId = notifications.loading(
+      "Menyiapkan QR anggota",
+      "Menghubungkan kartu dengan data anggota.",
+    );
+    refreshNotificationId.current = notificationId;
+    setIsRefreshingQr(true);
+    setQrError("");
+    void generateQr(selectedMemberId, notificationId);
   }
 
   function downloadQr() {
@@ -237,10 +244,9 @@ function LanyardCardWorkspace({
           members={activeMembers}
           selectedMemberId={selectedMemberId}
           details={details}
-          photoName={photoName}
+          hasProfilePhoto={Boolean(activeMembers.find((member) => member.id === selectedMemberId)?.photoUrl)}
           onMemberChange={selectMember}
           onFieldChange={updateField}
-          onPhotoChange={selectPhoto}
         />
 
         <section className={styles.previewPanel} aria-labelledby="preview-title">
@@ -275,9 +281,18 @@ function LanyardCardWorkspace({
           </div>
 
           <div className={styles.previewActions}>
-            <button type="button" className={styles.secondaryButton} onClick={() => void generateQr(selectedMemberId)}>
-              <RefreshCw size={16} aria-hidden="true" />
-              Muat ulang QR
+            <button
+              type="button"
+              className={styles.secondaryButton}
+              onClick={refreshQr}
+              disabled={isRefreshingQr}
+            >
+              <RefreshCw
+                size={16}
+                aria-hidden="true"
+                className={isRefreshingQr ? styles.spinningIcon : undefined}
+              />
+              {isRefreshingQr ? "Memuat ulang QR..." : "Muat ulang QR"}
             </button>
             <button
               type="button"

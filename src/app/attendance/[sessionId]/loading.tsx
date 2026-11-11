@@ -1,7 +1,10 @@
+import { PageLoading } from "@/components/feedback/page-loading";
+
 export default function AttendanceSessionLoading() {
   return (
-    <main>
-      <p role="status" aria-busy="true">Memuat detail sesi...</p>
-    </main>
+    <PageLoading
+      title="Menyiapkan sesi absensi"
+      description="Mengambil detail sesi dan rekap kehadiran."
+    />
   );
 }
