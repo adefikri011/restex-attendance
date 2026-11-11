@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Send, X } from "lucide-react";
+import { Send, ShieldAlert, X } from "lucide-react";
 import { generateMemberEmail, getPeriodEmailCode } from "@/components/members/member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import {
@@ -41,7 +41,10 @@ function isCreatedAccount(value: unknown): value is CreatedAccount {
     "email" in account &&
     typeof account.email === "string" &&
     "role" in account &&
-    (account.role === "Admin" || account.role === "Ketua Divisi" || account.role === "PJ Divisi") &&
+    (account.role === "Super Admin" ||
+      account.role === "Admin" ||
+      account.role === "Ketua Divisi" ||
+      account.role === "PJ Divisi") &&
     "status" in account &&
     account.status === "Aktif" &&
     typeof initialPassword === "string"
@@ -59,7 +62,8 @@ function previewEmail(name: string, role: AdministratorRole, division: string, p
     .toLocaleLowerCase("id")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
-  return nameSlug ? `${nameSlug}_admin_${getPeriodEmailCode(periodName)}@restex.id` : "";
+  const roleSlug = role === "Super Admin" ? "superadmin" : "admin";
+  return nameSlug ? `${nameSlug}_${roleSlug}_${getPeriodEmailCode(periodName)}@restex.id` : "";
 }
 
 export function InviteAdministratorForm({
@@ -74,9 +78,11 @@ export function InviteAdministratorForm({
   const [name, setName] = useState("");
   const [role, setRole] = useState<AdministratorRole>(initialRole);
   const [division, setDivision] = useState<string>(initialDivision || availableDivisions[0] || "");
+  const [confirmedSuperAdmin, setConfirmedSuperAdmin] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isDivisionRole = role === "Ketua Divisi" || role === "PJ Divisi";
+  const isSuperAdminRole = role === "Super Admin";
   const roleDivisions = role === "PJ Divisi" ? availablePjDivisions : availableDivisions;
   const selectedDivision = roleDivisions.includes(division) ? division : (roleDivisions[0] ?? "");
   const emailPreview = previewEmail(name, role, selectedDivision, periodName);
@@ -92,8 +98,16 @@ export function InviteAdministratorForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          role: role === "Admin" ? "admin" : role === "Ketua Divisi" ? "ketua-divisi" : "pj-divisi",
+          role:
+            role === "Super Admin"
+              ? "super-admin"
+              : role === "Admin"
+                ? "admin"
+                : role === "Ketua Divisi"
+                  ? "ketua-divisi"
+                  : "pj-divisi",
           division: isDivisionRole ? selectedDivision : null,
+          confirmSuperAdmin: isSuperAdminRole && confirmedSuperAdmin,
         }),
       });
       const result: unknown = await response.json();
@@ -158,17 +172,36 @@ export function InviteAdministratorForm({
           Jabatan
           <select
             value={role}
-            onChange={(event) => setRole(event.target.value as AdministratorRole)}
+            onChange={(event) => {
+              setRole(event.target.value as AdministratorRole);
+              setConfirmedSuperAdmin(false);
+            }}
           >
-            {administratorRoles
-              .filter((item) => item !== "Super Admin")
-              .map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
+            {administratorRoles.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
           </select>
         </label>
+        {isSuperAdminRole && (
+          <div className={styles.superAdminWarning}>
+            <p>
+              <ShieldAlert size={15} aria-hidden="true" />
+              Akun ini memiliki akses penuh ke seluruh data dan pengaturan organisasi.
+            </p>
+            <label>
+              <input
+                type="checkbox"
+                checked={confirmedSuperAdmin}
+                onChange={(event) =>
+                  setConfirmedSuperAdmin(event.target.checked)
+                }
+              />
+              Saya mengonfirmasi pembuatan akun Super Admin.
+            </label>
+          </div>
+        )}
         {isDivisionRole && (
           <label>
             Divisi
@@ -209,7 +242,8 @@ export function InviteAdministratorForm({
               disabled={
                 isSubmitting ||
                 !periodName ||
-                (isDivisionRole && !roleDivisions.length)
+                (isDivisionRole && !roleDivisions.length) ||
+                (isSuperAdminRole && !confirmedSuperAdmin)
               }
             >
               <Send size={14} aria-hidden="true" />

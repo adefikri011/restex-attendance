@@ -212,7 +212,7 @@ export function AdministratorAccountsPage({
           <span className={styles.pageEyebrow}>PENGELOLAAN · AKSES ORGANISASI</span>
           <h1>Akun Pengurus</h1>
           <p>
-            Atur Ketua Divisi dan akun PJ pendamping untuk menjaga kelangsungan absensi.
+            Kelola akses Super Admin, Admin, Ketua Divisi, dan PJ dengan hak yang sesuai.
           </p>
         </div>
         <button

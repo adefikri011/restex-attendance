@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
 
 export type NewAdministratorInput = {
   name: string;
-  role: "admin" | "ketua-divisi" | "pj-divisi";
+  role: "super-admin" | "admin" | "ketua-divisi" | "pj-divisi";
   division: string | null;
 };
 
@@ -108,7 +108,8 @@ function accountEmailBase(name: string, role: NewAdministratorInput["role"], div
     .toLocaleLowerCase("id")
     .replace(/[^a-z0-9]+/g, "_")
     .replace(/^_+|_+$/g, "");
-  return `${nameSlug}_admin_${getPeriodEmailCode(periodName)}@restex.id`;
+  const roleSlug = role === "super-admin" ? "superadmin" : "admin";
+  return `${nameSlug}_${roleSlug}_${getPeriodEmailCode(periodName)}@restex.id`;
 }
 
 export async function createAdministratorAccount(
@@ -119,8 +120,10 @@ export async function createAdministratorAccount(
     throw new Error("Nama harus terdiri dari 2–120 karakter.");
   }
   if (
-    (input.role === "admin" && input.division !== null) ||
-    (input.role !== "admin" && !input.division)
+    ((input.role === "admin" || input.role === "super-admin") &&
+      input.division !== null) ||
+    ((input.role === "ketua-divisi" || input.role === "pj-divisi") &&
+      !input.division)
   ) {
     throw new Error("Jabatan atau divisi tidak valid.");
   }
@@ -135,7 +138,7 @@ export async function createAdministratorAccount(
     });
     if (!activePeriod) throw new Error("Tidak ada periode aktif.");
 
-    if (input.role !== "admin") {
+    if (input.role === "ketua-divisi" || input.role === "pj-divisi") {
       const division = input.division;
       if (!division) throw new Error("Jabatan atau divisi tidak valid.");
       const activeDivision = await transaction.division.findFirst({
@@ -183,11 +186,13 @@ export async function createAdministratorAccount(
         name: input.name,
         email,
         role:
-          input.role === "admin"
-            ? "ADMIN"
-            : input.role === "ketua-divisi"
-              ? "DIVISION_LEAD"
-              : "DIVISION_PJ",
+          input.role === "super-admin"
+            ? "SUPER_ADMIN"
+            : input.role === "admin"
+              ? "ADMIN"
+              : input.role === "ketua-divisi"
+                ? "DIVISION_LEAD"
+                : "DIVISION_PJ",
         managedDivision: input.division,
         isActive: true,
         accounts: {
@@ -218,11 +223,13 @@ export async function createAdministratorAccount(
       name: user.name,
       email: user.email,
       role:
-        user.role === "ADMIN"
-          ? "Admin" as const
-          : user.role === "DIVISION_PJ"
-            ? "PJ Divisi" as const
-            : "Ketua Divisi" as const,
+        user.role === "SUPER_ADMIN"
+          ? "Super Admin" as const
+          : user.role === "ADMIN"
+            ? "Admin" as const
+            : user.role === "DIVISION_PJ"
+              ? "PJ Divisi" as const
+              : "Ketua Divisi" as const,
       division: user.managedDivision,
       status: "Aktif" as const,
       lastActiveAt: null,

@@ -38,10 +38,19 @@ export async function POST(request: Request) {
   const division = body.division;
   if (
     typeof role !== "string" ||
-    (role !== "admin" && role !== "ketua-divisi" && role !== "pj-divisi") ||
+    (role !== "super-admin" &&
+      role !== "admin" &&
+      role !== "ketua-divisi" &&
+      role !== "pj-divisi") ||
     (division !== null && typeof division !== "string")
   ) {
     return NextResponse.json({ error: "Jabatan atau divisi tidak valid." }, { status: 400 });
+  }
+  if (role === "super-admin" && body.confirmSuperAdmin !== true) {
+    return NextResponse.json(
+      { error: "Konfirmasi pembuatan akun Super Admin wajib dilakukan." },
+      { status: 400 },
+    );
   }
 
   try {

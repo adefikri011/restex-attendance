@@ -768,6 +768,48 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--ui-text-accent) 12%, transparent);
 }
 
+.superAdminWarning {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 10px;
+  padding: 11px 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-danger-text) 24%, transparent);
+  border-radius: 9px;
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.superAdminWarning > p,
+.superAdminWarning > label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 8px;
+  line-height: 1.5;
+}
+
+.superAdminWarning > p {
+  font-weight: 650;
+}
+
+.superAdminWarning > p > svg {
+  flex: 0 0 auto;
+}
+
+.superAdminWarning > label {
+  align-items: center;
+  cursor: pointer;
+}
+
+.inviteForm .superAdminWarning input {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  accent-color: var(--ui-danger-text);
+}
+
 .formError {
   grid-column: 1 / -1;
   margin: 0;

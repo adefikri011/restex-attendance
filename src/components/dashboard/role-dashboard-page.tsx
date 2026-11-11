@@ -13,7 +13,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { AppRoleId } from "@/components/auth/role-config";
-import type { SuperAdminDashboardData } from "@/lib/dashboard-service";
+import type {
+  DivisionDashboardData,
+  SuperAdminDashboardData,
+} from "@/lib/dashboard-service";
 import styles from "./role-dashboard-page.module.css";
 
 type DashboardAction = {
@@ -63,11 +66,13 @@ export function RoleDashboardPage({
 }: {
   roleId: AppRoleId;
   displayName: string;
-  dashboardData?: SuperAdminDashboardData;
+  dashboardData?: SuperAdminDashboardData | DivisionDashboardData;
 }) {
   const actions = roleActions[roleId];
   const isMember = roleId === "anggota";
   const isSuperAdmin = roleId === "super-admin";
+  const isDivisionManager =
+    roleId === "ketua-divisi" || roleId === "pj-divisi";
   const memberFirstName = displayName.split(" ")[0];
 
   return (
@@ -119,18 +124,26 @@ export function RoleDashboardPage({
         )}
       </header>
 
-      {isSuperAdmin && dashboardData && (
+      {(isSuperAdmin || isDivisionManager) && dashboardData && (
         <section
           className={styles.overview}
-          aria-labelledby="organization-overview-title"
+          aria-labelledby="role-overview-title"
         >
           <div className={styles.sectionHeading}>
             <div>
-              <span className={styles.eyebrow}>PANTAU ORGANISASI</span>
-              <h2 id="organization-overview-title">Ringkasan periode</h2>
+              <span className={styles.eyebrow}>
+                {isSuperAdmin ? "PANTAU ORGANISASI" : "PANTAU DIVISI"}
+              </span>
+              <h2 id="role-overview-title">
+                {isSuperAdmin ? "Ringkasan periode" : "Ringkasan divisi"}
+              </h2>
               <p>
-                {dashboardData.periodName ??
-                  "Belum ada periode aktif. Ringkasan akan tersedia setelah periode dibuat."}
+                {isDivisionManager && "divisionName" in dashboardData
+                  ? dashboardData.divisionName
+                    ? `${dashboardData.divisionName} · ${dashboardData.periodName ?? "Belum ada periode aktif"}`
+                    : "Akun ini belum ditugaskan ke divisi."
+                  : dashboardData.periodName ??
+                    "Belum ada periode aktif. Ringkasan akan tersedia setelah periode dibuat."}
               </p>
             </div>
           </div>
@@ -142,7 +155,9 @@ export function RoleDashboardPage({
               </span>
               <span className={styles.metricLabel}>Anggota aktif</span>
               <strong>{dashboardData.activeMemberCount.toLocaleString("id-ID")}</strong>
-              <span className={styles.metricNote}>di periode ini</span>
+              <span className={styles.metricNote}>
+                {isDivisionManager ? "di divisi ini" : "di periode ini"}
+              </span>
             </article>
             <article className={styles.metricCard}>
               <span className={styles.metricIcon} aria-hidden="true">
@@ -170,7 +185,9 @@ export function RoleDashboardPage({
               </span>
               <span className={styles.metricLabel}>Keanggotaan tercatat</span>
               <strong>{dashboardData.totalMemberCount.toLocaleString("id-ID")}</strong>
-              <span className={styles.metricNote}>aktif dan nonaktif</span>
+              <span className={styles.metricNote}>
+                {isDivisionManager ? "anggota divisi" : "aktif dan nonaktif"}
+              </span>
             </article>
           </div>
 
@@ -178,7 +195,11 @@ export function RoleDashboardPage({
             <section className={styles.overviewPanel}>
               <div className={styles.panelHeading}>
                 <div>
-                  <h3>Tren kehadiran</h3>
+                  <h3>
+                    {isDivisionManager
+                      ? "Tren kehadiran divisi"
+                      : "Tren kehadiran"}
+                  </h3>
                   <p>Persentase hadir dari sesi yang ditutup, 6 bulan terakhir</p>
                 </div>
                 <ChartNoAxesCombined size={18} aria-hidden="true" />
@@ -216,8 +237,12 @@ export function RoleDashboardPage({
             <section className={styles.overviewPanel}>
               <div className={styles.panelHeading}>
                 <div>
-                  <h3>Sesi terbaru</h3>
-                  <p>Aktivitas pada periode aktif</p>
+                  <h3>{isDivisionManager ? "Sesi divisi terbaru" : "Sesi terbaru"}</h3>
+                  <p>
+                    {isDivisionManager
+                      ? "Aktivitas divisi pada periode aktif"
+                      : "Aktivitas pada periode aktif"}
+                  </p>
                 </div>
                 <Link href="/attendance" aria-label="Lihat semua sesi absensi">
                   <ArrowRight size={17} aria-hidden="true" />
@@ -230,7 +255,9 @@ export function RoleDashboardPage({
                       <div className={styles.sessionSummary}>
                         <strong>{session.title}</strong>
                         <span>
-                          {session.division ?? "Seluruh organisasi"} · {session.date}
+                          {isDivisionManager
+                            ? `${session.date}`
+                            : `${session.division ?? "Seluruh organisasi"} · ${session.date}`}
                         </span>
                       </div>
                       <div className={styles.sessionAttendance}>

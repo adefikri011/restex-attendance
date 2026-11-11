@@ -4,7 +4,10 @@ import { appRoles, getAppRole } from "@/components/auth/role-config";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { RoleDashboardPage } from "@/components/dashboard/role-dashboard-page";
 import { requirePageUser } from "@/lib/auth-guard";
-import { getSuperAdminDashboardData } from "@/lib/dashboard-service";
+import {
+  getDivisionDashboardData,
+  getSuperAdminDashboardData,
+} from "@/lib/dashboard-service";
 
 type RoleDashboardRouteProps = {
   params: Promise<{ role: string }>;
@@ -39,7 +42,11 @@ export default async function RoleDashboardRoute({
   if (!role || role.id === "anggota") notFound();
   const user = await requirePageUser([role.id]);
   const dashboardData =
-    role.id === "super-admin" ? await getSuperAdminDashboardData() : undefined;
+    role.id === "super-admin"
+      ? await getSuperAdminDashboardData()
+      : role.id === "ketua-divisi" || role.id === "pj-divisi"
+        ? await getDivisionDashboardData(user.managedDivision)
+        : undefined;
 
   return (
     <DashboardShell role={role.id} displayName={user.name}>
