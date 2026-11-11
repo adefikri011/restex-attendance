@@ -540,6 +540,296 @@ a.actionCard:hover {
   text-align: center;
 }
 
+.memberPortal {
+  display: grid;
+  gap: 13px;
+}
+
+.memberDetailPage {
+  display: grid;
+  gap: 17px;
+  color: var(--ui-text-primary);
+}
+
+.memberDetailHeading {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.memberDetailHeading h1 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 25px;
+  font-weight: 730;
+  letter-spacing: -0.04em;
+}
+
+.memberDetailHeading p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.memberBackLink {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  color: var(--ui-text-accent);
+  font-size: 9px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.memberBackLink:hover {
+  text-decoration: underline;
+}
+
+.memberIdentityCard {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 13px;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background: var(--ui-surface);
+}
+
+.memberPortalAvatar {
+  width: 43px;
+  height: 43px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.memberIdentity,
+.memberIdentityMeta,
+.memberRate {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.memberIdentity {
+  flex: 1 1 190px;
+}
+
+.memberIdentity > strong {
+  overflow: hidden;
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberIdentity > span,
+.memberIdentityMeta > span,
+.memberRate > span {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.memberIdentityMeta {
+  min-width: 100px;
+  padding-left: 13px;
+  border-left: 1px solid var(--ui-border);
+}
+
+.memberIdentityMeta > strong {
+  overflow: hidden;
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.memberRate {
+  min-width: 69px;
+  justify-items: end;
+  margin-left: auto;
+  padding-left: 13px;
+  border-left: 1px solid var(--ui-border);
+}
+
+.memberRate > strong {
+  color: var(--ui-text-accent);
+  font-size: 19px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.memberSummaryHighlight {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 18px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background:
+    radial-gradient(ellipse at 92% 10%, color-mix(in srgb, #38a8c4 10%, transparent), transparent 40%),
+    var(--ui-surface);
+}
+
+.summaryHighlightIcon {
+  display: grid;
+  width: 43px;
+  height: 43px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.memberSummaryHighlight > div {
+  display: grid;
+  gap: 4px;
+}
+
+.memberSummaryHighlight > div > span {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+}
+
+.memberSummaryHighlight > div > strong {
+  color: var(--ui-text-primary);
+  font-size: 25px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.memberSummaryHighlight > div > p {
+  margin: 2px 0 0;
+  color: var(--ui-text-secondary);
+  font-size: 8px;
+}
+
+.memberAttendanceGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  scroll-margin-top: 20px;
+}
+
+.memberAttendanceCard {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: 31px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+  padding: 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.attendanceStatusIcon {
+  display: grid;
+  width: 31px;
+  height: 31px;
+  grid-row: span 2;
+  place-items: center;
+  border-radius: 9px;
+}
+
+.attendancePresent {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.attendanceExcused {
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.attendanceSick {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.attendanceAbsent {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.memberAttendanceCard > span:nth-child(2) {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.memberAttendanceCard > strong {
+  grid-column: 2;
+  color: var(--ui-text-primary);
+  font-size: 17px;
+  font-weight: 730;
+  line-height: 1.15;
+}
+
+.memberHistoryPanel {
+  min-width: 0;
+  padding: 15px 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 13px;
+  background: var(--ui-surface);
+  scroll-margin-top: 20px;
+}
+
+.memberHistoryPanel h2 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.memberHistoryPanel .recentSessionList {
+  margin-top: 13px;
+}
+
+.attendanceBadge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-size: 8px;
+  font-weight: 650;
+}
+
+.attendanceBadgeHadir {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.attendanceBadgeIzin {
+  background: var(--ui-info-soft);
+  color: var(--ui-info-text);
+}
+
+.attendanceBadgeSakit {
+  background: var(--ui-warning-soft);
+  color: var(--ui-warning-text);
+}
+
+.attendanceBadgeAlpha {
+  background: var(--ui-danger-soft);
+  color: var(--ui-danger-text);
+}
+
+.memberPortalEmpty {
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
 @media (max-width: 900px) {
   .actionGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -561,6 +851,29 @@ a.actionCard:hover {
 
   .overviewGrid {
     grid-template-columns: 1fr;
+  }
+
+  .memberIdentityCard {
+    flex-wrap: wrap;
+  }
+
+  .memberSummaryHighlight {
+    align-items: flex-start;
+  }
+
+  .memberIdentity {
+    flex-basis: calc(100% - 60px);
+  }
+
+  .memberIdentityMeta {
+    min-width: calc(33% - 10px);
+    margin-top: 6px;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .memberRate {
+    margin-top: 6px;
   }
 
   .welcomePanel {
@@ -606,6 +919,11 @@ a.actionCard:hover {
   }
 
   .metricGrid {
+    gap: 8px;
+  }
+
+  .memberAttendanceGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
 

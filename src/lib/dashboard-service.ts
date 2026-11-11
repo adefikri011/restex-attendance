@@ -2,7 +2,7 @@ import "server-only";
 import type { SessionStatus } from "@/components/attendance/attendance-data";
 import { prisma } from "@/lib/prisma";
 
-export type SuperAdminDashboardData = {
+export type OrganizationDashboardData = {
   periodName: string | null;
   activeMemberCount: number;
   totalMemberCount: number;
@@ -20,7 +20,7 @@ export type SuperAdminDashboardData = {
   }>;
 };
 
-export type DivisionDashboardData = SuperAdminDashboardData & {
+export type DivisionDashboardData = OrganizationDashboardData & {
   divisionName: string | null;
 };
 
@@ -63,7 +63,7 @@ function formatMonthLabel(year: number, month: number) {
   }).format(new Date(Date.UTC(year, month - 1, 1)));
 }
 
-export async function getSuperAdminDashboardData(): Promise<SuperAdminDashboardData> {
+export async function getOrganizationDashboardData(): Promise<OrganizationDashboardData> {
   const today = getJakartaDateParts(new Date());
   const activePeriod = await prisma.period.findFirst({
     where: { isActive: true },

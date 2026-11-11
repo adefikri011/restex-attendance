@@ -6,7 +6,7 @@ import { RoleDashboardPage } from "@/components/dashboard/role-dashboard-page";
 import { requirePageUser } from "@/lib/auth-guard";
 import {
   getDivisionDashboardData,
-  getSuperAdminDashboardData,
+  getOrganizationDashboardData,
 } from "@/lib/dashboard-service";
 
 type RoleDashboardRouteProps = {
@@ -42,8 +42,8 @@ export default async function RoleDashboardRoute({
   if (!role || role.id === "anggota") notFound();
   const user = await requirePageUser([role.id]);
   const dashboardData =
-    role.id === "super-admin"
-      ? await getSuperAdminDashboardData()
+    role.id === "super-admin" || role.id === "admin"
+      ? await getOrganizationDashboardData()
       : role.id === "ketua-divisi" || role.id === "pj-divisi"
         ? await getDivisionDashboardData(user.managedDivision)
         : undefined;

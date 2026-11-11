@@ -12,11 +12,13 @@ import {
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import type { AppRoleId } from "@/components/auth/role-config";
 import type {
   DivisionDashboardData,
-  SuperAdminDashboardData,
+  OrganizationDashboardData,
 } from "@/lib/dashboard-service";
+import type { MemberPortalData } from "@/lib/member-portal-service";
 import styles from "./role-dashboard-page.module.css";
 
 type DashboardAction = {
@@ -53,24 +55,37 @@ const roleActions: Record<AppRoleId, DashboardAction[]> = {
     { title: "Kartu lanyard", description: "Bantu anggota menyiapkan kartu identitas.", href: "/lanyard-card", actionLabel: "Buka kartu", icon: IdCard },
   ],
   anggota: [
-    { title: "Profil saya", description: "Informasi dan status keanggotaan pribadi.", icon: UserRound },
-    { title: "Riwayat absensi", description: "Catatan kehadiran pada sesi yang telah ditutup.", icon: ClipboardList },
-    { title: "Ringkasan kehadiran", description: "Rekap Hadir, Izin, Sakit, dan Alpha per periode.", icon: ChartNoAxesCombined },
+    { title: "Profil saya", description: "Informasi dan status keanggotaan pribadi.", href: "/profile", actionLabel: "Buka profil", icon: UserRound },
+    { title: "Riwayat absensi", description: "Catatan kehadiran pribadi pada sesi yang telah ditutup.", href: "/portal/anggota/riwayat-absensi", actionLabel: "Lihat riwayat", icon: ClipboardList },
+    { title: "Ringkasan kehadiran", description: "Rekap Hadir, Izin, Sakit, dan Alpha pada periode aktif.", href: "/portal/anggota/ringkasan-kehadiran", actionLabel: "Lihat ringkasan", icon: ChartNoAxesCombined },
   ],
 };
+
+function getMemberInitials(name: string) {
+  return name
+    .split(" ")
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
 
 export function RoleDashboardPage({
   roleId,
   displayName,
   dashboardData,
+  memberData,
 }: {
   roleId: AppRoleId;
   displayName: string;
-  dashboardData?: SuperAdminDashboardData | DivisionDashboardData;
+  dashboardData?: OrganizationDashboardData | DivisionDashboardData;
+  memberData?: MemberPortalData;
 }) {
   const actions = roleActions[roleId];
   const isMember = roleId === "anggota";
   const isSuperAdmin = roleId === "super-admin";
+  const isAdmin = roleId === "admin";
+  const isOrganizationManager = isSuperAdmin || isAdmin;
   const isDivisionManager =
     roleId === "ketua-divisi" || roleId === "pj-divisi";
   const memberFirstName = displayName.split(" ")[0];
@@ -96,7 +111,7 @@ export function RoleDashboardPage({
           <h1>
             {isMember
               ? `Halo, ${memberFirstName}`
-              : isSuperAdmin
+              : isSuperAdmin || isAdmin
                 ? `Selamat datang, ${memberFirstName}`
                 : "Selamat datang kembali"}
           </h1>
@@ -105,7 +120,9 @@ export function RoleDashboardPage({
               ? "Akses informasi keanggotaan dan absensi milikmu."
               : isSuperAdmin
                 ? "Kelola akses, data anggota, dan aktivitas RESTEX dari satu tempat."
-              : "Pilih kebutuhan yang ingin kamu kelola hari ini."}
+                : isAdmin
+                  ? "Jalankan administrasi anggota dan pantau aktivitas organisasi dari satu tempat."
+                  : "Pilih kebutuhan yang ingin kamu kelola hari ini."}
           </p>
         </div>
         {!isMember && (
@@ -124,7 +141,59 @@ export function RoleDashboardPage({
         )}
       </header>
 
-      {(isSuperAdmin || isDivisionManager) && dashboardData && (
+      {isMember && memberData && (
+        <section
+          className={styles.memberPortal}
+          aria-labelledby="member-portal-title"
+        >
+          <div className={styles.sectionHeading}>
+            <div>
+              <span className={styles.eyebrow}>INFORMASI PRIBADI</span>
+              <h2 id="member-portal-title">Keanggotaan saya</h2>
+              <p>
+                {memberData.periodName
+                  ? `Ringkasan keanggotaan dan absensi periode ${memberData.periodName}.`
+                  : "Belum ada periode aktif untuk menampilkan ringkasan keanggotaan dan absensi."}
+              </p>
+            </div>
+          </div>
+
+          {memberData.member ? (
+            <article className={styles.memberIdentityCard}>
+              <UserAvatar
+                className={styles.memberPortalAvatar}
+                initials={getMemberInitials(memberData.member.name)}
+                imageUrl="/api/profile/photo"
+              />
+              <div className={styles.memberIdentity}>
+                <strong>{memberData.member.name}</strong>
+                <span>
+                  {memberData.member.memberCode} · NIM {memberData.member.nim}
+                </span>
+              </div>
+              <div className={styles.memberIdentityMeta}>
+                <span>Divisi</span>
+                <strong>{memberData.member.division ?? "Belum ditetapkan"}</strong>
+              </div>
+              <div className={styles.memberIdentityMeta}>
+                <span>Status keanggotaan</span>
+                <strong>{memberData.member.membershipStatus ?? "Belum terdaftar"}</strong>
+              </div>
+              <div className={styles.memberIdentityMeta}>
+                <span>Angkatan</span>
+                <strong>{memberData.member.cohort}</strong>
+              </div>
+            </article>
+          ) : (
+            <p className={styles.memberPortalEmpty} role="status">
+              Akun ini belum terhubung ke data anggota. Hubungi pengurus untuk
+              memastikan akun anggota sudah ditautkan.
+            </p>
+          )}
+        </section>
+      )}
+
+      {(isOrganizationManager || isDivisionManager) && dashboardData && (
         <section
           className={styles.overview}
           aria-labelledby="role-overview-title"
@@ -132,10 +201,14 @@ export function RoleDashboardPage({
           <div className={styles.sectionHeading}>
             <div>
               <span className={styles.eyebrow}>
-                {isSuperAdmin ? "PANTAU ORGANISASI" : "PANTAU DIVISI"}
+                {isOrganizationManager ? "PANTAU ORGANISASI" : "PANTAU DIVISI"}
               </span>
               <h2 id="role-overview-title">
-                {isSuperAdmin ? "Ringkasan periode" : "Ringkasan divisi"}
+                {isSuperAdmin
+                  ? "Ringkasan periode"
+                  : isAdmin
+                    ? "Ringkasan organisasi"
+                    : "Ringkasan divisi"}
               </h2>
               <p>
                 {isDivisionManager && "divisionName" in dashboardData
@@ -282,21 +355,29 @@ export function RoleDashboardPage({
       <section className={styles.sectionHeading} aria-labelledby="role-actions-title">
         <div>
           <span className={styles.eyebrow}>
-            {isSuperAdmin ? "PUSAT PENGELOLAAN" : "AKSES SESUAI PERAN"}
+            {isSuperAdmin
+              ? "PUSAT PENGELOLAAN"
+              : isMember
+                ? "AKSES PRIBADI"
+                : "AKSES SESUAI PERAN"}
           </span>
           <h2 id="role-actions-title">
             {isMember
                 ? "Ruang anggota"
                 : isSuperAdmin
                   ? "Kelola organisasi"
-                  : "Akses cepat"}
+                  : isMember
+                    ? "Akses pribadi"
+                    : "Akses cepat"}
           </h2>
           <p>
             {isMember
                 ? "Portal ini hanya menampilkan data keanggotaan dan absensimu sendiri."
                 : isSuperAdmin
                   ? "Pilih area kerja untuk melanjutkan pengelolaan."
-                : "Menu ditampilkan sesuai hak akses akun yang terverifikasi."}
+                  : isMember
+                    ? "Buka profil atau lompat ke ringkasan dan riwayat absensimu."
+                    : "Menu ditampilkan sesuai hak akses akun yang terverifikasi."}
           </p>
         </div>
       </section>

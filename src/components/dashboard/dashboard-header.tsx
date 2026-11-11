@@ -32,6 +32,8 @@ export function DashboardHeader({
     "/audit-log": "Audit Log",
     "/administrator-accounts": "Akun Pengurus",
     "/portal/anggota": "Portal Anggota",
+    "/portal/anggota/ringkasan-kehadiran": "Ringkasan Kehadiran",
+    "/portal/anggota/riwayat-absensi": "Riwayat Absensi",
     "/profile": "Profil Saya",
   };
   const pageTitle = pathname.startsWith("/attendance/")
