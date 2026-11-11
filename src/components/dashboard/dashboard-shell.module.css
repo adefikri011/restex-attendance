@@ -25,6 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-bottom: 12px;
   padding: 0 6px;
 }
 
@@ -97,7 +98,7 @@
 .periodCard {
   display: grid;
   gap: 8px;
-  margin: 31px 1px 28px;
+  margin: 18px 1px 24px;
   padding: 15px 14px;
   border: 1px solid var(--ui-border);
   border-radius: 13px;
@@ -143,7 +144,7 @@
 }
 
 .navigationLabel {
-  margin: 0 10px 11px;
+  margin: 0 10px 15px;
 }
 
 .managementLabel {
@@ -152,7 +153,7 @@
 
 .navigationList {
   display: grid;
-  gap: 4px;
+  gap: 7px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -212,8 +213,8 @@
 .sidebarFooter {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 15px 5px 4px;
+  gap: 8px;
+  padding: 13px 0 0;
   border-top: 1px solid var(--ui-border);
 }
 
@@ -221,11 +222,22 @@
   display: flex;
   min-width: 0;
   flex: 1;
+  min-height: 58px;
   align-items: center;
-  gap: 10px;
-  border-radius: 9px;
+  gap: 11px;
+  padding: 7px 8px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: var(--ui-surface-subtle);
   color: inherit;
   text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.profileLink:hover,
+.profileLink[aria-current="page"] {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
 }
 
 .profileLink:hover .profileDetails strong,
@@ -238,15 +250,7 @@
   outline-offset: 3px;
 }
 
-.signOutError {
-  margin: 0;
-  padding: 8px 5px 0;
-  color: var(--ui-danger-text);
-  font-size: 11px;
-}
-
-.profileAvatar,
-.headerAvatar {
+.profileAvatar {
   position: relative;
   overflow: hidden;
   display: grid;
@@ -264,36 +268,173 @@
   height: 35px;
 }
 
-.headerAvatarImage {
-  width: 100%;
-  height: 100%;
-}
-
 .profileDetails {
   display: grid;
   min-width: 0;
-  gap: 3px;
+  gap: 2px;
 }
 
 .profileDetails strong {
   overflow: hidden;
   color: var(--ui-text-accent);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .profileDetails span {
+  overflow: hidden;
   color: #8a97a4;
-  font-size: 10px;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profileMenu {
-  margin-left: auto;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 11px;
+  background: var(--ui-surface);
   color: var(--ui-text-muted);
-  font-size: 13px;
-  letter-spacing: 1px;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.profileMenu:hover {
+  border-color: color-mix(in srgb, var(--ui-danger-text) 35%, var(--ui-border));
+  background: color-mix(in srgb, var(--ui-danger-text) 7%, var(--ui-surface));
+  color: var(--ui-danger-text);
+}
+
+.profileMenu:focus-visible,
+.logoutCancel:focus-visible,
+.logoutConfirm:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.logoutDialog {
+  width: min(100%, 390px);
+  overflow: hidden;
+  padding: 0;
+  text-align: center;
+}
+
+.logoutDialogContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 28px 24px;
+}
+
+.logoutMascot {
+  display: grid;
+  width: 120px;
+  height: 120px;
+  margin: 0 0 15px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, var(--ui-surface) 0 42%, transparent 43%),
+    var(--ui-surface-subtle);
+}
+
+.logoutMascot img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+}
+
+.logoutEyebrow {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+}
+
+.logoutDialog h2 {
+  margin: 7px 0 0;
+  color: var(--ui-text-accent);
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: -0.035em;
+}
+
+.logoutMessage {
+  max-width: 280px;
+  margin: 8px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.logoutError {
+  width: 100%;
+  margin: 15px 0 0;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--ui-danger-text) 22%, transparent);
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ui-danger-text) 7%, var(--ui-surface));
+  color: var(--ui-danger-text);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.logoutActions {
+  display: grid;
+  width: 100%;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-top: 22px;
+}
+
+.logoutCancel,
+.logoutConfirm {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, opacity 150ms ease;
+}
+
+.logoutCancel {
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+}
+
+.logoutCancel:hover:not(:disabled) {
+  background: var(--ui-surface-subtle);
+}
+
+.logoutConfirm {
+  border-color: var(--ui-danger-text);
+  background: var(--ui-danger-text);
+  color: white;
+}
+
+.logoutConfirm:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.logoutCancel:disabled,
+.logoutConfirm:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .mainColumn {
@@ -382,11 +523,83 @@
   background: var(--ui-accent);
 }
 
-.headerAvatar {
-  width: 34px;
-  height: 34px;
-  border: 0;
-  text-decoration: none;
+.languageMenu {
+  position: relative;
+}
+
+.languageSwitcher {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+}
+
+.languageSwitcher::-webkit-details-marker {
+  display: none;
+}
+
+.languageSwitcher:hover,
+.languageMenu[open] .languageSwitcher {
+  border-color: var(--ui-border-strong, var(--ui-border));
+  background: var(--ui-surface);
+}
+
+.languageFlag {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.languageDropdown {
+  position: absolute;
+  top: calc(100% + 9px);
+  right: 0;
+  z-index: 25;
+  display: grid;
+  width: 230px;
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+  box-shadow: 0 12px 30px rgb(15 35 50 / 12%);
+}
+
+.languageOption {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  min-height: 40px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 9px;
+  border-radius: 8px;
+  color: var(--ui-text-accent);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.languageOption[aria-current="true"] {
+  background: var(--ui-surface-subtle);
+}
+
+.languageOptionDisabled {
+  color: var(--ui-text-muted);
+  cursor: not-allowed;
+}
+
+.languageOptionStatus {
+  color: var(--ui-text-muted);
+  font-size: 9px;
+  font-weight: 500;
 }
 
 .mainContent {

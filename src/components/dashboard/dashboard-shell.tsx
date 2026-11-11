@@ -10,6 +10,7 @@ import {
   ChartNoAxesCombined,
   IdCard,
   LayoutDashboard,
+  LogOut,
   Menu,
   ScrollText,
   UsersRound,
@@ -20,7 +21,7 @@ import { useEffect, useState } from "react";
 import { appRoles, type AppRoleId } from "@/components/auth/role-config";
 import { UserAvatar } from "@/components/avatar/user-avatar";
 import { authClient } from "@/lib/auth-client";
-import { LogOut } from "lucide-react";
+import { MemberDialog } from "@/components/members/member-dialog";
 import { DashboardHeader } from "./dashboard-header";
 import styles from "./dashboard-shell.module.css";
 
@@ -106,6 +107,8 @@ export function DashboardShell({
 }: DashboardShellProps) {
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const [activePeriodName, setActivePeriodName] = useState<string | null>(null);
   const [periodLoadState, setPeriodLoadState] = useState<
     "loading" | "ready" | "error"
@@ -195,19 +198,31 @@ export function DashboardShell({
 
   async function handleSignOut() {
     setLogoutError("");
+    setIsSigningOut(true);
 
     try {
       const { error } = await authClient.signOut();
       if (error) {
+        console.error("Sign out request failed.", error);
         setLogoutError("Tidak dapat keluar. Silakan coba kembali.");
         return;
       }
 
+      setIsLogoutDialogOpen(false);
       router.replace("/login");
       router.refresh();
-    } catch {
+    } catch (error) {
+      console.error("Sign out request failed.", error);
       setLogoutError("Layanan autentikasi tidak dapat dihubungi.");
+    } finally {
+      setIsSigningOut(false);
     }
+  }
+
+  function closeLogoutDialog() {
+    if (isSigningOut) return;
+    setIsLogoutDialogOpen(false);
+    setLogoutError("");
   }
 
   return (
@@ -311,11 +326,6 @@ export function DashboardShell({
           )}
         </nav>
 
-        {logoutError && (
-          <p className={styles.signOutError} role="alert">
-            {logoutError}
-          </p>
-        )}
         <div className={styles.sidebarFooter}>
           <Link
             href="/profile"
@@ -330,20 +340,74 @@ export function DashboardShell({
             />
             <span className={styles.profileDetails}>
               <strong>{displayName}</strong>
-              <span>{activeRole.label} · Profil saya</span>
+              <span>{activeRole.label}</span>
             </span>
           </Link>
           <button
             type="button"
             className={styles.profileMenu}
             aria-label="Keluar dari akun"
-            title="Keluar"
-            onClick={handleSignOut}
+            title="Keluar dari akun"
+            onClick={() => {
+              setLogoutError("");
+              setIsLogoutDialogOpen(true);
+            }}
           >
             <LogOut size={17} aria-hidden="true" />
           </button>
         </div>
       </aside>
+
+      {isLogoutDialogOpen && (
+        <MemberDialog
+          labelledBy="logout-dialog-title"
+          onClose={closeLogoutDialog}
+          className={styles.logoutDialog}
+        >
+          <div className={styles.logoutDialogContent}>
+            <div className={styles.logoutMascot}>
+              <Image
+                src="/assets/mascot/warningg.png"
+                alt=""
+                width={144}
+                height={144}
+                unoptimized
+              />
+            </div>
+            <span className={styles.logoutEyebrow}>KONFIRMASI AKUN</span>
+            <h2 id="logout-dialog-title">Yakin ingin keluar?</h2>
+            <p className={styles.logoutMessage}>
+              Sesi RESTEX Attendance akan diakhiri. Kamu bisa masuk kembali
+              kapan saja.
+            </p>
+            {logoutError && (
+              <p className={styles.logoutError} role="alert">
+                {logoutError}
+              </p>
+            )}
+            <div className={styles.logoutActions}>
+              <button
+                type="button"
+                className={styles.logoutCancel}
+                onClick={closeLogoutDialog}
+                disabled={isSigningOut}
+                data-autofocus
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                className={styles.logoutConfirm}
+                onClick={handleSignOut}
+                disabled={isSigningOut}
+              >
+                <LogOut size={15} aria-hidden="true" />
+                {isSigningOut ? "Sedang keluar..." : "Ya, keluar"}
+              </button>
+            </div>
+          </div>
+        </MemberDialog>
+      )}
 
       <div className={styles.mainColumn}>
         <div className={styles.mobileTopbar}>
@@ -360,7 +424,6 @@ export function DashboardShell({
         </div>
         <DashboardHeader
           role={activeRole.id}
-          displayName={displayName}
           periodName={
             activePeriodName ??
             (periodLoadState === "loading"

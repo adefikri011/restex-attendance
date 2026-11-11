@@ -1,27 +1,17 @@
 import { Bell, ChevronDown, ChevronRight } from "lucide-react";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserAvatar } from "@/components/avatar/user-avatar";
 import type { AppRoleId } from "@/components/auth/role-config";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import styles from "./dashboard-shell.module.css";
 
 export function DashboardHeader({
   role,
-  displayName,
   periodName,
 }: {
   role: AppRoleId;
-  displayName: string;
   periodName: string | null;
 }) {
   const pathname = usePathname();
-  const initials = displayName
-    .split(" ")
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
   const pageTitles: Record<string, string> = {
     "/dashboard": "Dashboard",
     "/attendance": "Monitoring Absensi",
@@ -71,18 +61,35 @@ export function DashboardHeader({
           <Bell size={19} strokeWidth={1.8} />
           <span aria-hidden="true" />
         </button>
-        <Link
-          href="/profile"
-          className={styles.headerAvatar}
-          aria-label={`Buka profil ${displayName}`}
-          aria-current={pathname === "/profile" ? "page" : undefined}
-        >
-          <UserAvatar
-            className={styles.headerAvatarImage}
-            initials={initials}
-            imageUrl="/api/profile/photo"
-          />
-        </Link>
+        <details className={styles.languageMenu}>
+          <summary
+            className={styles.languageSwitcher}
+            aria-label="Bahasa Indonesia, buka pilihan bahasa"
+            title="Pilihan bahasa"
+          >
+            <span className={styles.languageFlag} aria-hidden="true">
+              🇮🇩
+            </span>
+            <span>ID</span>
+            <ChevronDown size={13} aria-hidden="true" />
+          </summary>
+          <div className={styles.languageDropdown}>
+            <div className={styles.languageOption} aria-current="true">
+              <span aria-hidden="true">🇮🇩</span>
+              <span>Bahasa Indonesia</span>
+              <span className={styles.languageOptionStatus}>Aktif</span>
+            </div>
+            <div
+              className={`${styles.languageOption} ${styles.languageOptionDisabled}`}
+              aria-disabled="true"
+              title="Bahasa Inggris masih dalam proses"
+            >
+              <span aria-hidden="true">🇬🇧</span>
+              <span>English</span>
+              <span className={styles.languageOptionStatus}>Dalam proses</span>
+            </div>
+          </div>
+        </details>
       </div>
     </header>
   );
