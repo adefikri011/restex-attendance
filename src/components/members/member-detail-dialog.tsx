@@ -1,5 +1,6 @@
 import { AtSign, CalendarDays, GraduationCap, Hash, UsersRound, X } from "lucide-react";
 import { getInitials, type Member, type MembershipStatus } from "./member-data";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import memberStyles from "./members.module.css";
 import styles from "./member-dialog.module.css";
 import { MemberDialog } from "./member-dialog";
@@ -39,9 +40,11 @@ export function MemberDetailDialog({ member, onClose }: MemberDetailDialogProps)
         </div>
 
         <div className={styles.detailIdentity}>
-          <span className={`${memberStyles.memberAvatar} ${styles.detailAvatar}`}>
-            {getInitials(member.name)}
-          </span>
+          <UserAvatar
+            className={`${memberStyles.memberAvatar} ${styles.detailAvatar}`}
+            initials={getInitials(member.name)}
+            imageUrl={member.photoUrl}
+          />
           <div>
             <h3>{member.name}</h3>
             <span>{member.nim}</span>

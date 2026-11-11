@@ -1,5 +1,6 @@
 import { formatSessionDate, getSessionCounts, type AttendanceSession } from "@/components/attendance/attendance-data";
 import { getInitials } from "@/components/members/member-data";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import type { MemberAttendanceSummary } from "./report-data";
 import styles from "./reports.module.css";
 
@@ -122,7 +123,11 @@ export function MemberReportTable({
                 <tr key={summary.member.id}>
                   <td>
                     <div className={styles.memberIdentity}>
-                      <span aria-hidden="true">{getInitials(summary.member.name)}</span>
+                      <UserAvatar
+                        className={styles.memberAvatar}
+                        initials={getInitials(summary.member.name)}
+                        imageUrl={summary.member.photoUrl}
+                      />
                       <div>
                         <strong>{summary.member.name}</strong>
                         <span>{summary.member.division}</span>

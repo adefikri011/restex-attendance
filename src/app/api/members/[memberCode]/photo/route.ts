@@ -15,15 +15,6 @@ export async function GET(
   }
 
   const { memberCode } = await context.params;
-  const activePeriod = await prisma.period.findFirst({
-    where: { isActive: true },
-    orderBy: { startDate: "desc" },
-    select: { id: true },
-  });
-  if (!activePeriod) {
-    return NextResponse.json({ error: "Periode aktif tidak ditemukan." }, { status: 404 });
-  }
-
   const isDivisionManager =
     access.user.role === "ketua-divisi" || access.user.role === "pj-divisi";
   if (isDivisionManager && !access.user.managedDivision) {
@@ -35,8 +26,6 @@ export async function GET(
       memberCode,
       memberships: {
         some: {
-          periodId: activePeriod.id,
-          status: "ACTIVE",
           ...(isDivisionManager ? { division: access.user.managedDivision! } : {}),
         },
       },

@@ -508,6 +508,8 @@
 }
 
 .memberIdentity > span {
+  position: relative;
+  overflow: hidden;
   display: grid;
   width: 30px;
   height: 30px;

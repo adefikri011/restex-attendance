@@ -46,6 +46,8 @@ export async function getAdministratorAccountsPageData() {
         id: true,
         name: true,
         email: true,
+        image: true,
+        updatedAt: true,
         role: true,
         isActive: true,
         managedDivision: true,
@@ -69,6 +71,9 @@ export async function getAdministratorAccountsPageData() {
     id: user.id,
     name: user.name,
     email: user.email,
+    photoUrl: user.image
+      ? `/api/users/${encodeURIComponent(user.id)}/photo?v=${user.updatedAt.getTime()}`
+      : null,
     role:
       user.role === "SUPER_ADMIN"
         ? "Super Admin"

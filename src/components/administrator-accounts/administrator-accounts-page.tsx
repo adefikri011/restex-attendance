@@ -17,6 +17,7 @@ import {
   UserRoundCheck,
   UsersRound,
 } from "lucide-react";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import { InviteAdministratorForm } from "./invite-administrator-form";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import {
@@ -324,7 +325,11 @@ export function AdministratorAccountsPage({
               </div>
               {lead ? (
                 <div className={styles.divisionLead}>
-                  <span>{getAdministratorInitials(lead.name)}</span>
+                  <UserAvatar
+                    className={styles.divisionLeadAvatar}
+                    initials={getAdministratorInitials(lead.name)}
+                    imageUrl={lead.photoUrl}
+                  />
                   <div>
                     <strong>{lead.name}</strong>
                     <small>Ketua Divisi</small>
@@ -348,7 +353,11 @@ export function AdministratorAccountsPage({
               )}
               {pj ? (
                 <div className={styles.divisionLead}>
-                  <span>{getAdministratorInitials(pj.name)}</span>
+                  <UserAvatar
+                    className={styles.divisionLeadAvatar}
+                    initials={getAdministratorInitials(pj.name)}
+                    imageUrl={pj.photoUrl}
+                  />
                   <div>
                     <strong>{pj.name}</strong>
                     <small>PJ Divisi</small>
@@ -453,9 +462,11 @@ export function AdministratorAccountsPage({
           {filteredAccounts.length ? (
             filteredAccounts.map((account) => (
               <article className={styles.accountRow} key={account.id}>
-                <span className={`${styles.accountAvatar} ${account.role === "Ketua Divisi" || account.role === "PJ Divisi" ? styles.avatarDivision : ""}`}>
-                  {getAdministratorInitials(account.name)}
-                </span>
+                <UserAvatar
+                  className={`${styles.accountAvatar} ${account.role === "Ketua Divisi" || account.role === "PJ Divisi" ? styles.avatarDivision : ""}`}
+                  initials={getAdministratorInitials(account.name)}
+                  imageUrl={account.photoUrl}
+                />
                 <div className={styles.accountIdentity}>
                   <strong>{account.name}</strong>
                   <span>{account.email}</span>

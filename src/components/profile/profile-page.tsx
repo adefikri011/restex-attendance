@@ -438,7 +438,7 @@ export function ProfilePage({
           {hasMemberRecord && (
             <p className={styles.syncNote}>
               <Check size={15} aria-hidden="true" />
-              Foto ini otomatis digunakan pada kartu lanyard anggota.
+              Foto ini hanya digunakan untuk profil akun Anda.
             </p>
           )}
         </section>

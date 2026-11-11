@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { appRoles, type AppRoleId } from "@/components/auth/role-config";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import { authClient } from "@/lib/auth-client";
 import { LogOut } from "lucide-react";
 import { DashboardHeader } from "./dashboard-header";
@@ -270,9 +271,11 @@ export function DashboardShell({
             aria-current={pathname === "/profile" ? "page" : undefined}
             onClick={closeNavigation}
           >
-            <span className={styles.profileAvatar} aria-hidden="true">
-              {profileInitials}
-            </span>
+            <UserAvatar
+              className={styles.profileAvatar}
+              initials={profileInitials}
+              imageUrl="/api/profile/photo"
+            />
             <span className={styles.profileDetails}>
               <strong>{displayName}</strong>
               <span>{activeRole.label} · Profil saya</span>

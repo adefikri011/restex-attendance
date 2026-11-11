@@ -71,7 +71,7 @@ export async function getMembersPageData(division?: string | null) {
       cohort: true,
       photoUrl: true,
       updatedAt: true,
-      user: { select: { email: true } },
+      user: { select: { email: true, image: true } },
       memberships: {
         where: {
           periodId: activePeriod.id,
@@ -94,7 +94,7 @@ export async function getMembersPageData(division?: string | null) {
         id: row.memberCode,
         name: row.fullName,
         email: row.user?.email ?? "",
-        photoUrl: row.photoUrl
+        photoUrl: row.photoUrl && row.photoUrl !== row.user?.image
           ? `/api/members/${encodeURIComponent(row.memberCode)}/photo?v=${row.updatedAt.getTime()}`
           : null,
         nim: row.nim,

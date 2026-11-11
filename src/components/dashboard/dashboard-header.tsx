@@ -1,6 +1,7 @@
 import { Bell, ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import type { AppRoleId } from "@/components/auth/role-config";
 import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import styles from "./dashboard-shell.module.css";
@@ -72,7 +73,11 @@ export function DashboardHeader({
           aria-label={`Buka profil ${displayName}`}
           aria-current={pathname === "/profile" ? "page" : undefined}
         >
-          {initials}
+          <UserAvatar
+            className={styles.headerAvatarImage}
+            initials={initials}
+            imageUrl="/api/profile/photo"
+          />
         </Link>
       </div>
     </header>

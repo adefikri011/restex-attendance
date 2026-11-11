@@ -197,12 +197,13 @@ export async function getAttendancePageData(viewer: AttendanceViewer) {
 
   return {
     sessions: rows.map(mapSession),
-    members: memberData.members.map(({ id, name, nim, division, status }) => ({
+    members: memberData.members.map(({ id, name, nim, division, status, photoUrl }) => ({
       id,
       name,
       nim,
       division,
       status,
+      photoUrl,
     })),
     periodName: activePeriod.name,
     division,
@@ -260,6 +261,9 @@ export async function getAttendanceSessionData(
       memberCode: true,
       fullName: true,
       nim: true,
+      photoUrl: true,
+      updatedAt: true,
+      user: { select: { image: true } },
       memberships: {
         where: { periodId: session.periodId },
         take: 1,
@@ -274,6 +278,9 @@ export async function getAttendanceSessionData(
       id: row.memberCode,
       name: row.fullName,
       nim: row.nim,
+      photoUrl: row.photoUrl && row.photoUrl !== row.user?.image
+        ? `/api/members/${encodeURIComponent(row.memberCode)}/photo?v=${row.updatedAt.getTime()}`
+        : null,
       division: membership.division,
       status: membershipStatusFromDatabase[membership.status],
     }];

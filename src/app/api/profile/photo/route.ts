@@ -113,8 +113,11 @@ export async function POST(request: Request) {
         data: { image: key },
       });
       await transaction.member.updateMany({
-        where: { userId: access.user.id },
-        data: { photoUrl: key },
+        where: {
+          userId: access.user.id,
+          photoUrl: { in: [key, ...(previousKey ? [previousKey] : [])] },
+        },
+        data: { photoUrl: null },
       });
     });
   } catch (error) {
@@ -152,10 +155,6 @@ export async function POST(request: Request) {
           await transaction.user.update({
             where: { id: access.user.id },
             data: { image: previousKey },
-          });
-          await transaction.member.updateMany({
-            where: { userId: access.user.id },
-            data: { photoUrl: previousKey },
           });
         });
         await deleteProfileImage(key);
@@ -198,10 +197,12 @@ export async function DELETE() {
         where: { id: access.user.id },
         data: { image: null },
       });
-      await transaction.member.updateMany({
-        where: { userId: access.user.id },
-        data: { photoUrl: null },
-      });
+      if (key) {
+        await transaction.member.updateMany({
+          where: { userId: access.user.id, photoUrl: key },
+          data: { photoUrl: null },
+        });
+      }
     });
     return NextResponse.json({ success: true });
   } catch (error) {

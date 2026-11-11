@@ -12,6 +12,7 @@ export type AdministratorAccount = {
   id: string;
   name: string;
   email: string;
+  photoUrl?: string | null;
   role: AdministratorRole;
   division: string | null;
   status: AdministratorAccountStatus;

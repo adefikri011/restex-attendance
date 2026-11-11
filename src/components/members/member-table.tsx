@@ -4,6 +4,7 @@ import {
   type Member,
   type MembershipStatus,
 } from "./member-data";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import styles from "./member-table.module.css";
 import sharedStyles from "./members.module.css";
 
@@ -85,9 +86,11 @@ export function MemberTable({
                       className={styles.memberIdentity}
                       onClick={() => onViewMember(member)}
                     >
-                      <span className={`${sharedStyles.memberAvatar} ${styles[`avatarTone${(index % 5) + 1}`]}`}>
-                        {getInitials(member.name)}
-                      </span>
+                      <UserAvatar
+                        className={`${sharedStyles.memberAvatar} ${styles[`avatarTone${(index % 5) + 1}`]}`}
+                        initials={getInitials(member.name)}
+                        imageUrl={member.photoUrl}
+                      />
                       <span className={styles.memberNameBlock}>
                         <strong>{member.name}</strong>
                         <small>{member.nim}</small>

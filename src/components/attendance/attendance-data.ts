@@ -12,7 +12,10 @@ export type ActivityType = (typeof activityTypes)[number];
 export type SessionStatus = "Aktif" | "Draft" | "Ditutup";
 export type AttendanceStatus = "Hadir" | "Izin" | "Sakit" | "Alpha";
 export type AttendanceMethod = "QR" | "Manual";
-export type AttendanceMember = Pick<Member, "id" | "name" | "nim" | "division" | "status">;
+export type AttendanceMember = Pick<
+  Member,
+  "id" | "name" | "nim" | "division" | "status" | "photoUrl"
+>;
 
 export type AttendanceEntry = {
   memberId: string;

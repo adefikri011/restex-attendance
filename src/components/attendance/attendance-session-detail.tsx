@@ -12,6 +12,7 @@ import {
   Square,
   UsersRound,
 } from "lucide-react";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import { AttendanceScanner } from "./attendance-scanner";
 import {
   formatSessionDate,
@@ -307,13 +308,15 @@ export function AttendanceSessionDetail({
                     <tr key={member.id}>
                       <td data-label="Anggota">
                         <span className={styles.member}>
-                          <span className={styles.avatar} aria-hidden="true">
-                            {member.name
+                          <UserAvatar
+                            className={styles.avatar}
+                            initials={member.name
                               .split(" ")
                               .slice(0, 2)
                               .map((part) => part[0])
                               .join("")}
-                          </span>
+                            imageUrl={member.photoUrl}
+                          />
                           <span>
                             <strong>{member.name}</strong>
                             <small>{member.nim}</small>

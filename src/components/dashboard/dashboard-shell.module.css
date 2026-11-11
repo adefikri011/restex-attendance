@@ -247,6 +247,8 @@
 
 .profileAvatar,
 .headerAvatar {
+  position: relative;
+  overflow: hidden;
   display: grid;
   flex: 0 0 auto;
   place-items: center;
@@ -260,6 +262,11 @@
 .profileAvatar {
   width: 35px;
   height: 35px;
+}
+
+.headerAvatarImage {
+  width: 100%;
+  height: 100%;
 }
 
 .profileDetails {
