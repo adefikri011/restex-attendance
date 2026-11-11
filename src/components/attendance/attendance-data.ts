@@ -36,6 +36,7 @@ export type AttendanceSession = {
   notes: string;
   status: SessionStatus;
   division?: string | null;
+  eligibleMemberCount?: number;
   createdBy?: string;
   attendance: AttendanceEntry[];
 };
@@ -89,6 +90,7 @@ export function getActiveMembers<T extends AttendanceMember>(members: T[]) {
 }
 
 export function getSessionCounts(session: AttendanceSession, totalActive: number) {
+  const eligibleMemberCount = session.eligibleMemberCount ?? totalActive;
   const counts = {
     hadir: session.attendance.filter((entry) => entry.status === "Hadir").length,
     izin: session.attendance.filter((entry) => entry.status === "Izin").length,
@@ -98,8 +100,11 @@ export function getSessionCounts(session: AttendanceSession, totalActive: number
 
   return {
     ...counts,
-    totalActive,
-    notRecorded: Math.max(0, totalActive - counts.hadir - counts.izin - counts.sakit - counts.alpha),
+    totalActive: eligibleMemberCount,
+    notRecorded: Math.max(
+      0,
+      eligibleMemberCount - counts.hadir - counts.izin - counts.sakit - counts.alpha,
+    ),
   };
 }
 
@@ -108,7 +113,7 @@ export function formatSessionDate(date: string) {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(new Date(`${date}T00:00:00`));
+  }).format(new Date(`${date}T12:00:00`));
 }
 
 export function createInitialSessions(members: Member[]): AttendanceSession[] {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowDownToLine,
   CalendarDays,
@@ -8,26 +8,19 @@ import {
   Clock3,
   UsersRound,
 } from "lucide-react";
-import {
-  createInitialSessions,
-  getActiveMembers,
-} from "@/components/attendance/attendance-data";
-import { initialMembers } from "@/components/members/member-data";
+import { isAttendanceSession } from "@/components/attendance/attendance-data";
+import type { Member } from "@/components/members/member-data";
 import { ReportAnalytics } from "./report-analytics";
 import { exportAttendanceReport } from "./report-export";
 import {
-  filterSessionsByRange,
   summarizeMembers,
   summarizeSessions,
+  type ReportPageData,
+  type ReportPeriodOption,
   type ReportRange,
 } from "./report-data";
 import { MemberReportTable, SessionReportTable } from "./report-tables";
 import styles from "./reports.module.css";
-
-const periodOptions = [
-  { id: "2026-2027", label: "2026 — 2027 · Aktif" },
-  { id: "2025-2026", label: "2025 — 2026 · Arsip" },
-];
 
 const rangeOptions: ReportRange[] = [
   "Bulan ini",
@@ -35,34 +28,118 @@ const rangeOptions: ReportRange[] = [
   "Seluruh periode",
 ];
 
-const allSessions = createInitialSessions(initialMembers);
-const activeMembers = getActiveMembers(initialMembers);
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
 
-export function ReportsPage() {
-  const [periodId, setPeriodId] = useState(periodOptions[0].id);
+function isReportPageData(value: unknown): value is ReportPageData {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.periods) &&
+    value.periods.every(
+      (period): period is ReportPeriodOption =>
+        isRecord(period) &&
+        typeof period.id === "string" &&
+        typeof period.name === "string" &&
+        typeof period.label === "string" &&
+        typeof period.startDate === "string" &&
+        typeof period.endDate === "string",
+    ) &&
+    typeof value.selectedPeriodId === "string" &&
+    Array.isArray(value.sessions) &&
+    value.sessions.every(isAttendanceSession) &&
+    Array.isArray(value.members) &&
+    value.members.every(
+      (member): member is Member =>
+        isRecord(member) &&
+        typeof member.id === "string" &&
+        typeof member.name === "string" &&
+        typeof member.email === "string" &&
+        typeof member.nim === "string" &&
+        typeof member.division === "string" &&
+        typeof member.cohort === "string" &&
+        (member.status === "Aktif" ||
+          member.status === "Cuti" ||
+          member.status === "Keluar" ||
+          member.status === "Alumni") &&
+        typeof member.joinedAt === "string",
+    )
+  );
+}
+
+export function ReportsPage({ initialData }: { initialData: ReportPageData }) {
+  const [data, setData] = useState(initialData);
+  const [periodId, setPeriodId] = useState(initialData.selectedPeriodId);
   const [range, setRange] = useState<ReportRange>("Bulan ini");
   const [isExporting, setIsExporting] = useState(false);
   const [notice, setNotice] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const skippedInitialFetch = useRef(false);
 
-  const isCurrentPeriod = periodId === periodOptions[0].id;
-  const sessions = useMemo(
-    () => filterSessionsByRange(isCurrentPeriod ? allSessions : [], range),
-    [isCurrentPeriod, range],
-  );
+  useEffect(() => {
+    if (!skippedInitialFetch.current) {
+      skippedInitialFetch.current = true;
+      return;
+    }
+    if (!periodId) return;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const params = new URLSearchParams({ periodId, range });
+        const response = await fetch(`/api/reports?${params}`, {
+          signal: controller.signal,
+        });
+        const result: unknown = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            isRecord(result) && typeof result.error === "string"
+              ? result.error
+              : "Laporan gagal dimuat.",
+          );
+        }
+        if (!isReportPageData(result)) {
+          throw new Error("Respons laporan tidak valid.");
+        }
+        setData(result);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === "AbortError") {
+          return;
+        }
+        setError(
+          requestError instanceof Error
+            ? requestError.message
+            : "Laporan gagal dimuat. Coba lagi.",
+        );
+      } finally {
+        if (!controller.signal.aborted) setIsLoading(false);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeout);
+      controller.abort();
+    };
+  }, [periodId, range]);
+
+  const sessions = data.sessions;
+  const activeMembers = data.members;
   const summary = summarizeSessions(sessions, activeMembers.length);
   const memberSummaries = summary.completedSessions.length
     ? summarizeMembers(activeMembers, summary.completedSessions)
     : [];
-  const selectedPeriod = periodOptions.find((period) => period.id === periodId)!;
+  const selectedPeriod = data.periods.find((period) => period.id === periodId);
 
   async function handleExport() {
-    if (!sessions.length || isExporting) return;
+    if (!sessions.length || !selectedPeriod || isExporting) return;
 
     setNotice("");
     setIsExporting(true);
     try {
       await exportAttendanceReport({
-        periodName: selectedPeriod.label.split(" · ")[0],
+        periodName: selectedPeriod.name,
         rangeLabel: range,
         sessions,
         memberSummaries,
@@ -111,12 +188,14 @@ export function ReportsPage() {
           <select
             value={periodId}
             onChange={(event) => setPeriodId(event.target.value)}
+            disabled={!data.periods.length || isLoading}
           >
-            {periodOptions.map((period) => (
+            {data.periods.map((period) => (
               <option value={period.id} key={period.id}>
                 {period.label}
               </option>
             ))}
+            {!data.periods.length && <option value="">Belum ada periode</option>}
           </select>
         </label>
         <label className={styles.filterField}>
@@ -124,6 +203,7 @@ export function ReportsPage() {
           <select
             value={range}
             onChange={(event) => setRange(event.target.value as ReportRange)}
+            disabled={!periodId || isLoading}
           >
             {rangeOptions.map((option) => (
               <option key={option} value={option}>
@@ -133,10 +213,11 @@ export function ReportsPage() {
           </select>
         </label>
         <span className={styles.filterResult}>
-          {sessions.length} sesi ditemukan
+          {isLoading ? "Memuat laporan..." : `${sessions.length} sesi ditemukan`}
         </span>
       </section>
 
+      {error && <p className={styles.liveNotice} role="alert">{error}</p>}
       <p className={styles.liveNotice} role="status" aria-live="polite">
         {notice}
       </p>
@@ -185,8 +266,8 @@ export function ReportsPage() {
       <MemberReportTable summaries={memberSummaries} />
 
       <p className={styles.previewNote}>
-        Statistik hanya menghitung sesi yang ditutup. Laporan ini menggunakan data
-        contoh pratinjau UI dan belum terhubung ke database.
+        Statistik kehadiran hanya menghitung sesi yang ditutup. Data diperbarui
+        berdasarkan periode dan rentang waktu yang dipilih.
       </p>
     </div>
   );

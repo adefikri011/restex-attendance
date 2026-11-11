@@ -33,8 +33,8 @@ export function ReportAnalytics({
           <div className={styles.sessionBars}>
             {sessions.map((session) => {
               const counts = getSessionCounts(session, totalActive);
-              const percentage = totalActive
-                ? Math.round((counts.hadir / totalActive) * 100)
+              const percentage = counts.totalActive
+                ? Math.round((counts.hadir / counts.totalActive) * 100)
                 : 0;
 
               return (

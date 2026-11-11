@@ -7,6 +7,21 @@ import type { Member } from "@/components/members/member-data";
 
 export type ReportRange = "Bulan ini" | "Semester I" | "Seluruh periode";
 
+export type ReportPeriodOption = {
+  id: string;
+  name: string;
+  label: string;
+  startDate: string;
+  endDate: string;
+};
+
+export type ReportPageData = {
+  periods: ReportPeriodOption[];
+  selectedPeriodId: string;
+  sessions: AttendanceSession[];
+  members: Member[];
+};
+
 export type MemberAttendanceSummary = {
   member: Member;
   hadir: number;
@@ -15,17 +30,6 @@ export type MemberAttendanceSummary = {
   alpha: number;
   attendanceRate: number;
 };
-
-export function filterSessionsByRange(
-  sessions: AttendanceSession[],
-  range: ReportRange,
-) {
-  return sessions.filter((session) => {
-    if (range === "Bulan ini") return session.date.startsWith("2026-11");
-    if (range === "Semester I") return session.date >= "2026-07-01" && session.date <= "2026-12-31";
-    return session.date >= "2026-07-01" && session.date <= "2027-06-30";
-  });
-}
 
 export function summarizeSessions(sessions: AttendanceSession[], totalActive: number) {
   const completedSessions = sessions.filter((session) => session.status === "Ditutup");
@@ -44,7 +48,10 @@ export function summarizeSessions(sessions: AttendanceSession[], totalActive: nu
     totals.Alpha += counts.alpha;
   }
 
-  const possibleAttendance = completedSessions.length * totalActive;
+  const possibleAttendance = completedSessions.reduce(
+    (total, session) => total + (session.eligibleMemberCount ?? totalActive),
+    0,
+  );
 
   return {
     completedSessions,
@@ -73,8 +80,11 @@ export function summarizeMembers(
         Sakit: 0,
         Alpha: 0,
       };
+      const eligibleSessions = completedSessions.filter(
+        (session) => !session.division || session.division === member.division,
+      );
 
-      for (const session of completedSessions) {
+      for (const session of eligibleSessions) {
         const entry = session.attendance.find(
           (attendanceEntry) => attendanceEntry.memberId === member.id,
         );
@@ -87,8 +97,8 @@ export function summarizeMembers(
         izin: attendance.Izin,
         sakit: attendance.Sakit,
         alpha: attendance.Alpha,
-        attendanceRate: completedSessions.length
-          ? Math.round((attendance.Hadir / completedSessions.length) * 100)
+        attendanceRate: eligibleSessions.length
+          ? Math.round((attendance.Hadir / eligibleSessions.length) * 100)
           : 0,
       };
     })

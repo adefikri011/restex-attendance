@@ -46,8 +46,8 @@ export function SessionReportTable({
               {sessions.map((session) => {
                 const counts = getSessionCounts(session, totalActive);
                 const percentage =
-                  session.status === "Ditutup" && totalActive
-                    ? Math.round((counts.hadir / totalActive) * 100)
+                  session.status === "Ditutup" && counts.totalActive
+                    ? Math.round((counts.hadir / counts.totalActive) * 100)
                     : null;
 
                 return (
