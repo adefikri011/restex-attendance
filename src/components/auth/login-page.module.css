@@ -299,6 +299,122 @@
   padding-top: 14px;
 }
 
+.loginMethodSwitch {
+  display: grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap: 4px;
+  margin-bottom: 13px;
+  padding: 4px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+}
+
+.loginMethodSwitch button {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ui-text-secondary);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.loginMethodSwitch button:hover {
+  color: var(--ui-text-primary);
+}
+
+.loginMethodSwitch button.selectedMethod {
+  border-color: var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  box-shadow: 0 1px 3px rgb(11 34 52 / 8%);
+}
+
+.loginMethodSwitch button:focus-visible,
+.identifiedAccount button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.identifiedAccount {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 9px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--ui-text-accent) 28%, var(--ui-border));
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ui-text-accent) 6%, var(--ui-surface));
+}
+
+.identifiedIcon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ui-text-accent) 14%, var(--ui-surface));
+  color: var(--ui-text-accent);
+}
+
+.identifiedAccount > span:nth-child(2) {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.identifiedAccount strong,
+.identifiedAccount small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.identifiedAccount strong {
+  color: var(--ui-text-primary);
+  font-size: 9px;
+}
+
+.identifiedAccount small {
+  color: var(--ui-text-muted);
+  font-size: 8px;
+}
+
+.identifiedAccount button {
+  flex: 0 0 auto;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 8px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.identifiedAccount button:hover {
+  background: var(--ui-surface);
+}
+
+.qrPasswordPrompt {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 9px;
+  line-height: 1.5;
+}
+
 .loginForm {
   display: grid;
   gap: 13px;
@@ -539,6 +655,10 @@
 
   .loginForm {
     gap: 11px;
+  }
+
+  .loginMethodSwitch {
+    margin-bottom: 10px;
   }
 
   .securityNote {

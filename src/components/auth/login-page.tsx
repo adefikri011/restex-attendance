@@ -11,17 +11,21 @@ import {
   Eye,
   EyeOff,
   LockKeyhole,
+  ScanLine,
   ShieldCheck,
   UserRoundCheck,
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
+import { LoginQrScanner } from "./login-qr-scanner";
 import { LoginMascot } from "./login-mascot";
 import { TurnstileWidget, type TurnstileWidgetHandle } from "./turnstile-widget";
 import styles from "./login-page.module.css";
 
 export function LoginPage() {
   const router = useRouter();
+  const [loginMethod, setLoginMethod] = useState<"email" | "qr">("email");
   const [email, setEmail] = useState("");
+  const [qrAccount, setQrAccount] = useState<{ email: string; name: string } | null>(null);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
@@ -30,9 +34,24 @@ export function LoginPage() {
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
+  function chooseLoginMethod(method: "email" | "qr") {
+    if (method === loginMethod) return;
+    setLoginMethod(method);
+    setEmail("");
+    setPassword("");
+    setQrAccount(null);
+    setNotice("");
+    turnstileRef.current?.reset();
+  }
+
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setNotice("");
+
+    if (loginMethod === "qr" && !qrAccount) {
+      setNotice("Pindai QR lanyard yang valid untuk mengenali akun.");
+      return;
+    }
 
     if (!captchaToken) {
       setNotice("Selesaikan verifikasi keamanan sebelum masuk.");
@@ -197,7 +216,7 @@ export function LoginPage() {
           <div className={styles.formHeading}>
             <span className={styles.formEyebrow}>SELAMAT DATANG KEMBALI</span>
             <h2>Masuk ke akun</h2>
-            <p>Masuk dengan kredensial akun RESTEX Attendance.</p>
+            <p>Pilih email atau scan QR lanyard untuk mengenali akun. Kata sandi tetap diperlukan.</p>
           </div>
 
           <p className={styles.liveNotice} role="status" aria-live="polite">
@@ -205,83 +224,146 @@ export function LoginPage() {
           </p>
 
           <section className={styles.credentialsPanel}>
-            <form className={styles.loginForm} onSubmit={handleLogin}>
-              <label className={styles.formLabel}>
+            <div className={styles.loginMethodSwitch} aria-label="Metode masuk">
+              <button
+                type="button"
+                className={loginMethod === "email" ? styles.selectedMethod : ""}
+                aria-pressed={loginMethod === "email"}
+                onClick={() => chooseLoginMethod("email")}
+              >
+                <AtSign size={14} aria-hidden="true" />
                 Email
-                <span className={styles.inputWrap}>
-                  <AtSign size={16} aria-hidden="true" />
-                  <input
-                    autoComplete="username"
-                    autoFocus
-                    required
-                    type="email"
-                    value={email}
-                    onChange={(event) => {
-                      setEmail(event.target.value);
-                      setNotice("");
-                    }}
-                    placeholder="nama@restex.id"
-                  />
-                </span>
-              </label>
-
-              <label className={styles.formLabel}>
-                Kata sandi
-                <span className={styles.inputWrap}>
-                  <LockKeyhole size={16} aria-hidden="true" />
-                  <input
-                    autoComplete="current-password"
-                    required
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    placeholder="Masukkan kata sandi"
-                  />
+              </button>
+              <button
+                type="button"
+                className={loginMethod === "qr" ? styles.selectedMethod : ""}
+                aria-pressed={loginMethod === "qr"}
+                onClick={() => chooseLoginMethod("qr")}
+              >
+                <ScanLine size={14} aria-hidden="true" />
+                Scan QR lanyard
+              </button>
+            </div>
+            <form className={styles.loginForm} onSubmit={handleLogin}>
+              {loginMethod === "email" ? (
+                <label className={styles.formLabel}>
+                  Email
+                  <span className={styles.inputWrap}>
+                    <AtSign size={16} aria-hidden="true" />
+                    <input
+                      autoComplete="username"
+                      autoFocus
+                      required
+                      type="email"
+                      value={email}
+                      onChange={(event) => {
+                        setEmail(event.target.value);
+                        setNotice("");
+                      }}
+                      placeholder="nama@restex.id"
+                    />
+                  </span>
+                </label>
+              ) : qrAccount ? (
+                <div className={styles.identifiedAccount}>
+                  <span className={styles.identifiedIcon}>
+                    <Check size={16} aria-hidden="true" />
+                  </span>
+                  <span>
+                    <strong>{qrAccount.name}</strong>
+                    <small>{qrAccount.email}</small>
+                  </span>
                   <button
                     type="button"
-                    className={styles.passwordToggle}
-                    onClick={() => setShowPassword((visible) => !visible)}
-                    aria-label={
-                      showPassword ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
-                    }
+                    onClick={() => {
+                      setQrAccount(null);
+                      setEmail("");
+                      setPassword("");
+                    }}
                   >
-                    {showPassword ? (
-                      <EyeOff size={16} aria-hidden="true" />
-                    ) : (
-                      <Eye size={16} aria-hidden="true" />
-                    )}
+                    Pindai ulang
                   </button>
-                </span>
-              </label>
+                </div>
+              ) : (
+                <LoginQrScanner
+                  onAccountIdentified={(account) => {
+                    setQrAccount(account);
+                    setEmail(account.email);
+                    setNotice("");
+                  }}
+                />
+              )}
 
-              <div className={styles.formOptions}>
-                <label className={styles.rememberOption}>
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(event) => setRemember(event.target.checked)}
+              {(loginMethod === "email" || qrAccount) && (
+                <>
+                  {qrAccount && (
+                    <p className={styles.qrPasswordPrompt}>
+                      Masukkan kata sandi untuk melanjutkan dengan akun ini.
+                    </p>
+                  )}
+                  <label className={styles.formLabel}>
+                    Kata sandi
+                    <span className={styles.inputWrap}>
+                      <LockKeyhole size={16} aria-hidden="true" />
+                      <input
+                        autoComplete="current-password"
+                        required
+                        type={showPassword ? "text" : "password"}
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder="Masukkan kata sandi"
+                      />
+                      <button
+                        type="button"
+                        className={styles.passwordToggle}
+                        onClick={() => setShowPassword((visible) => !visible)}
+                        aria-label={
+                          showPassword
+                            ? "Sembunyikan kata sandi"
+                            : "Tampilkan kata sandi"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff size={16} aria-hidden="true" />
+                        ) : (
+                          <Eye size={16} aria-hidden="true" />
+                        )}
+                      </button>
+                    </span>
+                  </label>
+
+                  <div className={styles.formOptions}>
+                    <label className={styles.rememberOption}>
+                      <input
+                        type="checkbox"
+                        checked={remember}
+                        onChange={(event) => setRemember(event.target.checked)}
+                      />
+                      <span className={styles.customCheckbox} aria-hidden="true">
+                        <Check size={12} strokeWidth={3} />
+                      </span>
+                      Ingat saya
+                    </label>
+                    <span className={styles.forgotHelp}>
+                      Lupa sandi? Hubungi Admin.
+                    </span>
+                  </div>
+
+                  <TurnstileWidget
+                    ref={turnstileRef}
+                    onTokenChange={setCaptchaToken}
                   />
-                  <span className={styles.customCheckbox} aria-hidden="true">
-                    <Check size={12} strokeWidth={3} />
-                  </span>
-                  Ingat saya
-                </label>
-                <span className={styles.forgotHelp}>Lupa sandi? Hubungi Admin.</span>
-              </div>
 
-              <TurnstileWidget
-                ref={turnstileRef}
-                onTokenChange={setCaptchaToken}
-              />
-
-              <button
-                type="submit"
-                className={styles.submitButton}
-                disabled={isSubmitting || !captchaToken}
-              >
-                {isSubmitting ? "Memeriksa..." : "Masuk"}
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
+                  <button
+                    type="submit"
+                    className={styles.submitButton}
+                    disabled={isSubmitting || !captchaToken}
+                  >
+                    {isSubmitting ? "Memeriksa..." : "Masuk"}
+                    <ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                </>
+              )}
             </form>
 
             <div className={styles.loginInfo}>
