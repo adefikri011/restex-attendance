@@ -3,11 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import {
   ArrowRight,
   AtSign,
-  CheckCircle2,
+  Check,
   Eye,
   EyeOff,
   LockKeyhole,
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { LoginMascot } from "./login-mascot";
+import { TurnstileWidget, type TurnstileWidgetHandle } from "./turnstile-widget";
 import styles from "./login-page.module.css";
 
 export function LoginPage() {
@@ -26,27 +27,47 @@ export function LoginPage() {
   const [remember, setRemember] = useState(true);
   const [notice, setNotice] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const turnstileRef = useRef<TurnstileWidgetHandle>(null);
 
   async function handleLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setNotice("");
+
+    if (!captchaToken) {
+      setNotice("Selesaikan verifikasi keamanan sebelum masuk.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const { data, error } = await authClient.signIn.email({
-        email: email.trim().toLowerCase(),
-        password,
-        rememberMe: remember,
-      });
+      const { data, error } = await authClient.signIn.email(
+        {
+          email: email.trim().toLowerCase(),
+          password,
+          rememberMe: remember,
+        },
+        {
+          headers: { "x-captcha-response": captchaToken },
+        },
+      );
 
       if (error || !data) {
-        setNotice("Email atau kata sandi tidak valid. Silakan coba lagi.");
+        turnstileRef.current?.reset();
+        setNotice(
+          error?.code === "VERIFICATION_FAILED" ||
+            error?.code === "MISSING_RESPONSE"
+            ? "Verifikasi keamanan gagal. Silakan coba kembali."
+            : "Email atau kata sandi tidak valid. Silakan coba lagi.",
+        );
         return;
       }
 
       router.replace("/dashboard");
       router.refresh();
     } catch {
+      turnstileRef.current?.reset();
       setNotice("Layanan login tidak dapat dihubungi. Silakan coba lagi.");
     } finally {
       setIsSubmitting(false);
@@ -241,17 +262,22 @@ export function LoginPage() {
                     onChange={(event) => setRemember(event.target.checked)}
                   />
                   <span className={styles.customCheckbox} aria-hidden="true">
-                    <CheckCircle2 size={12} />
+                    <Check size={12} strokeWidth={3} />
                   </span>
                   Ingat saya
                 </label>
                 <span className={styles.forgotHelp}>Lupa sandi? Hubungi Admin.</span>
               </div>
 
+              <TurnstileWidget
+                ref={turnstileRef}
+                onTokenChange={setCaptchaToken}
+              />
+
               <button
                 type="submit"
                 className={styles.submitButton}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !captchaToken}
               >
                 {isSubmitting ? "Memeriksa..." : "Masuk"}
                 <ArrowRight size={16} aria-hidden="true" />

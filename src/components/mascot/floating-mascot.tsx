@@ -2,91 +2,116 @@
 
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { Bot, X } from "lucide-react";
 import styles from "./floating-mascot.module.css";
+
+const APPEARANCE_INTERVAL = 3 * 60_000;
+const DISPLAY_DURATION = 16_000;
+
+const poses = [
+  {
+    src: "/assets/mascot/floating-guide.webp",
+    message: "Butuh bantuan? Aku tunjukkan bagian yang kamu perlukan.",
+  },
+  {
+    src: "/assets/mascot/floating-scan.webp",
+    message: "Siap hadir? Pindai QR kegiatan untuk mencatat kehadiranmu.",
+  },
+  {
+    src: "/assets/mascot/floating-lanyard.webp",
+    message: "Jangan lupa kenakan lanyard saat bertugas, ya.",
+  },
+  {
+    src: "/assets/mascot/floating-done.webp",
+    message: "Terima kasih sudah menjaga kegiatan RESTEX tetap tertib!",
+  },
+] as const;
 
 export function FloatingMascot() {
   const pathname = usePathname();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [poseIndex, setPoseIndex] = useState(0);
+  const [isHidden, setIsHidden] = useState(false);
+  const [phase, setPhase] = useState<"display" | "interval">("display");
+  const pose = poses[poseIndex];
+  const isLoginPage = pathname === "/login";
 
   useEffect(() => {
-    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const video = videoRef.current;
-    let isActive = true;
-
-    function syncPlayback(video: HTMLVideoElement) {
-      if (motionPreference.matches) {
-        video.pause();
-        setIsPlaying(false);
-        return;
-      }
-
-      void video.play().then(
-        () => {
-          if (isActive && !motionPreference.matches) {
-            setIsPlaying(true);
-          }
-        },
-        () => {
-          if (isActive) {
-            setIsPlaying(false);
-          }
-        },
-      );
-    }
-
-    function handleMotionPreferenceChange() {
-      const currentVideo = videoRef.current;
-
-      if (currentVideo) {
-        syncPlayback(currentVideo);
-      }
-    }
-
-    if (!video) {
+    if (isLoginPage) {
       return;
     }
 
-    motionPreference.addEventListener("change", handleMotionPreferenceChange);
-    syncPlayback(video);
+    const timeout = window.setTimeout(() => {
+      if (phase === "display") {
+        setIsVisible(false);
+        setPhase("interval");
+      } else {
+        setPoseIndex((current) => (current + 1) % poses.length);
+        setIsVisible(true);
+        setIsHidden(false);
+        setPhase("display");
+      }
+    }, phase === "display" ? DISPLAY_DURATION : APPEARANCE_INTERVAL);
 
-    return () => {
-      isActive = false;
-      motionPreference.removeEventListener("change", handleMotionPreferenceChange);
-      video.pause();
-    };
-  }, []);
+    return () => window.clearTimeout(timeout);
+  }, [isLoginPage, phase]);
 
-  if (pathname === "/login") {
+  function hideMascot() {
+    setIsVisible(false);
+    setIsHidden(true);
+  }
+
+  function showMascot() {
+    setIsVisible(true);
+    setIsHidden(false);
+    setPhase("display");
+  }
+
+  if (isLoginPage) {
     return null;
   }
 
   return (
-    <div className={styles.mascotDock} aria-hidden="true">
-      <video
-        ref={videoRef}
-        className={`${styles.mascotVideo} ${isPlaying ? styles.playing : ""}`}
-        muted
-        loop
-        playsInline
-        preload="metadata"
-        tabIndex={-1}
-      >
-        <source
-          src="/assets/mascot/bengong.webm"
-          type="video/webm"
-        />
-      </video>
-      <Image
-        className={`${styles.mascotFallback} ${isPlaying ? styles.hidden : ""}`}
-        src="/assets/mascot/login-wave.webp"
-        alt=""
-        width={720}
-        height={720}
-        loading="eager"
-        unoptimized
-      />
-    </div>
+    <aside
+      className={`${styles.mascotDock} ${isVisible && !isHidden ? styles.visible : ""}`}
+      aria-label="Maskot RESTEX Attendance"
+    >
+      {isHidden || !isVisible ? (
+        <button
+          type="button"
+          className={styles.restoreButton}
+          aria-label="Tampilkan maskot"
+          title="Tampilkan maskot"
+          onClick={showMascot}
+        >
+          <Bot size={19} aria-hidden="true" />
+        </button>
+      ) : (
+        <>
+          <div className={styles.speechBubble} role="status" aria-live="polite">
+            <p key={pose.src}>{pose.message}</p>
+          </div>
+          <Image
+            key={pose.src}
+            className={styles.mascotImage}
+            src={pose.src}
+            alt=""
+            width={320}
+            height={320}
+            unoptimized
+          />
+          <button
+            type="button"
+            className={styles.hideButton}
+            aria-label="Sembunyikan maskot"
+            title="Sembunyikan maskot"
+            onClick={hideMascot}
+          >
+            <X size={14} aria-hidden="true" />
+          </button>
+        </>
+      )}
+    </aside>
   );
 }

@@ -33,6 +33,12 @@ Login menggunakan Better Auth dengan sesi yang disimpan di PostgreSQL. Atur
 acak minimal 32 karakter. Pendaftaran publik dinonaktifkan; role hanya dibaca
 dari akun di database dan diverifikasi lagi pada halaman server.
 
+Login dilindungi Cloudflare Turnstile. Isi `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+dengan site key publik dan `CLOUDFLARE_TURNSTILE_SECRET_KEY` dengan secret key
+server dari widget Turnstile. Verifikasi token dilakukan pada endpoint login
+Better Auth; login akan ditolak sampai kedua key dikonfigurasi. Batasi hostname
+widget di Cloudflare sesuai domain aplikasi dan `BETTER_AUTH_URL`.
+
 Sebelum login pertama, siapkan backup database lalu terapkan migrasi autentikasi
 ke database yang benar:
 

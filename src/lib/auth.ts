@@ -2,6 +2,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { captcha } from "better-auth/plugins/captcha";
 import { prisma } from "@/lib/prisma";
 
 const isProductionRuntime =
@@ -31,12 +32,21 @@ if (baseURL) {
 }
 
 const trustedOrigins = new Set(baseURL ? [new URL(baseURL).origin] : []);
+const turnstileAllowedHostnames = new Set(
+  baseURL ? [new URL(baseURL).hostname] : [],
+);
 if (process.env.NODE_ENV !== "production") {
   trustedOrigins.add("http://localhost:3000");
   trustedOrigins.add("http://127.0.0.1:3000");
+  turnstileAllowedHostnames.add("localhost");
+  turnstileAllowedHostnames.add("127.0.0.1");
   for (const origin of process.env.BETTER_AUTH_TRUSTED_ORIGINS?.split(",") ?? []) {
     const trimmedOrigin = origin.trim();
-    if (trimmedOrigin) trustedOrigins.add(new URL(trimmedOrigin).origin);
+    if (trimmedOrigin) {
+      const parsedOrigin = new URL(trimmedOrigin);
+      trustedOrigins.add(parsedOrigin.origin);
+      turnstileAllowedHostnames.add(parsedOrigin.hostname);
+    }
   }
 }
 
@@ -105,4 +115,13 @@ export const auth = betterAuth({
     window: 60,
     max: 5,
   },
+  plugins: [
+    captcha({
+      provider: "cloudflare-turnstile",
+      secretKey: process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY?.trim() ?? "",
+      endpoints: ["/sign-in/email"],
+      expectedAction: "login",
+      allowedHostnames: [...turnstileAllowedHostnames],
+    }),
+  ],
 });

@@ -369,45 +369,67 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-top: -3px;
+  margin-top: -1px;
 }
 
 .rememberOption {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   color: var(--ui-text-secondary);
-  font-size: 8px;
+  font-size: 9px;
+  font-weight: 550;
   cursor: pointer;
+  user-select: none;
 }
 
 .rememberOption input {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  clip-path: inset(50%);
   opacity: 0;
 }
 
 .customCheckbox {
   display: grid;
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
   place-items: center;
   border: 1px solid var(--ui-border);
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--ui-surface);
   color: transparent;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
 }
 
 .rememberOption input:checked + .customCheckbox {
   border-color: var(--ui-button-primary);
   background: var(--ui-button-primary);
   color: var(--ui-button-primary-text);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--ui-button-primary) 22%, transparent);
 }
 
 .rememberOption input:focus-visible + .customCheckbox {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+.customCheckbox svg {
+  opacity: 0;
+  transform: scale(0.65);
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.rememberOption input:checked + .customCheckbox svg {
+  opacity: 1;
+  transform: scale(1);
 }
 
 .forgotHelp {
@@ -436,6 +458,11 @@
 
 .submitButton:hover {
   background: var(--ui-button-primary-hover);
+}
+
+.submitButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .submitButton:active {
@@ -611,7 +638,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .inputWrap,
-  .submitButton {
+  .submitButton,
+  .customCheckbox,
+  .customCheckbox svg {
     transition: none;
   }
 }
