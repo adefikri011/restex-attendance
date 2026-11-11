@@ -1,7 +1,9 @@
 .loginPage {
   display: grid;
-  min-height: 100svh;
+  width: 100%;
+  height: 100svh;
   grid-template-columns: minmax(340px, 0.9fr) minmax(500px, 1.1fr);
+  overflow: hidden;
   background: var(--ui-background);
   color: var(--ui-text-primary);
 }
@@ -9,11 +11,11 @@
 .brandPanel {
   position: relative;
   display: flex;
-  min-height: 100svh;
+  min-height: 0;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
-  padding: clamp(32px, 5vw, 68px);
+  padding: clamp(24px, 5vh, 48px) clamp(30px, 5vw, 68px);
   background:
     radial-gradient(ellipse at 86% 30%, rgb(33 89 116 / 42%), transparent 34%),
     linear-gradient(145deg, #08283f 0%, #0b2f4a 56%, #113c57 100%);
@@ -49,6 +51,13 @@
   z-index: 1;
 }
 
+.brandContent {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+
 .brandLink {
   display: inline-flex;
   align-items: center;
@@ -72,6 +81,8 @@
 
 .wordmark strong,
 .mobileBrand strong {
+  display: flex;
+  align-items: center;
   color: #f7fbfd;
   font-size: 15px;
   font-weight: 820;
@@ -79,9 +90,13 @@
   line-height: 1;
 }
 
-.wordmark strong span,
-.mobileBrand strong span {
-  color: #ef5c77;
+.wordmarkX {
+  display: block;
+  width: 25px;
+  height: 18px;
+  flex: 0 0 auto;
+  margin-left: -3px;
+  overflow: visible;
 }
 
 .wordmark small,
@@ -94,7 +109,8 @@
 
 .brandMessage {
   max-width: 470px;
-  margin-top: clamp(72px, 16vh, 156px);
+  margin-top: auto;
+  padding-top: clamp(24px, 7vh, 62px);
 }
 
 .brandEyebrow {
@@ -138,8 +154,8 @@
 
 .featureList {
   display: grid;
-  gap: 17px;
-  margin-top: clamp(36px, 7vh, 68px);
+  gap: 14px;
+  margin-top: clamp(22px, 4vh, 36px);
 }
 
 .featureItem {
@@ -180,7 +196,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 6px 12px;
-  margin-top: 40px;
+  margin-top: clamp(18px, 3vh, 28px);
   color: #a9bfcc;
   font-size: 8px;
   letter-spacing: 0.04em;
@@ -208,37 +224,15 @@
 .formPanel {
   display: flex;
   min-width: 0;
-  min-height: 100svh;
+  min-height: 0;
   flex-direction: column;
-  padding: 27px clamp(24px, 5vw, 68px) 20px;
-}
-
-.topActions {
-  display: flex;
-  min-height: 38px;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.backLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ui-text-muted);
-  font-size: 10px;
-  font-weight: 550;
-  text-decoration: none;
-  transition: color 150ms ease;
-}
-
-.backLink:hover {
-  color: var(--ui-text-primary);
+  padding: 20px clamp(24px, 5vw, 68px) 15px;
 }
 
 .loginContent {
   width: min(100%, 430px);
   margin: auto;
-  padding: 36px 0;
+  padding: 16px 0;
 }
 
 .mobileBrand {
@@ -246,7 +240,7 @@
 }
 
 .formHeading {
-  margin-bottom: 25px;
+  margin-bottom: 18px;
 }
 
 .formEyebrow {
@@ -302,12 +296,12 @@
 }
 
 .credentialsPanel {
-  padding-top: 20px;
+  padding-top: 14px;
 }
 
 .loginForm {
   display: grid;
-  gap: 16px;
+  gap: 13px;
 }
 
 .formLabel {
@@ -455,7 +449,7 @@
 }
 
 .securityNote {
-  margin: 19px 0 0;
+  margin: 14px 0 0;
   color: var(--ui-text-muted);
   font-size: 8px;
   text-align: center;
@@ -470,13 +464,69 @@
   font-size: 8px;
 }
 
+@media (max-height: 760px) and (min-width: 721px) {
+  .brandMessage {
+    padding-top: 20px;
+  }
+
+  .brandMessage h1 {
+    margin: 14px 0 10px;
+    font-size: clamp(38px, 4.7vw, 56px);
+  }
+
+  .brandMessage p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .featureList {
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .featureItem > span {
+    width: 32px;
+    height: 32px;
+  }
+
+  .brandFooter {
+    margin-top: 14px;
+  }
+
+  .formPanel {
+    padding-top: 14px;
+    padding-bottom: 12px;
+  }
+
+  .loginContent {
+    padding: 10px 0;
+  }
+
+  .formHeading {
+    margin-bottom: 14px;
+  }
+
+  .formHeading h2 {
+    font-size: 27px;
+  }
+
+  .loginForm {
+    gap: 11px;
+  }
+
+  .securityNote {
+    margin-top: 11px;
+  }
+}
+
 @media (max-width: 900px) {
   .loginPage {
-    grid-template-columns: minmax(290px, 0.8fr) minmax(440px, 1.2fr);
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
   }
 
   .brandPanel {
-    padding: 34px;
+    padding-right: 30px;
+    padding-left: 30px;
   }
 
   .formPanel {
@@ -492,7 +542,9 @@
 @media (max-width: 720px) {
   .loginPage {
     display: block;
+    height: auto;
     min-height: 100svh;
+    overflow: visible;
   }
 
   .brandPanel {
@@ -558,7 +610,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .backLink,
   .inputWrap,
   .submitButton {
     transition: none;

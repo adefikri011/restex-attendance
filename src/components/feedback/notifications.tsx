@@ -29,9 +29,9 @@ const statusMarks = {
 };
 
 const mascotImages: Record<NotificationStatus, { src: string; alt: string }> = {
-  loading: { src: "/assets/mascot/work.webp", alt: "" },
-  success: { src: "/assets/mascot/happy.webp", alt: "" },
-  error: { src: "/assets/mascot/error.webp", alt: "" },
+  loading: { src: "/assets/mascot/feedback-loading.webp", alt: "" },
+  success: { src: "/assets/mascot/feedback-success.webp", alt: "" },
+  error: { src: "/assets/mascot/feedback-warning.webp", alt: "" },
 };
 
 function NotificationCard({

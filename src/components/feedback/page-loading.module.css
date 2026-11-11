@@ -50,10 +50,10 @@
 
 .eyelid {
   position: absolute;
-  top: 45.5%;
+  top: 32%;
   z-index: 1;
-  width: 11%;
-  height: 4.5%;
+  width: 9%;
+  height: 5%;
   border-radius: 50%;
   background: #11172c;
   opacity: 0;
@@ -63,11 +63,11 @@
 }
 
 .leftEyelid {
-  left: 22%;
+  left: 34%;
 }
 
 .rightEyelid {
-  left: 53.5%;
+  left: 58%;
   animation-delay: 80ms;
 }
 

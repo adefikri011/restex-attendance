@@ -1,0 +1,68 @@
+.mascotDock {
+  position: fixed;
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 20;
+  display: grid;
+  width: clamp(72px, 8vw, 104px);
+  aspect-ratio: 1;
+  place-items: center;
+  isolation: isolate;
+  pointer-events: none;
+}
+
+.mascotDock::before {
+  position: absolute;
+  z-index: -1;
+  inset: 20%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(55 177 208 / 24%), transparent 72%);
+  content: "";
+  filter: blur(12px);
+}
+
+.mascotVideo,
+.mascotFallback {
+  position: absolute;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.mascotVideo {
+  filter: drop-shadow(0 9px 10px rgb(11 34 52 / 16%));
+}
+
+.mascotVideo.playing {
+  opacity: 1;
+}
+
+.mascotFallback {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 7px 9px rgb(11 34 52 / 14%));
+  opacity: 1;
+}
+
+.mascotFallback.hidden {
+  opacity: 0;
+}
+
+@media (max-width: 600px) {
+  .mascotDock {
+    right: max(8px, env(safe-area-inset-right));
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: 76px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascotVideo,
+  .mascotFallback {
+    transition: none;
+  }
+}

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   AtSign,
   CheckCircle2,
@@ -15,8 +14,8 @@ import {
   ShieldCheck,
   UserRoundCheck,
 } from "lucide-react";
-import { ThemeSwitcher } from "@/components/theme/theme-switcher";
 import { authClient } from "@/lib/auth-client";
+import { LoginMascot } from "./login-mascot";
 import styles from "./login-page.module.css";
 
 export function LoginPage() {
@@ -59,6 +58,7 @@ export function LoginPage() {
       <section className={styles.brandPanel} aria-label="RESTEX Attendance">
         <div className={styles.brandGlow} aria-hidden="true" />
         <div className={styles.brandContent}>
+          <LoginMascot />
           <Link className={styles.brandLink} href="/" aria-label="RESTEX Attendance">
             <Image
               className={styles.brandLogo}
@@ -70,16 +70,34 @@ export function LoginPage() {
               unoptimized
             />
             <span className={styles.wordmark}>
-              <strong>RESTE<span>X</span></strong>
+              <strong>
+                RESTE
+                <svg
+                  className={styles.wordmarkX}
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <linearGradient id="login-brand-x-blue" x1="2" y1="2" x2="32" y2="22" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DDF7FF" />
+                      <stop offset=".48" stopColor="#69CBE8" />
+                      <stop offset="1" stopColor="#3186B6" />
+                    </linearGradient>
+                    <linearGradient id="login-brand-x-rose" x1="3" y1="23" x2="34" y2="2" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#E84F70" />
+                      <stop offset="1" stopColor="#FF8294" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M1.5 1C8 3.4 14.7 9 21 13.8L35 23.5C28.2 21.6 21.5 16 15.2 11.2L1.5 1Z" fill="url(#login-brand-x-blue)" />
+                  <path d="M.6 23.3C6.5 18.5 13.5 12.9 20.5 7.6 26.4 3.2 31.8.8 35.7.2 32.3 3.2 27.9 7 22.1 11.8 15.8 17 8.8 22.3 3.1 23.8 2.1 24.1 1.2 23.9.6 23.3Z" fill="url(#login-brand-x-rose)" />
+                </svg>
+              </strong>
               <small>ATTENDANCE</small>
             </span>
           </Link>
 
           <div className={styles.brandMessage}>
-            <span className={styles.brandEyebrow}>
-              <span aria-hidden="true" />
-              RUANG KERJA RESTEX
-            </span>
             <h1>
               Hadir untuk
               <br />
@@ -118,14 +136,6 @@ export function LoginPage() {
       </section>
 
       <section className={styles.formPanel}>
-        <div className={styles.topActions}>
-          <Link href="/" className={styles.backLink}>
-            <ArrowLeft size={15} aria-hidden="true" />
-            Kembali
-          </Link>
-          <ThemeSwitcher />
-        </div>
-
         <div className={styles.loginContent}>
           <div className={styles.mobileBrand}>
             <Image
@@ -136,7 +146,29 @@ export function LoginPage() {
               unoptimized
             />
             <span>
-              <strong>RESTE<span>X</span></strong>
+              <strong>
+                RESTE
+                <svg
+                  className={styles.wordmarkX}
+                  viewBox="0 0 36 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <defs>
+                    <linearGradient id="login-mobile-x-blue" x1="2" y1="2" x2="32" y2="22" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#DDF7FF" />
+                      <stop offset=".48" stopColor="#69CBE8" />
+                      <stop offset="1" stopColor="#3186B6" />
+                    </linearGradient>
+                    <linearGradient id="login-mobile-x-rose" x1="3" y1="23" x2="34" y2="2" gradientUnits="userSpaceOnUse">
+                      <stop stopColor="#E84F70" />
+                      <stop offset="1" stopColor="#FF8294" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M1.5 1C8 3.4 14.7 9 21 13.8L35 23.5C28.2 21.6 21.5 16 15.2 11.2L1.5 1Z" fill="url(#login-mobile-x-blue)" />
+                  <path d="M.6 23.3C6.5 18.5 13.5 12.9 20.5 7.6 26.4 3.2 31.8.8 35.7.2 32.3 3.2 27.9 7 22.1 11.8 15.8 17 8.8 22.3 3.1 23.8 2.1 24.1 1.2 23.9.6 23.3Z" fill="url(#login-mobile-x-rose)" />
+                </svg>
+              </strong>
               <small>ATTENDANCE</small>
             </span>
           </div>

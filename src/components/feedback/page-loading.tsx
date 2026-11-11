@@ -22,10 +22,10 @@ export function PageLoading({
           <div className={styles.mascotArtwork}>
             <Image
               className={styles.mascot}
-              src="/assets/mascot/work.webp"
+              src="/assets/mascot/feedback-loading.webp"
               alt=""
-              width={262}
-              height={239}
+              width={256}
+              height={256}
               priority
               unoptimized
             />
