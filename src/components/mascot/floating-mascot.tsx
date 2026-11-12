@@ -36,9 +36,10 @@ export function FloatingMascot() {
   const [phase, setPhase] = useState<"display" | "interval">("display");
   const pose = poses[poseIndex];
   const isLoginPage = pathname === "/login";
+  const isLandingPage = pathname === "/";
 
   useEffect(() => {
-    if (isLoginPage) {
+    if (isLoginPage || isLandingPage) {
       return;
     }
 
@@ -55,7 +56,7 @@ export function FloatingMascot() {
     }, phase === "display" ? DISPLAY_DURATION : APPEARANCE_INTERVAL);
 
     return () => window.clearTimeout(timeout);
-  }, [isLoginPage, phase]);
+  }, [isLandingPage, isLoginPage, phase]);
 
   function hideMascot() {
     setIsVisible(false);
@@ -68,7 +69,7 @@ export function FloatingMascot() {
     setPhase("display");
   }
 
-  if (isLoginPage) {
+  if (isLoginPage || isLandingPage) {
     return null;
   }
 

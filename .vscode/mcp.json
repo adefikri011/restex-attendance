@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "anti-ai-slop": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/home/fikri/.local/share/anti-ai-slop/mcp/server.mjs"]
+    }
+  },
+  "inputs": []
+}

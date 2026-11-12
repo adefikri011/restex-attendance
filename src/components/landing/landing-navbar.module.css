@@ -1,6 +1,6 @@
 .header {
   position: fixed;
-  inset: 20px 16px auto;
+  inset: 18px 16px auto;
   z-index: 40;
   display: flex;
   justify-content: center;
@@ -9,39 +9,61 @@
 
 .floatingPill {
   display: flex;
-  width: min(100%, 1020px);
-  min-height: 62px;
+  width: 100%;
+  min-height: 60px;
   align-items: center;
-  gap: 20px;
-  padding: 8px 10px 8px 15px;
-  border: 1px solid rgb(255 255 255 / 78%);
+  gap: 18px;
+  padding: 7px 9px 7px 13px;
+  border: 1px solid rgb(255 255 255 / 88%);
   border-radius: 999px;
-  background: rgb(255 255 255 / 88%);
-  box-shadow:
-    0 12px 36px rgb(22 47 67 / 10%),
-    0 2px 8px rgb(22 47 67 / 5%);
-  backdrop-filter: blur(18px);
+  background: rgb(255 255 255 / 96%);
+  box-shadow: 0 8px 30px rgb(18 43 61 / 10%);
   pointer-events: auto;
+  transition:
+    width 260ms ease,
+    min-height 260ms ease,
+    gap 260ms ease,
+    padding 260ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.floatingPill:global(.site-container) {
+  width: min(1200px, calc(100% - 2 * var(--gutter)));
+  flex: 0 0 auto;
 }
 
 .brand {
   display: inline-flex;
   min-width: max-content;
+  min-height: 42px;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #0b2f4a;
+  cursor: pointer;
+  text-align: left;
   text-decoration: none;
 }
 
 .logo {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
   object-fit: contain;
 }
 
 .brandName {
   display: grid;
   gap: 2px;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    width 220ms ease,
+    opacity 140ms ease;
 }
 
 .brandName strong {
@@ -63,19 +85,25 @@
 }
 
 .brandName small {
-  color: #8393a0;
-  font-size: 7px;
+  color: #526b7c;
+  font-size: 10px;
   font-weight: 750;
-  letter-spacing: 0.19em;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
 }
 
 .desktopNavigation {
   display: flex;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   gap: 3px;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    flex-basis 220ms ease,
+    opacity 140ms ease;
 }
 
 .navItem {
@@ -87,8 +115,8 @@
   padding: 0 11px;
   border-radius: 999px;
   color: #607586;
-  font-size: 11px;
-  font-weight: 650;
+  font-size: 14px;
+  font-weight: 550;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -125,7 +153,7 @@ a.navItem:hover {
 .loginLink,
 .mobileLoginLink {
   display: inline-flex;
-  min-height: 38px;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   padding: 0 17px;
@@ -133,8 +161,8 @@ a.navItem:hover {
   border-radius: 999px;
   background: #0b2f4a;
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   transition: background 150ms ease, transform 150ms ease;
@@ -152,71 +180,183 @@ a.navItem:hover {
   margin-left: auto;
 }
 
-.mobileMenu summary {
+.mobileNavigation {
+  position: absolute;
+  top: calc(100% + 11px);
+  right: 0;
+  display: none;
+  width: min(340px, calc(100vw - 24px));
+  padding: 18px;
+  border: 1px solid rgb(255 255 255 / 90%);
+  border-radius: 21px;
+  background: rgb(249 250 248 / 96%);
+  box-shadow:
+    0 18px 48px rgb(16 47 70 / 16%),
+    0 0 20px rgb(255 255 255 / 80%);
+  backdrop-filter: blur(22px) saturate(155%);
+  animation: menuReveal 180ms ease both;
+}
+
+.mobileMenu[data-open="true"] .mobileNavigation {
   display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 50%;
-  color: #0b2f4a;
-  cursor: pointer;
+}
+
+.mobileMenuHeading {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 1px 13px;
+  border-bottom: 1px solid #dfe5e5;
+  color: #86959c;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.mobileNavList {
+  display: grid;
+  margin: 0;
+  padding: 0;
   list-style: none;
 }
 
-.mobileMenu summary::-webkit-details-marker {
-  display: none;
+.mobileNavList li + li {
+  border-top: 1px solid #e4e9e9;
 }
 
-.mobileMenu summary:hover,
-.mobileMenu[open] summary {
-  background: #edf3f6;
-}
-
-.mobileNavigation {
-  position: absolute;
-  top: calc(100% + 13px);
-  right: -10px;
+.mobileNavLink,
+.mobileNavDisabled {
   display: grid;
-  width: min(300px, calc(100vw - 32px));
-  gap: 4px;
-  padding: 9px;
-  border: 1px solid #e2e8ed;
-  border-radius: 20px;
-  background: rgb(255 255 255 / 97%);
-  box-shadow: 0 16px 42px rgb(22 47 67 / 14%);
-  backdrop-filter: blur(18px);
+  min-height: 47px;
+  grid-template-columns: 26px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  color: #18384d;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
 }
 
-.mobileNavigation .navItem {
-  justify-content: flex-start;
-  min-height: 42px;
-  padding: 0 13px;
-  border-radius: 12px;
-  font-size: 12px;
+.mobileNavLink {
+  transition: color 140ms ease, padding 140ms ease;
 }
 
-.mobileNavigation .comingSoon {
-  margin-left: auto;
+.mobileNavLink:hover {
+  padding-right: 3px;
+  padding-left: 3px;
+  color: #d83f63;
+}
+
+.mobileNavNumber {
+  color: #d83f63;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.mobileNavArrow {
+  color: #d83f63;
+  font-size: 14px;
+}
+
+.mobileNavDisabled {
+  color: #76868e;
+  font-weight: 500;
+}
+
+.mobileComingSoon {
+  color: #9aa6ab;
+  font-size: 8px;
+  font-weight: 600;
 }
 
 .mobileLoginLink {
-  min-height: 42px;
-  margin-top: 5px;
-  border-radius: 12px;
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 13px;
+  padding: 0 14px;
+  border-radius: 11px;
+  background: #102f46;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 150ms ease;
+}
+
+.mobileLoginLink:hover {
+  background: #164a6b;
 }
 
 .brand:focus-visible,
 .navItem:focus-visible,
 .loginLink:focus-visible,
-.mobileMenu summary:focus-visible,
+.menuToggle:focus-visible,
+.mobileNavLink:focus-visible,
 .mobileLoginLink:focus-visible {
   outline: 3px solid #d83f63;
   outline-offset: 3px;
 }
 
-@media (max-width: 900px) {
+@keyframes menuReveal {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -5px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@media (min-width: 768px) {
+  .header[data-collapsed="true"] .floatingPill {
+    width: min(232px, calc(100vw - 32px));
+    min-height: 58px;
+    justify-content: center;
+    gap: 0;
+    padding: 7px 12px;
+    border-color: rgb(255 255 255 / 96%);
+    background: rgb(255 255 255 / 96%);
+    box-shadow:
+      0 8px 30px rgb(18 43 61 / 14%);
+  }
+
+  .header[data-collapsed="true"] .brand {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    gap: 8px;
+    color: #0b2f4a;
+  }
+
+  .header[data-collapsed="true"] .logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .header[data-collapsed="true"] .brandName strong {
+    font-size: 12px;
+  }
+
+  .header[data-collapsed="true"] .brandName small {
+    color: #607586;
+    font-size: 10px;
+    letter-spacing: 0.13em;
+  }
+
+  .header[data-collapsed="true"] .desktopNavigation,
+  .header[data-collapsed="true"] .loginLink {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) and (min-width: 768px) {
   .floatingPill {
-    gap: 10px;
+    gap: 8px;
   }
 
   .desktopNavigation {
@@ -224,9 +364,9 @@ a.navItem:hover {
   }
 
   .navItem {
-    padding-right: 8px;
-    padding-left: 8px;
-    font-size: 10px;
+    padding-right: 7px;
+    padding-left: 7px;
+    font-size: 14px;
   }
 
   .comingSoon {
@@ -234,16 +374,36 @@ a.navItem:hover {
   }
 }
 
-@media (max-width: 680px) {
+@media (max-width: 767px) {
   .header {
-    inset: 12px 12px auto;
+    inset: 12px 0 auto;
   }
 
   .floatingPill {
+    position: relative;
+    width: 100%;
     min-height: 56px;
     justify-content: space-between;
     gap: 8px;
-    padding: 7px 8px 7px 12px;
+    padding: 6px;
+  }
+
+  .brand {
+    gap: 6px;
+  }
+
+  .logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .brandName strong {
+    font-size: 12px;
+  }
+
+  .brandName small {
+    font-size: 10px;
+    letter-spacing: 0.02em;
   }
 
   .desktopNavigation {
@@ -251,21 +411,103 @@ a.navItem:hover {
   }
 
   .loginLink {
-    min-height: 36px;
-    margin-left: auto;
-    padding: 0 14px;
-    font-size: 10px;
+    display: none;
   }
 
   .mobileMenu {
+    position: static;
     display: block;
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+
+  .menuToggle {
+    display: flex;
+    min-width: 76px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 6px;
+    border: 1px solid rgb(16 47 70 / 10%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 58%);
+    color: #18384d;
+    cursor: pointer;
+    list-style: none;
+    transition:
+      background 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .menuToggle:hover,
+  .mobileMenu[data-open="true"] .menuToggle {
+    border-color: rgb(216 63 99 / 24%);
+    background: #fff;
+  }
+
+  .menuGlyph {
+    display: grid;
+    width: 16px;
+    gap: 4px;
+  }
+
+  .menuGlyph span {
+    display: block;
+    width: 14px;
+    height: 1.5px;
+    border-radius: 2px;
+    background: currentColor;
+    transition:
+      width 160ms ease,
+      transform 160ms ease;
+  }
+
+  .menuGlyph span:last-child {
+    width: 9px;
+    margin-left: auto;
+  }
+
+  .mobileMenu[data-open="true"] .menuGlyph span:first-child {
+    transform: translateY(2.75px) rotate(45deg);
+  }
+
+  .mobileMenu[data-open="true"] .menuGlyph span:last-child {
+    width: 14px;
+    transform: translateY(-2.75px) rotate(-45deg);
+  }
+
+  .menuLabel {
+    font-size: 14px;
+    font-weight: 550;
+    letter-spacing: 0.02em;
+  }
+
+  .mobileNavigation {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: auto;
+    left: 50%;
+    width: min(340px, calc(100vw - 24px));
+    background: rgb(249 250 248 / 99%);
+    transform: translateX(-50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .floatingPill,
+  .brandName,
   .navItem,
   .loginLink,
-  .mobileLoginLink {
+  .mobileLoginLink,
+  .mobileNavLink,
+  .menuToggle,
+  .menuGlyph span {
     transition: none;
+  }
+
+  .mobileNavigation {
+    animation: none;
   }
 }
