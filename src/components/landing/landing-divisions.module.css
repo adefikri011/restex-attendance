@@ -319,20 +319,262 @@
   overflow: visible;
 }
 
-.drawing {
-  stroke: rgb(255 255 255 / 58%);
-  stroke-width: 1.4;
+.blueprintSvg {
+  color: #d0ddf0;
+  font-family: var(--font-geist-mono), monospace;
+}
+
+.blueprintPath {
+  fill: none;
+  stroke: rgb(208 221 240 / 76%);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  vector-effect: non-scaling-stroke;
+  animation: blueprint-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) var(--draw-delay, 0s) forwards;
+}
+
+.blueprintAccent {
+  stroke: #ec0b5b;
+}
+
+.blueprintFaint {
+  stroke: rgb(208 221 240 / 30%);
+}
+
+.blueprintGridLine {
+  stroke: rgb(208 221 240 / 14%);
+  stroke-dasharray: 3 5;
+}
+
+.signalAxis {
+  stroke: rgb(208 221 240 / 28%);
+  stroke-dasharray: 3 5;
+}
+
+.signalWave {
+  stroke-width: 1.6;
+}
+
+.signalPacket {
+  stroke: #ec0b5b;
+  stroke-dasharray: 0.015 0.985;
+  stroke-dashoffset: 0;
+  stroke-width: 3;
+  filter: drop-shadow(0 0 4px rgb(236 11 91 / 80%));
+  animation:
+    blueprint-draw 900ms cubic-bezier(0.65, 0, 0.35, 1) 250ms forwards,
+    signal-travel 2.4s linear 1.2s infinite;
+}
+
+.blueprintShape {
+  fill: #0b2f4a;
+  stroke: rgb(208 221 240 / 72%);
+  stroke-width: 1.3;
   vector-effect: non-scaling-stroke;
 }
 
-.drawing rect,
-.drawing circle {
-  fill: #0b2f4a;
+.blueprintInner {
+  fill: rgb(255 255 255 / 2%);
+  stroke: rgb(208 221 240 / 34%);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
 }
 
-.drawingAccent {
-  fill: #d83f63 !important;
-  stroke: #ff9aab;
+.blueprintPin {
+  fill: none;
+  stroke: rgb(208 221 240 / 55%);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+
+.blueprintPad {
+  fill: #0b2f4a;
+  stroke: rgb(208 221 240 / 70%);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  animation: blueprint-appear 500ms ease 550ms both;
+}
+
+.blueprintActivePad {
+  fill: #ec0b5b;
+  stroke: #ff89aa;
+  stroke-width: 1.1;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blueprint-appear 500ms ease 700ms both;
+}
+
+.blueprintLabel {
+  fill: rgb(255 255 255 / 90%);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+.blueprintMicroLabel {
+  fill: rgb(208 221 240 / 60%);
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.blueprintLineNumber {
+  fill: rgb(208 221 240 / 38%);
+  font-size: 9px;
+}
+
+.blueprintCode {
+  fill: rgb(224 232 246 / 92%);
+  font-size: 12px;
+}
+
+.codeMuted {
+  fill: rgb(208 221 240 / 54%);
+}
+
+.codeAccent {
+  fill: #ff6f9a;
+}
+
+.codeHighlight {
+  fill: rgb(236 11 91 / 10%);
+}
+
+.codeCursor {
+  fill: #ec0b5b;
+  animation: cursor-blink 1s steps(1) infinite;
+}
+
+.researchCurve {
+  stroke-width: 1.5;
+}
+
+.blueprintLens {
+  fill: rgb(11 47 74 / 72%);
+  stroke: rgb(208 221 240 / 76%);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.blueprintFaintCircle {
+  fill: none;
+  stroke: rgb(208 221 240 / 35%);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.magnifierHandle {
+  stroke-width: 4;
+}
+
+.researchPulse {
+  fill: none;
+  stroke: #ec0b5b;
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blueprint-pulse 1.8s ease-out 900ms infinite;
+}
+
+.gearOutline {
+  fill: #0b2f4a;
+  stroke: rgb(208 221 240 / 76%);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.gearSpin,
+.gearSpinReverse {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.gearSpin {
+  animation: gear-rotate 28s linear infinite;
+}
+
+.gearSpinReverse {
+  animation: gear-rotate-reverse 28s linear infinite;
+}
+
+.blueprintGearSlot {
+  fill: none;
+  stroke: rgb(208 221 240 / 72%);
+  stroke-width: 1.2;
+}
+
+.blueprintPitchCircle {
+  fill: none;
+  stroke: rgb(208 221 240 / 30%);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+  vector-effect: non-scaling-stroke;
+}
+
+.blueprintDimensionDash {
+  fill: none;
+  stroke: rgb(208 221 240 / 30%);
+  stroke-width: 1;
+  stroke-dasharray: 8 3 2 3;
+}
+
+.dimensionArrow {
+  fill: rgb(208 221 240 / 76%);
+}
+
+@keyframes blueprint-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes blueprint-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes signal-travel {
+  to {
+    stroke-dashoffset: -1;
+  }
+}
+
+@keyframes blueprint-pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.65);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+@keyframes cursor-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes gear-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gear-rotate-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 .artworkIndex {
@@ -594,6 +836,32 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .blueprintPath {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .blueprintPad,
+  .blueprintActivePad,
+  .signalPacket,
+  .researchPulse,
+  .codeCursor,
+  .gearSpin,
+  .gearSpinReverse {
+    animation: none;
+  }
+
+  .blueprintPad,
+  .blueprintActivePad {
+    opacity: 1;
+    transform: none;
+  }
+
+  .researchPulse {
+    opacity: 0;
+  }
+
   .tab,
   .tab::before,
   .activeIndicator,
