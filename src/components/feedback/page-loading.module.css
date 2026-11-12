@@ -17,15 +17,16 @@
 
 .mascotStage {
   display: grid;
-  width: 144px;
-  min-height: 132px;
+  width: 190px;
+  min-height: 190px;
   place-items: center;
   margin-bottom: 22px;
 }
 
 .mascotArtwork {
   position: relative;
-  width: 132px;
+  width: 190px;
+  aspect-ratio: 1;
 }
 
 .mascotArtwork::after {
@@ -48,27 +49,14 @@
   filter: drop-shadow(0 10px 16px rgb(11 47 74 / 12%));
 }
 
-.eyelid {
-  position: absolute;
-  top: 32%;
-  z-index: 1;
-  width: 9%;
-  height: 5%;
-  border-radius: 50%;
-  background: #11172c;
-  opacity: 0;
-  transform: scaleY(0);
-  transform-origin: center;
-  animation: blink 3.8s ease-in-out infinite;
+.mascotArtwork video {
+  height: 100%;
+  object-fit: contain;
 }
 
-.leftEyelid {
-  left: 34%;
-}
-
-.rightEyelid {
-  left: 58%;
-  animation-delay: 80ms;
+.mascotArtwork img {
+  height: 100%;
+  object-fit: contain;
 }
 
 .message {
@@ -126,23 +114,19 @@
   }
 }
 
-@keyframes blink {
-  0%,
-  3%,
-  100% {
-    opacity: 0;
-    transform: scaleY(0);
-  }
-
-  1.5%,
-  2.2% {
-    opacity: 1;
-    transform: scaleY(1);
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .eyelid {
-    animation: none;
+@media (max-width: 480px) {
+  .mascotStage {
+    width: 166px;
+    min-height: 166px;
+  }
+
+  .mascotArtwork {
+    width: 166px;
   }
 }

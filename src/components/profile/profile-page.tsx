@@ -20,6 +20,7 @@ import {
   Trash2,
 } from "lucide-react";
 import type { AppRoleId } from "@/components/auth/role-config";
+import { notifications } from "@/lib/notifications";
 import styles from "./profile-page.module.css";
 
 const roleLabels: Record<AppRoleId, string> = {
@@ -74,7 +75,6 @@ export function ProfilePage({
   const [hasRemovedPhoto, setHasRemovedPhoto] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRemovingPhoto, setIsRemovingPhoto] = useState(false);
-  const [notice, setNotice] = useState<{ text: string; isError: boolean } | null>(null);
   const photoPreview = hasRemovedPhoto
     ? null
     : photoSelection?.previewUrl ?? imageUrl;
@@ -94,11 +94,11 @@ export function ProfilePage({
     event.target.value = "";
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      setNotice({ text: "Pilih foto berformat JPEG, PNG, atau WebP.", isError: true });
+      notifications.warning("Format foto belum didukung", "Pilih foto JPEG, PNG, atau WebP.");
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      setNotice({ text: "Ukuran foto maksimal 5 MB.", isError: true });
+      notifications.warning("Ukuran foto terlalu besar", "Ukuran foto maksimal 5 MB.");
       return;
     }
     const previewUrl = URL.createObjectURL(file);
@@ -117,11 +117,10 @@ export function ProfilePage({
     };
     image.onerror = () => {
       URL.revokeObjectURL(previewUrl);
-      setNotice({ text: "Foto tidak dapat dibuka. Silakan pilih gambar lain.", isError: true });
+      notifications.error("Foto tidak dapat dibuka", "Silakan pilih gambar lain.");
     };
     image.src = previewUrl;
     setHasRemovedPhoto(false);
-    setNotice(null);
   }
 
   function moveCrop(event: PointerEvent<HTMLDivElement>) {
@@ -225,12 +224,11 @@ export function ProfilePage({
         previewUrl: URL.createObjectURL(croppedPhoto),
       });
       setPhotoSource(null);
-      setNotice(null);
     } catch (error) {
-      setNotice({
-        text: error instanceof Error ? error.message : "Foto gagal diproses.",
-        isError: true,
-      });
+      notifications.error(
+        "Foto gagal diproses",
+        error instanceof Error ? error.message : "Silakan pilih foto lain.",
+      );
     }
   }
 
@@ -241,10 +239,9 @@ export function ProfilePage({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice(null);
     setIsSaving(true);
     let updatedName = false;
-    let successMessage = "Profil berhasil diperbarui.";
+    let photoWarning: string | undefined;
 
     try {
       const profileResponse = await fetch("/api/profile", {
@@ -273,19 +270,23 @@ export function ProfilePage({
               : photoResult.error ?? "Foto profil gagal disimpan.",
           );
         }
-        successMessage = photoResult.warning ?? successMessage;
+        photoWarning = photoResult.warning;
         setPhotoSelection(null);
       }
 
-      setNotice({ text: successMessage, isError: false });
       setPhotoSelection(null);
+      if (photoWarning) {
+        notifications.warning("Profil diperbarui dengan catatan", photoWarning);
+      } else {
+        notifications.success("Profil berhasil diperbarui");
+      }
       router.refresh();
     } catch (error) {
       if (updatedName) router.refresh();
-      setNotice({
-        text: error instanceof Error ? error.message : "Profil gagal diperbarui.",
-        isError: true,
-      });
+      notifications.error(
+        "Profil gagal diperbarui",
+        error instanceof Error ? error.message : "Silakan coba kembali.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -293,7 +294,6 @@ export function ProfilePage({
 
   async function removePhoto() {
     setIsRemovingPhoto(true);
-    setNotice(null);
     try {
       const response = await fetch("/api/profile/photo", { method: "DELETE" });
       const result = (await response.json()) as ApiResult;
@@ -301,16 +301,17 @@ export function ProfilePage({
       setPhotoSelection(null);
       setPhotoSource(null);
       setHasRemovedPhoto(true);
-      setNotice({
-        text: result.warning ?? "Foto profil berhasil dihapus.",
-        isError: false,
-      });
+      if (result.warning) {
+        notifications.warning("Foto dihapus dengan catatan", result.warning);
+      } else {
+        notifications.success("Foto profil berhasil dihapus");
+      }
       router.refresh();
     } catch (error) {
-      setNotice({
-        text: error instanceof Error ? error.message : "Foto profil gagal dihapus.",
-        isError: true,
-      });
+      notifications.error(
+        "Foto profil gagal dihapus",
+        error instanceof Error ? error.message : "Silakan coba kembali.",
+      );
     } finally {
       setIsRemovingPhoto(false);
     }
@@ -476,15 +477,6 @@ export function ProfilePage({
               <input value={roleLabels[role]} readOnly aria-readonly="true" />
             </label>
           </div>
-
-          {notice && (
-            <p
-              className={`${styles.notice} ${notice.isError ? styles.errorNotice : styles.successNotice}`}
-              role={notice.isError ? "alert" : "status"}
-            >
-              {notice.text}
-            </p>
-          )}
 
           <div className={styles.formFooter}>
             <span>Foto profil disimpan secara privat.</span>

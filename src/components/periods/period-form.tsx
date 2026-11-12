@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { CalendarPlus, X } from "lucide-react";
 import type { PeriodRecord } from "./periods-data";
 import styles from "./periods.module.css";
+import { notifications } from "@/lib/notifications";
 
 type PeriodFormProps = {
   periods: PeriodRecord[];
@@ -36,15 +37,15 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
   const [defaults] = useState(() => getDefaultDates(periods));
   const [startDate, setStartDate] = useState(defaults.startDate);
   const [endDate, setEndDate] = useState(defaults.endDate);
-  const [error, setError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
-
     if (endDate <= startDate) {
-      setError("Tanggal selesai harus setelah tanggal mulai.");
+      notifications.warning(
+        "Rentang tanggal belum valid",
+        "Tanggal selesai harus setelah tanggal mulai.",
+      );
       return;
     }
 
@@ -55,7 +56,10 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
       day: "2-digit",
     }).format(new Date());
     if (startDate <= today) {
-      setError("Periode baru harus dimulai setelah hari ini.");
+      notifications.warning(
+        "Tanggal mulai tidak valid",
+        "Periode baru harus dimulai setelah hari ini.",
+      );
       return;
     }
 
@@ -63,7 +67,10 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
       (period) => startDate <= period.endDate && endDate >= period.startDate,
     );
     if (overlaps) {
-      setError("Rentang tanggal bertabrakan dengan periode yang sudah ada.");
+      notifications.warning(
+        "Periode bertabrakan",
+        "Rentang tanggal bertabrakan dengan periode yang sudah ada.",
+      );
       return;
     }
 
@@ -71,8 +78,9 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
     try {
       await onCreate({ startDate, endDate });
     } catch (error) {
-      setError(
-        error instanceof Error ? error.message : "Periode gagal disimpan. Coba lagi.",
+      notifications.error(
+        "Periode gagal disimpan",
+        error instanceof Error ? error.message : "Silakan coba lagi.",
       );
     } finally {
       setIsSaving(false);
@@ -132,11 +140,6 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
             {isSaving ? "Menyimpan..." : "Simpan periode"}
           </button>
         </div>
-        {error && (
-          <p className={styles.formError} role="alert">
-            {error}
-          </p>
-        )}
       </form>
       <p className={styles.formNote}>
         Aktivasi periode dan transisi status anggota dikelola terpisah agar riwayat

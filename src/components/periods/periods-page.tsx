@@ -20,6 +20,7 @@ import {
   type PeriodStatus,
 } from "./periods-data";
 import styles from "./periods.module.css";
+import { notifications } from "@/lib/notifications";
 
 const statusFilters: Array<"Semua" | PeriodStatus> = [
   "Semua",
@@ -65,8 +66,6 @@ export function PeriodsPage({
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState<"Semua" | PeriodStatus>("Semua");
   const [expandedPeriodId, setExpandedPeriodId] = useState<string | null>(null);
-  const [notice, setNotice] = useState("");
-
   const activePeriod = periods.find((period) => period.status === "Aktif");
   const otherPeriods = periods.filter((period) => period.status !== "Aktif");
   const filteredPeriods = useMemo(
@@ -99,7 +98,7 @@ export function PeriodsPage({
     setPeriods((currentPeriods) => [period, ...currentPeriods]);
     setIsFormOpen(false);
     setFilter("Semua");
-    setNotice(`Periode ${period.name} berhasil disimpan.`);
+    notifications.success("Periode berhasil disimpan", `Periode ${period.name} siap dikelola.`);
   }
 
   function toggleDetails(periodId: string) {
@@ -123,7 +122,6 @@ export function PeriodsPage({
             type="button"
             className={styles.primaryButton}
             onClick={() => {
-              setNotice("");
               setIsFormOpen((isOpen) => !isOpen);
             }}
           >
@@ -140,10 +138,6 @@ export function PeriodsPage({
           onCreate={addPeriod}
         />
       )}
-
-      <p className={styles.visuallyHidden} role="status" aria-live="polite">
-        {notice}
-      </p>
 
       <section className={styles.activePeriodCard} aria-labelledby="active-period-title">
         <div className={styles.activeCardTop}>

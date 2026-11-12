@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import { Camera, CircleAlert, ScanLine } from "lucide-react";
 import type { IDetectedBarcode, IScannerError } from "@yudiel/react-qr-scanner";
+import { notifications } from "@/lib/notifications";
 import styles from "./attendance-session-detail.module.css";
 
 const Scanner = dynamic(
@@ -41,7 +42,6 @@ export function AttendanceScanner({
   sessionId,
   onRecorded,
 }: AttendanceScannerProps) {
-  const [message, setMessage] = useState<{ text: string; isError: boolean } | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [cameraError, setCameraError] = useState("");
   const [cameraAttempt, setCameraAttempt] = useState(0);
@@ -63,8 +63,6 @@ export function AttendanceScanner({
     setCameraError("");
     inFlight.current = true;
     setIsProcessing(true);
-    setMessage(null);
-
     try {
       const response = await fetch(`/api/attendance/sessions/${sessionId}/scan`, {
         method: "POST",
@@ -80,7 +78,7 @@ export function AttendanceScanner({
           typeof result.error === "string"
             ? result.error
             : "QR tidak dapat dicatat.";
-        setMessage({ text: errorMessage, isError: true });
+        notifications.error("Kehadiran gagal dicatat", errorMessage);
         return;
       }
 
@@ -90,9 +88,13 @@ export function AttendanceScanner({
         name: attendance.name,
         recordedBy: attendance.recordedBy,
       });
-      setMessage({ text: `${attendance.name} berhasil tercatat hadir.`, isError: false });
-    } catch {
-      setMessage({ text: "Layanan absensi tidak dapat dihubungi.", isError: true });
+      notifications.success("Kehadiran berhasil dicatat", attendance.name);
+    } catch (error) {
+      console.error("Attendance QR scan failed.", error);
+      notifications.error(
+        "Kehadiran gagal dicatat",
+        "Layanan absensi tidak dapat dihubungi.",
+      );
     } finally {
       inFlight.current = false;
       setIsProcessing(false);
@@ -174,11 +176,6 @@ export function AttendanceScanner({
                 Coba buka kamera lagi
               </button>
             </div>
-          )}
-          {message && (
-            <p className={message.isError ? styles.scannerError : styles.scanSuccess} role="status">
-              {message.text}
-            </p>
           )}
         </div>
       </div>

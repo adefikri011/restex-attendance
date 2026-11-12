@@ -9,6 +9,7 @@ import {
   type AttendanceSession,
 } from "./attendance-data";
 import styles from "./attendance.module.css";
+import { notifications } from "@/lib/notifications";
 
 type AttendanceSessionFormProps = {
   onCancel: () => void;
@@ -30,12 +31,10 @@ export function AttendanceSessionForm({
   const [time, setTime] = useState("19:00");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
     setIsSubmitting(true);
 
     try {
@@ -46,7 +45,8 @@ export function AttendanceSessionForm({
       });
       const result: unknown = await response.json();
       if (!response.ok) {
-        setError(
+        notifications.error(
+          "Sesi absensi gagal dibuka",
           typeof result === "object" &&
             result !== null &&
             "error" in result &&
@@ -61,7 +61,8 @@ export function AttendanceSessionForm({
       }
       onCreated(result.session);
     } catch (caught) {
-      setError(
+      notifications.error(
+        "Sesi absensi gagal dibuka",
         caught instanceof Error
           ? caught.message
           : "Layanan sesi tidak dapat dihubungi.",
@@ -138,7 +139,6 @@ export function AttendanceSessionForm({
             placeholder="Agenda atau informasi tambahan"
           />
         </label>
-        {error && <p className={styles.formError} role="alert">{error}</p>}
         <div className={styles.sessionFormFooter}>
           <p>Operator yang membuka sesi akan tercatat otomatis.</p>
           <div>

@@ -21,6 +21,10 @@
   --notification-accent: var(--ui-success-fill);
 }
 
+.warning {
+  --notification-accent: #d78a1f;
+}
+
 .error {
   --notification-accent: var(--ui-danger-text);
 }
@@ -93,6 +97,10 @@
 
 .success .statusMark {
   background: var(--ui-success-fill);
+}
+
+.warning .statusMark {
+  background: #d78a1f;
 }
 
 .error .statusMark {

@@ -10,6 +10,7 @@ import {
   type AdministratorRole,
 } from "./administrator-account-data";
 import styles from "./administrator-accounts.module.css";
+import { notifications } from "@/lib/notifications";
 
 type CreatedAccount = {
   account: AdministratorAccount;
@@ -79,7 +80,6 @@ export function InviteAdministratorForm({
   const [role, setRole] = useState<AdministratorRole>(initialRole);
   const [division, setDivision] = useState<string>(initialDivision || availableDivisions[0] || "");
   const [confirmedSuperAdmin, setConfirmedSuperAdmin] = useState(false);
-  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isDivisionRole = role === "Ketua Divisi" || role === "PJ Divisi";
   const isSuperAdminRole = role === "Super Admin";
@@ -89,7 +89,6 @@ export function InviteAdministratorForm({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
     setIsSubmitting(true);
 
     try {
@@ -112,7 +111,8 @@ export function InviteAdministratorForm({
       });
       const result: unknown = await response.json();
       if (!response.ok) {
-        setError(
+        notifications.error(
+          "Akun pengurus gagal dibuat",
           typeof result === "object" &&
             result !== null &&
             "error" in result &&
@@ -127,7 +127,8 @@ export function InviteAdministratorForm({
       }
       onCreated(result);
     } catch (caught) {
-      setError(
+      notifications.error(
+        "Akun pengurus gagal dibuat",
         caught instanceof Error
           ? caught.message
           : "Layanan pembuatan akun tidak dapat dihubungi.",
@@ -251,11 +252,6 @@ export function InviteAdministratorForm({
             </button>
           </div>
         </div>
-        {error && (
-          <p className={styles.formError} role="alert">
-            {error}
-          </p>
-        )}
       </form>
     </section>
   );

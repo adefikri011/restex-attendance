@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import styles from "./page-loading.module.css";
 
 type PageLoadingProps = {
@@ -10,6 +13,39 @@ export function PageLoading({
   title = "Menyiapkan ruang kerja",
   description = "Mengambil data dan menyiapkan tampilan Anda.",
 }: PageLoadingProps) {
+  const mascotVideoRef = useRef<HTMLVideoElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(true);
+  const [videoFailed, setVideoFailed] = useState(false);
+
+  useEffect(() => {
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotionPreference = () =>
+      setPrefersReducedMotion(motionPreference.matches);
+
+    updateMotionPreference();
+    motionPreference.addEventListener("change", updateMotionPreference);
+    return () =>
+      motionPreference.removeEventListener("change", updateMotionPreference);
+  }, []);
+
+  useEffect(() => {
+    const video = mascotVideoRef.current;
+    if (!video || prefersReducedMotion || videoFailed) return;
+
+    let isCurrent = true;
+
+    void video.play().catch((error: unknown) => {
+      if (!isCurrent) return;
+      console.error("Page loading mascot video could not be played.", error);
+      setVideoFailed(true);
+    });
+
+    return () => {
+      isCurrent = false;
+      video.pause();
+    };
+  }, [prefersReducedMotion, videoFailed]);
+
   return (
     <main className={styles.screen}>
       <div
@@ -20,17 +56,32 @@ export function PageLoading({
       >
         <div className={styles.mascotStage} aria-hidden="true">
           <div className={styles.mascotArtwork}>
-            <Image
-              className={styles.mascot}
-              src="/assets/mascot/feedback-loading.webp"
-              alt=""
-              width={256}
-              height={256}
-              priority
-              unoptimized
-            />
-            <span className={`${styles.eyelid} ${styles.leftEyelid}`} />
-            <span className={`${styles.eyelid} ${styles.rightEyelid}`} />
+            {prefersReducedMotion || videoFailed ? (
+              <Image
+                className={styles.mascot}
+                src="/assets/mascot/loading.png"
+                alt=""
+                width={720}
+                height={720}
+                priority
+                unoptimized
+              />
+            ) : (
+              <video
+                ref={mascotVideoRef}
+                className={styles.mascot}
+                src="/assets/mascot/loading.webm"
+                poster="/assets/mascot/loading.png"
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onError={() => {
+                  console.error("Page loading mascot video failed to load.");
+                  setVideoFailed(true);
+                }}
+              />
+            )}
           </div>
         </div>
 

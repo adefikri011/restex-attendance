@@ -26,6 +26,7 @@ import {
   type AttendanceSession,
   type SessionStatus,
 } from "./attendance-data";
+import { notifications } from "@/lib/notifications";
 
 const filters: Array<{ label: string; value: SessionStatus | "Semua" }> = [
   { label: "Semua sesi", value: "Semua" },
@@ -68,6 +69,7 @@ export function AttendancePage({
   function handleCreated(session: AttendanceSession) {
     setSessions((current) => [session, ...current]);
     setIsCreateOpen(false);
+    notifications.success("Sesi absensi berhasil dibuka", session.title);
     router.push(`/attendance/${session.id}`);
   }
 

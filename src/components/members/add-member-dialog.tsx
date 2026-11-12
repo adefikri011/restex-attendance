@@ -7,6 +7,7 @@ import {
   type MembershipStatus,
 } from "./member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { notifications } from "@/lib/notifications";
 import memberStyles from "./member-controls.module.css";
 import styles from "./member-dialog.module.css";
 import { MemberDialog } from "./member-dialog";
@@ -31,13 +32,11 @@ export function AddMemberDialog({
   const [division, setDivision] = useState(divisions[0] ?? "");
   const [cohort, setCohort] = useState("2026");
   const [status, setStatus] = useState<MembershipStatus>("Aktif");
-  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const generatedEmail = generateMemberEmail(name, division, periodName);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
     setIsSubmitting(true);
 
     try {
@@ -49,11 +48,16 @@ export function AddMemberDialog({
         status,
       });
       if (result.error) {
-        setError(result.error);
+        notifications.error("Anggota gagal ditambahkan", result.error);
         return;
       }
 
       onClose();
+    } catch (error) {
+      notifications.error(
+        "Anggota gagal ditambahkan",
+        error instanceof Error ? error.message : "Layanan tidak dapat dihubungi.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -155,7 +159,6 @@ export function AddMemberDialog({
             <strong> {initialAccountPassword}</strong>.
             </>}
           </p>
-          {error && <p className={styles.formError} role="alert">{error}</p>}
           <div className={styles.dialogActions}>
             <button type="button" className={styles.cancelButton} onClick={onClose}>
               Batal

@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { Building2, Check, Pencil, Plus, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 import type { DivisionSummary } from "@/lib/division-service";
+import { notifications } from "@/lib/notifications";
 import styles from "./members.module.css";
 
 type DivisionManagerProps = {
@@ -50,8 +51,6 @@ export function DivisionManager({
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   function applyDivisions(nextDivisions: DivisionSummary[]) {
@@ -62,7 +61,6 @@ export function DivisionManager({
   async function addDivision(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSaving(true);
-    setMessage("");
     try {
       const response = await fetch("/api/divisions", {
         method: "POST",
@@ -87,11 +85,13 @@ export function DivisionManager({
         },
       ].sort((a, b) => Number(b.isActive) - Number(a.isActive) || a.sortOrder - b.sortOrder));
       setNewName("");
-      setMessage("Divisi berhasil ditambahkan.");
-      setIsError(false);
+      notifications.success("Divisi berhasil ditambahkan", result.division.name);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Divisi gagal ditambahkan.");
-      setIsError(true);
+      console.error("Division creation failed.", error);
+      notifications.error(
+        "Divisi gagal ditambahkan",
+        error instanceof Error ? error.message : "Silakan coba lagi.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -99,7 +99,6 @@ export function DivisionManager({
 
   async function updateDivision(division: DivisionSummary, changes: { name?: string; isActive?: boolean }) {
     setIsSaving(true);
-    setMessage("");
     try {
       const response = await fetch(`/api/divisions/${encodeURIComponent(division.id)}`, {
         method: "PATCH",
@@ -127,11 +126,13 @@ export function DivisionManager({
           .sort((a, b) => Number(b.isActive) - Number(a.isActive) || a.sortOrder - b.sortOrder),
       );
       setEditingId(null);
-      setMessage("Divisi berhasil diperbarui.");
-      setIsError(false);
+      notifications.success("Divisi berhasil diperbarui", result.division.name);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Divisi gagal diperbarui.");
-      setIsError(true);
+      console.error("Division update failed.", error);
+      notifications.error(
+        "Divisi gagal diperbarui",
+        error instanceof Error ? error.message : "Silakan coba lagi.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -140,7 +141,6 @@ export function DivisionManager({
   async function removeDivision(division: DivisionSummary) {
     if (!window.confirm(`Hapus divisi "${division.name}"?`)) return;
     setIsSaving(true);
-    setMessage("");
     try {
       const response = await fetch(`/api/divisions/${encodeURIComponent(division.id)}`, {
         method: "DELETE",
@@ -148,11 +148,13 @@ export function DivisionManager({
       const result: unknown = await response.json();
       if (!response.ok) throw new Error(getErrorMessage(result));
       applyDivisions(divisions.filter(({ id }) => id !== division.id));
-      setMessage("Divisi berhasil dihapus.");
-      setIsError(false);
+      notifications.success("Divisi berhasil dihapus", division.name);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Divisi gagal dihapus.");
-      setIsError(true);
+      console.error("Division deletion failed.", error);
+      notifications.error(
+        "Divisi gagal dihapus",
+        error instanceof Error ? error.message : "Silakan coba lagi.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -267,11 +269,6 @@ export function DivisionManager({
           </div>
         ))}
       </div>
-      {message && (
-        <p className={isError ? styles.divisionError : styles.divisionSuccess} role={isError ? "alert" : "status"}>
-          {message}
-        </p>
-      )}
     </section>
   );
 }

@@ -11,6 +11,7 @@ import {
 import memberStyles from "./member-controls.module.css";
 import styles from "./member-dialog.module.css";
 import { MemberDialog } from "./member-dialog";
+import { notifications } from "@/lib/notifications";
 
 type EditableMember = Pick<Member, "name" | "nim" | "division" | "cohort" | "status">;
 
@@ -34,13 +35,11 @@ export function EditMemberDialog({
   const [division, setDivision] = useState(member.division);
   const [cohort, setCohort] = useState(member.cohort);
   const [status, setStatus] = useState<MembershipStatus>(member.status);
-  const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const emailPreview = generateMemberEmail(name, division, periodName);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("");
     setIsSubmitting(true);
 
     try {
@@ -52,10 +51,15 @@ export function EditMemberDialog({
         status,
       });
       if (result.error) {
-        setError(result.error);
+        notifications.error("Data anggota gagal diperbarui", result.error);
         return;
       }
       onClose();
+    } catch (error) {
+      notifications.error(
+        "Data anggota gagal diperbarui",
+        error instanceof Error ? error.message : "Layanan tidak dapat dihubungi.",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -154,11 +158,6 @@ export function EditMemberDialog({
           Perubahan nama atau divisi akan memperbarui email login otomatis; password
           tidak berubah. Status selain Aktif menonaktifkan akses login.
         </p>
-        {error && (
-          <p className={styles.formError} role="alert">
-            {error}
-          </p>
-        )}
         <div className={styles.dialogActions}>
           <button type="button" className={styles.cancelButton} onClick={onClose}>
             Batal

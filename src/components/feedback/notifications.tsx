@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import styles from "./notifications.module.css";
 
-type NotificationStatus = "loading" | "success" | "error";
+type NotificationStatus = "loading" | "success" | "warning" | "error";
 type NotificationId = string | number;
 
 type NotificationCardProps = {
@@ -19,18 +19,21 @@ type NotificationCardProps = {
 const statusLabels: Record<NotificationStatus, string> = {
   loading: "Sedang berjalan",
   success: "Selesai",
+  warning: "Perlu diperhatikan",
   error: "Perlu perhatian",
 };
 
 const statusMarks = {
   loading: <LoaderCircle size={14} aria-hidden="true" />,
   success: <Check size={15} aria-hidden="true" />,
+  warning: <TriangleAlert size={16} aria-hidden="true" />,
   error: <TriangleAlert size={16} aria-hidden="true" />,
 };
 
 const mascotImages: Record<NotificationStatus, { src: string; alt: string }> = {
   loading: { src: "/assets/mascot/feedback-loading.webp", alt: "" },
   success: { src: "/assets/mascot/feedback-success.webp", alt: "" },
+  warning: { src: "/assets/mascot/feedback-warning.webp", alt: "" },
   error: { src: "/assets/mascot/feedback-warning.webp", alt: "" },
 };
 
@@ -43,8 +46,8 @@ function NotificationCard({
   return (
     <article
       className={`${styles.card} ${styles[status]}`}
-      role={status === "error" ? "alert" : "status"}
-      aria-live={status === "error" ? "assertive" : "polite"}
+      role={status === "error" || status === "warning" ? "alert" : "status"}
+      aria-live={status === "error" || status === "warning" ? "assertive" : "polite"}
       aria-atomic="true"
     >
       <div className={styles.iconFrame} aria-hidden="true">
@@ -115,6 +118,9 @@ export const notifications = {
   },
   success(title: string, description?: string, id?: NotificationId) {
     return showNotification("success", title, description, id);
+  },
+  warning(title: string, description?: string, id?: NotificationId) {
+    return showNotification("warning", title, description, id);
   },
   error(title: string, description?: string, id?: NotificationId) {
     return showNotification("error", title, description, id);

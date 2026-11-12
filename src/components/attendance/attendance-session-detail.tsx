@@ -6,7 +6,6 @@ import {
   ArrowLeft,
   CalendarDays,
   Check,
-  CircleAlert,
   Clock3,
   MapPin,
   Square,
@@ -24,6 +23,7 @@ import {
   type AttendanceStatus,
 } from "./attendance-data";
 import styles from "./attendance-session-detail.module.css";
+import { notifications } from "@/lib/notifications";
 
 type AttendanceSessionDetailProps = {
   session: AttendanceSession;
@@ -46,7 +46,6 @@ export function AttendanceSessionDetail({
   periodName,
 }: AttendanceSessionDetailProps) {
   const [session, setSession] = useState(initialSession);
-  const [actionError, setActionError] = useState("");
   const [isClosing, setIsClosing] = useState(false);
   const sessionMembers = session.division
     ? members.filter((member) => member.division === session.division)
@@ -60,7 +59,6 @@ export function AttendanceSessionDetail({
     : 0;
 
   async function closeSession() {
-    setActionError("");
     setIsClosing(true);
     try {
       const response = await fetch(`/api/attendance/sessions/${session.id}`, {
@@ -70,7 +68,8 @@ export function AttendanceSessionDetail({
       });
       const result: unknown = await response.json();
       if (!response.ok) {
-        setActionError(
+        notifications.error(
+          "Sesi gagal ditutup",
           typeof result === "object" &&
             result !== null &&
             "error" in result &&
@@ -90,8 +89,13 @@ export function AttendanceSessionDetail({
         throw new Error("Respons penutupan sesi tidak valid.");
       }
       setSession(result.session);
-    } catch {
-      setActionError("Layanan sesi tidak dapat dihubungi.");
+      notifications.success("Sesi absensi ditutup", "Rekap kehadiran sesi telah dikunci.");
+    } catch (error) {
+      console.error("Attendance session close failed.", error);
+      notifications.error(
+        "Sesi gagal ditutup",
+        "Layanan sesi tidak dapat dihubungi.",
+      );
     } finally {
       setIsClosing(false);
     }
@@ -160,8 +164,6 @@ export function AttendanceSessionDetail({
           </button>
         </div>
       )}
-      {actionError && <p className={styles.actionError} role="alert"><CircleAlert size={14} />{actionError}</p>}
-
       <section className={styles.overview} aria-label="Informasi sesi">
         <div className={styles.overviewItem}>
           <CalendarDays size={16} aria-hidden="true" />

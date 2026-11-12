@@ -28,6 +28,7 @@ import {
   type AdministratorRole,
 } from "./administrator-account-data";
 import styles from "./administrator-accounts.module.css";
+import { notifications } from "@/lib/notifications";
 
 type RoleFilter = "Semua" | AdministratorRole;
 type StatusFilter = "Semua" | AdministratorAccountStatus;
@@ -107,7 +108,6 @@ export function AdministratorAccountsPage({
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [inviteRole, setInviteRole] = useState<AdministratorRole>("Admin");
   const [inviteDivision, setInviteDivision] = useState("");
-  const [notice, setNotice] = useState("");
   const [createdCredentials, setCreatedCredentials] = useState<{
     email: string;
     password: string;
@@ -167,7 +167,10 @@ export function AdministratorAccountsPage({
       email: result.account.email,
       password: result.initialPassword,
     });
-    setNotice(`Akun ${result.account.name} berhasil dibuat.`);
+    notifications.success(
+      "Akun pengurus berhasil dibuat",
+      `${result.account.name} sudah dapat mengakses sistem.`,
+    );
   }
 
   async function toggleAccountStatus(accountId: string) {
@@ -183,7 +186,8 @@ export function AdministratorAccountsPage({
       });
       const result: unknown = await response.json();
       if (!response.ok) {
-        setNotice(
+        notifications.error(
+          "Status akun gagal diperbarui",
           typeof result === "object" &&
             result !== null &&
             "error" in result &&
@@ -199,9 +203,16 @@ export function AdministratorAccountsPage({
           account.id === accountId ? { ...account, status: nextStatus } : account,
         ),
       );
-      setNotice(`${selectedAccount.name} sekarang ${nextStatus.toLocaleLowerCase("id")}.`);
-    } catch {
-      setNotice("Layanan akun pengurus tidak dapat dihubungi.");
+      notifications.success(
+        "Status akun diperbarui",
+        `${selectedAccount.name} sekarang ${nextStatus.toLocaleLowerCase("id")}.`,
+      );
+    } catch (error) {
+      console.error("Administrator account status update failed.", error);
+      notifications.error(
+        "Status akun gagal diperbarui",
+        "Layanan akun pengurus tidak dapat dihubungi.",
+      );
     }
   }
 
@@ -219,7 +230,6 @@ export function AdministratorAccountsPage({
           type="button"
           className={styles.primaryButton}
           onClick={() => {
-            setNotice("");
             setCreatedCredentials(null);
             setInviteRole("Admin");
             setInviteDivision("");
@@ -243,7 +253,7 @@ export function AdministratorAccountsPage({
         />
       )}
 
-      {createdCredentials ? (
+      {createdCredentials && (
         <aside className={styles.previewNote} role="status">
           <ShieldCheck size={15} aria-hidden="true" />
           <p>
@@ -252,10 +262,6 @@ export function AdministratorAccountsPage({
             {" "}— berikan kredensial ini langsung kepada pengurus.
           </p>
         </aside>
-      ) : (
-        <p className={styles.visuallyHidden} role="status" aria-live="polite">
-          {notice}
-        </p>
       )}
 
       <section className={styles.summaryGrid} aria-label="Ringkasan akun pengurus">

@@ -18,6 +18,7 @@ import { MemberToolbar } from "./member-toolbar";
 import { DivisionManager } from "./division-manager";
 import styles from "./members.module.css";
 import type { DivisionSummary } from "@/lib/division-service";
+import { notifications } from "@/lib/notifications";
 
 const pageSize = 8;
 
@@ -116,8 +117,6 @@ export function MembersPage({
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isImporting, setIsImporting] = useState(false);
-  const [notice, setNotice] = useState("");
-  const [isNoticeError, setIsNoticeError] = useState(false);
   const [credentials, setCredentials] = useState<MemberCredential[]>([]);
 
   const divisions = useMemo(
@@ -190,8 +189,7 @@ export function MembersPage({
       setDivision("Semua");
       setSearch("");
       setPage(1);
-      setNotice(`${member.name} berhasil dibuat sebagai Anggota.`);
-      setIsNoticeError(false);
+      notifications.success("Anggota berhasil ditambahkan", `${member.name} sudah terdaftar.`);
       return {};
     } catch {
       return { error: "Layanan tidak dapat dihubungi. Periksa koneksi lalu coba kembali." };
@@ -234,8 +232,7 @@ export function MembersPage({
         ),
       );
       setEditingMember(null);
-      setNotice(`${updatedMember.name} berhasil diperbarui.`);
-      setIsNoticeError(false);
+      notifications.success("Data anggota diperbarui", `${updatedMember.name} berhasil diperbarui.`);
       return {};
     } catch {
       return { error: "Layanan tidak dapat dihubungi. Coba kembali." };
@@ -245,7 +242,6 @@ export function MembersPage({
   async function importFile(file: File | undefined) {
     if (!file) return;
     setIsImporting(true);
-    setNotice("");
     setCredentials([]);
 
     try {
@@ -274,8 +270,10 @@ export function MembersPage({
                 .slice(0, 8)
                 .map((issue) => `Baris ${issue.row}: ${issue.message}`)
             : [];
-        setNotice([message, ...issues].join(" "));
-        setIsNoticeError(true);
+        notifications.error(
+          "Impor anggota gagal",
+          [message, ...issues].join(" "),
+        );
         return;
       }
 
@@ -284,8 +282,10 @@ export function MembersPage({
         !Array.isArray(result.members) ||
         !result.members.every(isMemberCredential)
       ) {
-        setNotice("Respons server tidak valid. Muat ulang halaman dan periksa daftar anggota.");
-        setIsNoticeError(true);
+        notifications.error(
+          "Impor anggota gagal",
+          "Respons server tidak valid. Muat ulang halaman dan periksa daftar anggota.",
+        );
         return;
       }
 
@@ -299,11 +299,16 @@ export function MembersPage({
       setDivision("Semua");
       setSearch("");
       setPage(1);
-      setNotice(`${created.length} anggota berhasil dibuat.`);
-      setIsNoticeError(false);
-    } catch {
-      setNotice("File gagal diunggah. Periksa koneksi lalu coba kembali.");
-      setIsNoticeError(true);
+      notifications.success(
+        "Impor anggota berhasil",
+        `${created.length} anggota berhasil ditambahkan.`,
+      );
+    } catch (error) {
+      console.error("Member import failed.", error);
+      notifications.error(
+        "File gagal diunggah",
+        "Periksa koneksi lalu coba kembali.",
+      );
     } finally {
       setIsImporting(false);
     }
@@ -448,23 +453,12 @@ export function MembersPage({
           onImport={importFile}
           onDownloadTemplate={downloadTemplate}
           onAddMember={() => {
-            setNotice("");
-            setIsNoticeError(false);
             setIsAddDialogOpen(true);
           }}
         />
         {!periodName && (
           <p className={styles.importNotice} role="alert">
             Belum ada periode aktif. Atur periode terlebih dahulu sebelum membuat anggota.
-          </p>
-        )}
-        {notice && (
-          <p
-            className={isNoticeError ? styles.importNotice : styles.successNotice}
-            role={isNoticeError ? "alert" : "status"}
-            aria-live="polite"
-          >
-            {notice}
           </p>
         )}
         {credentials.length > 0 && (
@@ -514,8 +508,6 @@ export function MembersPage({
           onPageChange={setPage}
           onViewMember={setSelectedMember}
           onEditMember={(member) => {
-            setNotice("");
-            setIsNoticeError(false);
             setEditingMember(member);
           }}
         />

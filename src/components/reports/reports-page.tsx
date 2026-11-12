@@ -12,6 +12,7 @@ import { isAttendanceSession } from "@/components/attendance/attendance-data";
 import type { Member } from "@/components/members/member-data";
 import { ReportAnalytics } from "./report-analytics";
 import { exportAttendanceReport } from "./report-export";
+import { notifications } from "@/lib/notifications";
 import {
   summarizeMembers,
   summarizeSessions,
@@ -72,7 +73,6 @@ export function ReportsPage({ initialData }: { initialData: ReportPageData }) {
   const [periodId, setPeriodId] = useState(initialData.selectedPeriodId);
   const [range, setRange] = useState<ReportRange>("Bulan ini");
   const [isExporting, setIsExporting] = useState(false);
-  const [notice, setNotice] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const skippedInitialFetch = useRef(false);
@@ -135,7 +135,6 @@ export function ReportsPage({ initialData }: { initialData: ReportPageData }) {
   async function handleExport() {
     if (!sessions.length || !selectedPeriod || isExporting) return;
 
-    setNotice("");
     setIsExporting(true);
     try {
       await exportAttendanceReport({
@@ -144,10 +143,10 @@ export function ReportsPage({ initialData }: { initialData: ReportPageData }) {
         sessions,
         memberSummaries,
       });
-      setNotice("File Excel berhasil diunduh.");
+      notifications.success("Laporan berhasil diunduh", "File Excel sudah siap.");
     } catch (error) {
       console.error("Gagal mengekspor laporan absensi.", error);
-      setNotice("Laporan gagal diekspor. Silakan coba kembali.");
+      notifications.error("Laporan gagal diekspor", "Silakan coba kembali.");
     } finally {
       setIsExporting(false);
     }
@@ -218,9 +217,6 @@ export function ReportsPage({ initialData }: { initialData: ReportPageData }) {
       </section>
 
       {error && <p className={styles.liveNotice} role="alert">{error}</p>}
-      <p className={styles.liveNotice} role="status" aria-live="polite">
-        {notice}
-      </p>
 
       <section className={styles.metricsGrid} aria-label="Ringkasan laporan">
         <article className={styles.metricCard}>
