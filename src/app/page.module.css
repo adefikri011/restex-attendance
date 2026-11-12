@@ -1,0 +1,6 @@
+.page {
+  min-height: 100svh;
+  background:
+    radial-gradient(ellipse at 50% -18%, #e8f0f5 0, transparent 53%),
+    var(--ui-background);
+}
