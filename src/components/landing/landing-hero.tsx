@@ -223,7 +223,7 @@ export function LandingHero() {
                         <span>{copy.cardUniversity}</span>
                       </span>
                       <span className={styles.photoSlot} aria-hidden="true">
-                        <span>R</span>
+                        <span className={styles.cardMascot} />
                       </span>
                       <span className={styles.cardName}>{copy.cardName}</span>
                       <span className={styles.cardFooter}>

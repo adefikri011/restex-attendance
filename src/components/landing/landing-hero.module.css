@@ -348,23 +348,36 @@
 }
 
 .photoSlot {
+  position: relative;
   display: grid;
   width: 58%;
   aspect-ratio: 4 / 5;
   flex: 0 0 auto;
   place-items: center;
   align-self: center;
+  overflow: hidden;
   margin: 20px auto;
   border: 1.5px dashed rgb(11 47 74 / 25%);
   border-radius: 4px;
-  color: rgb(11 47 74 / 13%);
+  background: #fff;
 }
 
-.photoSlot > span {
-  font-size: 64px;
-  font-weight: 700;
-  letter-spacing: -0.08em;
-  line-height: 1;
+.cardMascot {
+  display: block;
+  width: auto;
+  height: 100%;
+  aspect-ratio: 180 / 253;
+  background-image: url("/assets/mascot/goFrame-shy-sprite.webp");
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 6200% 100%;
+  animation: shyMascot 5.167s steps(61, end) infinite;
+}
+
+@keyframes shyMascot {
+  to {
+    background-position: 100% 0;
+  }
 }
 
 .cardName {
@@ -705,6 +718,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cardMascot {
+    animation: none;
+    background-position: 0 0;
+  }
+
   .swingAssembly,
   .settled {
     animation: none;
