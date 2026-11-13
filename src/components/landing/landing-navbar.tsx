@@ -3,17 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { LANDING_NAVIGATION_ITEMS } from "./landing-navigation";
 import styles from "./landing-navbar.module.css";
-
-const navigationItems = [
-  { label: "Beranda", href: "/", enabled: true },
-  { label: "Tentang", href: "#tentang", enabled: true },
-];
 
 function NavigationItems({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <>
-      {navigationItems
+      {LANDING_NAVIGATION_ITEMS
         .filter((item) => item.enabled)
         .map((item) => (
           <Link
@@ -238,7 +234,7 @@ export function LandingNavbar() {
               <span>JELAJAHI</span>
             </div>
             <ol className={styles.mobileNavList}>
-              {navigationItems
+              {LANDING_NAVIGATION_ITEMS
                 .filter((item) => item.enabled)
                 .map((item, index) => (
                 <li key={item.label}>

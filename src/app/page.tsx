@@ -5,6 +5,7 @@ import { LandingAbout } from "@/components/landing/landing-about";
 import { LandingAnnouncements } from "@/components/landing/landing-announcements";
 import { LandingDivisions } from "@/components/landing/landing-divisions";
 import { getLandingDivisions } from "@/components/landing/landing-division-data";
+import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingProjects } from "@/components/landing/landing-projects";
@@ -24,15 +25,18 @@ async function LandingDivisionsContent() {
 
 export default function Home() {
   return (
-    <main className={styles.page}>
-      <LandingNavbar />
-      <LandingHero />
-      <LandingAbout />
-      <Suspense fallback={<LandingDivisions divisions={[]} />}>
-        <LandingDivisionsContent />
-      </Suspense>
-      <LandingAnnouncements />
-      <LandingProjects />
-    </main>
+    <>
+      <main className={styles.page} id="top">
+        <LandingNavbar />
+        <LandingHero />
+        <LandingAbout />
+        <Suspense fallback={<LandingDivisions divisions={[]} />}>
+          <LandingDivisionsContent />
+        </Suspense>
+        <LandingAnnouncements />
+        <LandingProjects />
+      </main>
+      <LandingFooter />
+    </>
   );
 }
