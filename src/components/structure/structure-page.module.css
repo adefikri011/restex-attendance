@@ -1,0 +1,170 @@
+.page {
+  min-height: 100vh;
+  padding: 148px 0 96px;
+  background: #fff;
+  color: #0b2f4a;
+}
+
+.content {
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.title {
+  margin: 0;
+  color: #0b2f4a;
+  font-size: var(--fs-h1);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+
+.periodLabel {
+  margin: 12px 0 0;
+  color: #64748b;
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+}
+
+.periodPicker {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.periodLink {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  color: #64748b;
+  font-size: var(--fs-caption);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.periodLink[aria-current="page"] {
+  border-color: #0b2f4a;
+  background: #0b2f4a;
+  color: #fff;
+}
+
+.periodLink:focus-visible {
+  outline: 3px solid #d83f63;
+  outline-offset: 3px;
+}
+
+.groups {
+  display: grid;
+  gap: 80px;
+  margin-top: 56px;
+}
+
+.withSubnav {
+  margin-top: 32px;
+}
+
+.group {
+  scroll-margin-top: 148px;
+  min-width: 0;
+}
+
+.groupTitle {
+  margin: 0 0 28px;
+  color: #0b2f4a;
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
+}
+
+.officerRows {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.officerRow {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.rowCopy {
+  min-width: 0;
+}
+
+.rowName {
+  margin: 0;
+  color: #0b2f4a;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.rowPosition {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.emptyState {
+  margin: 56px 0 0;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  color: #64748b;
+  font-size: var(--fs-body);
+  line-height: 1.6;
+}
+
+@media (max-width: 767px) {
+  .page {
+    padding: 120px 0 64px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .periodPicker {
+    justify-content: flex-start;
+  }
+
+  .groups {
+    gap: 64px;
+    margin-top: 40px;
+  }
+
+  .withSubnav {
+    margin-top: 32px;
+  }
+
+  .group {
+    scroll-margin-top: 126px;
+  }
+
+  .officerRows {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

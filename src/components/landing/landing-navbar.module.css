@@ -237,6 +237,10 @@ a.navItem:hover {
   text-decoration: none;
 }
 
+.activeMobileNavLink {
+  color: #0b2f4a;
+}
+
 .mobileNavLink {
   transition: color 140ms ease, padding 140ms ease;
 }

@@ -2,11 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { LANDING_NAVIGATION_ITEMS } from "./landing-navigation";
 import styles from "./landing-navbar.module.css";
 
-function NavigationItems({ onNavigate }: { onNavigate?: () => void }) {
+function isCurrentPage(href: string, pathname: string) {
+  if (!href.startsWith("/")) return false;
+  return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+}
+
+function NavigationItems({
+  onNavigate,
+  pathname,
+}: {
+  onNavigate?: () => void;
+  pathname: string;
+}) {
   return (
     <>
       {LANDING_NAVIGATION_ITEMS
@@ -15,9 +27,11 @@ function NavigationItems({ onNavigate }: { onNavigate?: () => void }) {
           <Link
             href={item.href}
             className={`${styles.navItem} ${
-              item.href === "/" ? styles.activeNavItem : ""
+              isCurrentPage(item.href, pathname) ? styles.activeNavItem : ""
             }`}
-            aria-current={item.href === "/" ? "page" : undefined}
+            aria-current={
+              isCurrentPage(item.href, pathname) ? "page" : undefined
+            }
             onClick={onNavigate}
             key={item.href}
           >
@@ -29,6 +43,7 @@ function NavigationItems({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 export function LandingNavbar() {
+  const pathname = usePathname() ?? "/";
   const [isScrolled, setIsScrolled] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -188,7 +203,10 @@ export function LandingNavbar() {
           aria-label="Navigasi utama"
           inert={isCollapsed}
         >
-          <NavigationItems onNavigate={collapseAfterNavigation} />
+          <NavigationItems
+            onNavigate={collapseAfterNavigation}
+            pathname={pathname}
+          />
         </nav>
 
         <Link
@@ -234,23 +252,34 @@ export function LandingNavbar() {
               <span>JELAJAHI</span>
             </div>
             <ol className={styles.mobileNavList}>
-              {LANDING_NAVIGATION_ITEMS
-                .filter((item) => item.enabled)
-                .map((item, index) => (
-                <li key={item.label}>
-                  <Link
-                    className={styles.mobileNavLink}
-                    href={item.href}
-                    onClick={closeMobileNavigation}
-                  >
-                    <span className={styles.mobileNavNumber}>0{index + 1}</span>
-                    <span>{item.label}</span>
-                    <span className={styles.mobileNavArrow} aria-hidden="true">
-                      ↗
-                    </span>
-                  </Link>
-                </li>
-              ))}
+              {LANDING_NAVIGATION_ITEMS.filter((item) => item.enabled).map(
+                (item, index) => {
+                  const isActive = isCurrentPage(item.href, pathname);
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        className={`${styles.mobileNavLink} ${
+                          isActive ? styles.activeMobileNavLink : ""
+                        }`}
+                        href={item.href}
+                        aria-current={isActive ? "page" : undefined}
+                        onClick={closeMobileNavigation}
+                      >
+                        <span className={styles.mobileNavNumber}>
+                          0{index + 1}
+                        </span>
+                        <span>{item.label}</span>
+                        <span
+                          className={styles.mobileNavArrow}
+                          aria-hidden="true"
+                        >
+                          ↗
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                },
+              )}
             </ol>
           </nav>
         </div>

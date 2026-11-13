@@ -1,0 +1,90 @@
+.rail {
+  display: none;
+}
+
+.officers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.officer {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .rail {
+    position: relative;
+    display: block;
+    height: 2px;
+    margin-bottom: 32px;
+    border-radius: 999px;
+    background: rgb(11 47 74 / 20%);
+  }
+
+  .rail::before,
+  .rail::after {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: rgb(11 47 74 / 35%);
+    content: "";
+  }
+
+  .rail::before {
+    left: 0;
+  }
+
+  .rail::after {
+    right: 0;
+  }
+
+  .officers {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .officer::before {
+    position: absolute;
+    z-index: 2;
+    top: -32px;
+    left: 50%;
+    width: 2px;
+    height: 50px;
+    transform: translateX(-50%);
+    background: rgb(11 47 74 / 35%);
+    content: "";
+    transition: height 180ms ease-out;
+  }
+
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .officer:hover::before {
+    height: 54px;
+  }
+
+  .officer :global(article) {
+    transition: transform 180ms ease-out;
+  }
+
+  .officer:hover :global(article) {
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .officer::before,
+  .officer :global(article) {
+    transition: none;
+  }
+}

@@ -4,11 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
 import { useEffect, useRef, useState } from "react";
+import { ACTIVE_PERIOD } from "@/data/active-period";
 import styles from "./landing-hero.module.css";
 
 const HERO_TITLE = "Membangun teknologi, bukan cuma mempelajarinya.";
 const HERO_SUPPORTING_TEXT = "Riset, inovasi, dan kerja bersama.";
-const ACTIVE_PERIOD_LABEL = "Periode 2026–2027";
+const ACTIVE_PERIOD_LABEL = `Periode ${ACTIVE_PERIOD.label}`;
 const REGISTRATION_OPEN = false;
 const REGISTRATION_DEADLINE: string | null = null;
 const REGISTRATION_NOTIFY_HREF: string | null = null;

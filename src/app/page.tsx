@@ -9,6 +9,7 @@ import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingProjects } from "@/components/landing/landing-projects";
+import { LandingStructure } from "@/components/structure/landing-structure";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -35,6 +36,7 @@ export default function Home() {
         </Suspense>
         <LandingAnnouncements />
         <LandingProjects />
+        <LandingStructure />
       </main>
       <LandingFooter />
     </>
