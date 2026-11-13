@@ -379,6 +379,17 @@ a.navItem:hover {
     inset: 12px 0 auto;
   }
 
+  .header[data-collapsed="true"] .floatingPill:global(.site-container) {
+    width: min(250px, calc(100vw - 32px));
+    min-height: 48px;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 5px 4px 9px;
+    border-color: rgb(255 255 255 / 96%);
+    background: rgb(255 255 255 / 98%);
+    box-shadow: 0 8px 26px rgb(18 43 61 / 14%);
+  }
+
   .floatingPill {
     position: relative;
     width: 100%;
@@ -404,6 +415,24 @@ a.navItem:hover {
   .brandName small {
     font-size: 10px;
     letter-spacing: 0.02em;
+  }
+
+  .header[data-collapsed="true"] .brand {
+    min-height: 36px;
+    gap: 6px;
+  }
+
+  .header[data-collapsed="true"] .logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .header[data-collapsed="true"] .brandName strong {
+    font-size: 11px;
+  }
+
+  .header[data-collapsed="true"] .brandName small {
+    display: none;
   }
 
   .desktopNavigation {
@@ -439,6 +468,12 @@ a.navItem:hover {
       background 160ms ease,
       border-color 160ms ease,
       color 160ms ease;
+  }
+
+  .header[data-collapsed="true"] .menuToggle {
+    min-width: 68px;
+    min-height: 38px;
+    font-size: 12px;
   }
 
   .menuToggle:hover,

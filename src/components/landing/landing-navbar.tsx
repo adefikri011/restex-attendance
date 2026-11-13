@@ -39,7 +39,7 @@ export function LandingNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const isCollapsed = isDesktop && isScrolled && !isExpanded;
+  const isCollapsed = isScrolled && !isExpanded;
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
@@ -125,7 +125,7 @@ export function LandingNavbar() {
                 : "Buka navigasi utama"
               : "Kembali ke bagian atas"
           }
-          aria-expanded={isDesktop ? !isCollapsed : undefined}
+          aria-expanded={isScrolled ? !isCollapsed : undefined}
           aria-controls={isDesktop ? "landing-desktop-navigation" : undefined}
           title={isCollapsed ? "Buka navigasi" : undefined}
         >

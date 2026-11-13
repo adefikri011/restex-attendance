@@ -2,7 +2,7 @@
   position: relative;
   z-index: 3;
   isolation: isolate;
-  padding: 112px 0 120px;
+  padding: 112px 0 28px;
   background: #f5f7fa;
   color: #0b2f4a;
   scroll-margin-top: 24px;
@@ -704,7 +704,7 @@
 
 @media (max-width: 600px) {
   .section {
-    padding: 88px 0 80px;
+    padding: 88px 0 20px;
   }
 
   .section::before {
