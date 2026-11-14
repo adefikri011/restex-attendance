@@ -3,7 +3,13 @@ import { getApiUser } from "@/lib/auth-guard";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(request: Request) {
-  const access = await getApiUser();
+  const access = await getApiUser([
+    "super-admin",
+    "admin",
+    "ketua-divisi",
+    "pj-divisi",
+    "anggota",
+  ]);
   if (!access.user) {
     return NextResponse.json({ error: "Silakan masuk untuk mengubah profil." }, {
       status: access.status,

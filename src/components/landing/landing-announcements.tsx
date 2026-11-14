@@ -3,6 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import type { RecruitmentStatus } from "@/lib/recruitment";
+import { formatTanggal } from "@/lib/recruitment";
 import styles from "./landing-announcements.module.css";
 
 type PostType = "pengumuman" | "kegiatan" | "kesempatan";
@@ -13,7 +15,6 @@ type Post = {
   title: string;
   excerpt: string;
   publishedAt: string;
-  deadline?: string;
   coverImage?: string;
 };
 
@@ -25,7 +26,6 @@ const POSTS: Post[] = [
     excerpt:
       "Bergabung untuk belajar, merancang, dan mengerjakan proyek teknologi bersama RESTEX.",
     publishedAt: "2026-11-12",
-    deadline: "2026-11-30",
   },
   {
     type: "kegiatan",
@@ -51,11 +51,6 @@ const dateFormatter = new Intl.DateTimeFormat("id-ID", {
   year: "numeric",
 });
 
-const deadlineFormatter = new Intl.DateTimeFormat("id-ID", {
-  day: "numeric",
-  month: "short",
-});
-
 function parseLocalDate(date: string) {
   const [year, month, day] = date.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -63,16 +58,6 @@ function parseLocalDate(date: string) {
 
 function formatDate(date: string) {
   return dateFormatter.format(parseLocalDate(date));
-}
-
-function getDaysRemaining(deadline: string, now: Date) {
-  const endDate = parseLocalDate(deadline);
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  return Math.ceil((endDate.getTime() - today.getTime()) / 86_400_000);
-}
-
-function getDeadlineLabel(deadline: string) {
-  return deadlineFormatter.format(parseLocalDate(deadline));
 }
 
 function getTypeLabel(type: PostType) {
@@ -180,20 +165,21 @@ function PostArtwork({ type }: { type: PostType }) {
   );
 }
 
-export function LandingAnnouncements() {
+export function LandingAnnouncements({
+  recruitmentStatus,
+}: {
+  recruitmentStatus: RecruitmentStatus;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
   const touchStartX = useRef<number | null>(null);
   const [revealState, setRevealState] = useState<
     "idle" | "waiting" | "shown"
   >("idle");
-  const [today, setToday] = useState<Date | null>(null);
   const [activePostIndex, setActivePostIndex] = useState(0);
 
   useEffect(() => {
     let observer: IntersectionObserver | null = null;
     const frame = window.requestAnimationFrame(() => {
-      setToday(new Date());
-
       if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
       const section = sectionRef.current;
@@ -223,15 +209,11 @@ export function LandingAnnouncements() {
     (a, b) =>
       Date.parse(b.publishedAt) - Date.parse(a.publishedAt),
   );
-  const activeAnnouncement =
-    today === null
-      ? posts.find((post) => post.type === "pengumuman" && post.deadline)
-      : posts.find(
-          (post) =>
-            post.type === "pengumuman" &&
-            post.deadline &&
-            getDaysRemaining(post.deadline, today) >= 0,
-        );
+  const activeRecruitmentStatus =
+    recruitmentStatus.state === "open" ? recruitmentStatus : undefined;
+  const activeAnnouncement = activeRecruitmentStatus
+    ? posts.find((post) => post.type === "pengumuman")
+    : undefined;
   const latestPosts = posts
     .filter((post) => post.type !== "pengumuman")
     .slice(0, 4);
@@ -366,7 +348,7 @@ export function LandingAnnouncements() {
           </div>
         ) : null}
 
-        {activeAnnouncement && today && activeAnnouncement.deadline && (
+        {activeAnnouncement && (
           <Link
             className={styles.announcementFeature}
             href={`/kabar/${activeAnnouncement.slug}`}
@@ -387,15 +369,20 @@ export function LandingAnnouncements() {
                 <ArrowIndicator />
               </span>
             </span>
-            <span className={styles.announcementDeadline}>
-              <span className={styles.announcementDays}>
-                {getDaysRemaining(activeAnnouncement.deadline, today)}
-              </span>
-              <span className={styles.deadline}>
-                hari lagi · tutup{" "}
-                {getDeadlineLabel(activeAnnouncement.deadline)}
-              </span>
-            </span>
+            {activeRecruitmentStatus?.daysLeft !== undefined &&
+              activeRecruitmentStatus.closesAt && (
+                <span className={styles.announcementDeadline}>
+                  <span className={styles.announcementDays}>
+                    {activeRecruitmentStatus.daysLeft}
+                  </span>
+                  <span className={styles.deadline}>
+                    hari lagi · tutup{" "}
+                    <time dateTime={activeRecruitmentStatus.closesAt}>
+                      {formatTanggal(activeRecruitmentStatus.closesAt)}
+                    </time>
+                  </span>
+                </span>
+              )}
           </Link>
         )}
       </div>

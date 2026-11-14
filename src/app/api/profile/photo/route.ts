@@ -20,7 +20,13 @@ async function getProfilePhotoKey(userId: string) {
 }
 
 export async function GET() {
-  const access = await getApiUser();
+  const access = await getApiUser([
+    "super-admin",
+    "admin",
+    "ketua-divisi",
+    "pj-divisi",
+    "anggota",
+  ]);
   if (!access.user) {
     return NextResponse.json({ error: "Silakan masuk untuk melihat foto profil." }, {
       status: access.status,
@@ -58,7 +64,13 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser();
+  const access = await getApiUser([
+    "super-admin",
+    "admin",
+    "ketua-divisi",
+    "pj-divisi",
+    "anggota",
+  ]);
   if (!access.user) {
     return NextResponse.json({ error: "Silakan masuk untuk mengunggah foto." }, {
       status: access.status,
@@ -182,7 +194,13 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE() {
-  const access = await getApiUser();
+  const access = await getApiUser([
+    "super-admin",
+    "admin",
+    "ketua-divisi",
+    "pj-divisi",
+    "anggota",
+  ]);
   if (!access.user) {
     return NextResponse.json({ error: "Silakan masuk untuk menghapus foto." }, {
       status: access.status,

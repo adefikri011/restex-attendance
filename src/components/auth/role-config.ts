@@ -48,6 +48,18 @@ export const appRoles = [
       "Buka sesi dan catat kehadiran anggota pada divisi yang menjadi tanggung jawabmu.",
   },
   {
+    id: "calon-anggota",
+    label: "Calon Anggota",
+    dashboardPath: "/portal/calon-anggota",
+    databaseRole: "CANDIDATE",
+    description:
+      "Melihat informasi seleksi dan pengumuman yang ditujukan untuk calon anggota.",
+    displayName: "Calon Anggota",
+    homeTitle: "Informasi seleksi RESTEX.",
+    homeDescription:
+      "Pantau status pendaftaran dan pengumuman seleksi milikmu.",
+  },
+  {
     id: "anggota",
     label: "Anggota",
     dashboardPath: "/portal/anggota",

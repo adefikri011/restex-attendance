@@ -4,6 +4,7 @@ export const auditCategories = [
   "Periode",
   "Akun & akses",
   "Identitas",
+  "Pengaturan",
 ] as const;
 
 export type AuditCategory = (typeof auditCategories)[number];

@@ -172,6 +172,7 @@
   color: var(--ui-text-accent);
   font: inherit;
   font-size: 13px;
+  cursor: pointer;
   text-align: left;
   text-decoration: none;
   transition: background 150ms ease, color 150ms ease;
@@ -199,6 +200,67 @@
   left: 0;
   width: 3px;
   height: 25px;
+  border-radius: 0 4px 4px 0;
+  background: var(--ui-accent);
+  content: "";
+}
+
+.navigationItem:focus-visible,
+.subNavigationItem:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.navigationChevron {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: #929eaa;
+  transition: transform 150ms ease;
+}
+
+.navigationChevronExpanded {
+  transform: rotate(180deg);
+}
+
+.subNavigationList {
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 2px 19px;
+  padding: 3px 0 3px 11px;
+  border-left: 1px solid var(--ui-border);
+  list-style: none;
+}
+
+.subNavigationItem {
+  position: relative;
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.subNavigationItem:hover {
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+}
+
+.activeSubNavigationItem {
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+  font-weight: 650;
+}
+
+.activeSubNavigationItem::before {
+  position: absolute;
+  left: -12px;
+  width: 3px;
+  height: 22px;
   border-radius: 0 4px 4px 0;
   background: var(--ui-accent);
   content: "";

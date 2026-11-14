@@ -11,5 +11,9 @@ export const instant = false;
 
 export default async function DashboardRoute() {
   const user = await requirePageUser();
-  redirect(user.role === "anggota" ? "/portal/anggota" : `/dashboard/${user.role}`);
+  redirect(
+    user.role === "anggota" || user.role === "calon-anggota"
+      ? `/portal/${user.role}`
+      : `/dashboard/${user.role}`,
+  );
 }

@@ -12,12 +12,25 @@ function isCurrentPage(href: string, pathname: string) {
   return pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
 }
 
+function isActiveNavigationItem(
+  item: (typeof LANDING_NAVIGATION_ITEMS)[number],
+  pathname: string,
+  activeSectionHref: string | null,
+) {
+  if (item.type === "section") {
+    return pathname === "/" && item.href === activeSectionHref;
+  }
+  return isCurrentPage(item.href, pathname);
+}
+
 function NavigationItems({
   onNavigate,
   pathname,
+  activeSectionHref,
 }: {
   onNavigate?: () => void;
   pathname: string;
+  activeSectionHref: string | null;
 }) {
   return (
     <>
@@ -27,10 +40,16 @@ function NavigationItems({
           <Link
             href={item.href}
             className={`${styles.navItem} ${
-              isCurrentPage(item.href, pathname) ? styles.activeNavItem : ""
+              isActiveNavigationItem(item, pathname, activeSectionHref)
+                ? styles.activeNavItem
+                : ""
             }`}
             aria-current={
-              isCurrentPage(item.href, pathname) ? "page" : undefined
+              isActiveNavigationItem(item, pathname, activeSectionHref)
+                ? item.type === "section"
+                  ? "location"
+                  : "page"
+                : undefined
             }
             onClick={onNavigate}
             key={item.href}
@@ -44,6 +63,12 @@ function NavigationItems({
 
 export function LandingNavbar() {
   const pathname = usePathname() ?? "/";
+  const [activeSection, setActiveSection] = useState<{
+    pathname: string;
+    href: string | null;
+  }>({ pathname: "/", href: null });
+  const activeSectionHref =
+    activeSection.pathname === pathname ? activeSection.href : null;
   const [isScrolled, setIsScrolled] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
@@ -51,6 +76,50 @@ export function LandingNavbar() {
   const headerRef = useRef<HTMLElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const isCollapsed = isScrolled && !isExpanded;
+
+  useEffect(() => {
+    if (pathname !== "/" || !("IntersectionObserver" in window)) return;
+
+    const sectionItems = LANDING_NAVIGATION_ITEMS.filter(
+      (item) => item.enabled && item.type === "section",
+    );
+    const targets = sectionItems
+      .map((item) => ({
+        href: item.href,
+        element: document.getElementById(item.href.split("#")[1] ?? ""),
+      }))
+      .filter(
+        (item): item is { href: string; element: HTMLElement } =>
+          item.element instanceof HTMLElement,
+      );
+    if (targets.length === 0) return;
+
+    const visible = new Map<string, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const href = targets.find(
+            (target) => target.element === entry.target,
+          )?.href;
+          if (!href) continue;
+          if (entry.isIntersecting) {
+            visible.set(href, entry.boundingClientRect.top);
+          } else {
+            visible.delete(href);
+          }
+        }
+
+        const activeHref = [...visible.entries()].sort(
+          (first, second) => first[1] - second[1],
+        )[0]?.[0];
+        setActiveSection({ pathname, href: activeHref ?? null });
+      },
+      { rootMargin: "-25% 0px -55% 0px", threshold: 0 },
+    );
+
+    targets.forEach(({ element }) => observer.observe(element));
+    return () => observer.disconnect();
+  }, [pathname]);
 
   useEffect(() => {
     const mediaQuery = window.matchMedia("(min-width: 768px)");
@@ -206,6 +275,7 @@ export function LandingNavbar() {
           <NavigationItems
             onNavigate={collapseAfterNavigation}
             pathname={pathname}
+            activeSectionHref={activeSectionHref}
           />
         </nav>
 
@@ -254,7 +324,11 @@ export function LandingNavbar() {
             <ol className={styles.mobileNavList}>
               {LANDING_NAVIGATION_ITEMS.filter((item) => item.enabled).map(
                 (item, index) => {
-                  const isActive = isCurrentPage(item.href, pathname);
+                  const isActive = isActiveNavigationItem(
+                    item,
+                    pathname,
+                    activeSectionHref,
+                  );
                   return (
                     <li key={item.label}>
                       <Link
@@ -262,7 +336,13 @@ export function LandingNavbar() {
                           isActive ? styles.activeMobileNavLink : ""
                         }`}
                         href={item.href}
-                        aria-current={isActive ? "page" : undefined}
+                        aria-current={
+                          isActive
+                            ? item.type === "section"
+                              ? "location"
+                              : "page"
+                            : undefined
+                        }
                         onClick={closeMobileNavigation}
                       >
                         <span className={styles.mobileNavNumber}>

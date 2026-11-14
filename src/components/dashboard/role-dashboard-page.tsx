@@ -9,6 +9,7 @@ import {
   IdCard,
   ShieldCheck,
   UserRound,
+  UserPlus,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
@@ -34,12 +35,16 @@ const roleActions: Record<AppRoleId, DashboardAction[]> = {
     { title: "Akun pengurus", description: "Atur akses dan Ketua Divisi.", href: "/administrator-accounts", actionLabel: "Kelola akun", icon: ShieldCheck },
     { title: "Anggota", description: "Kelola status dan data keanggotaan.", href: "/members", actionLabel: "Lihat anggota", icon: UsersRound },
     { title: "Periode", description: "Tinjau periode aktif dan arsip.", href: "/periods", actionLabel: "Kelola periode", icon: CalendarDays },
+    { title: "Pendaftar", description: "Tinjau formulir yang masuk dan tahap seleksinya.", href: "/recruitment/applicants", actionLabel: "Tinjau pendaftar", icon: UsersRound },
+    { title: "Pendaftaran", description: "Atur status dan tautan oprec.", href: "/recruitment", actionLabel: "Atur pendaftaran", icon: UserPlus },
     { title: "Laporan", description: "Tinjau rekap kehadiran organisasi.", href: "/reports", actionLabel: "Buka laporan", icon: ChartNoAxesCombined },
     { title: "Audit Log", description: "Telusuri perubahan penting.", href: "/audit-log", actionLabel: "Tinjau aktivitas", icon: ClipboardList },
   ],
   admin: [
     { title: "Anggota", description: "Kelola data dan status keanggotaan.", href: "/members", actionLabel: "Lihat anggota", icon: UsersRound },
     { title: "Periode", description: "Tinjau periode kepengurusan.", href: "/periods", actionLabel: "Lihat periode", icon: CalendarDays },
+    { title: "Pendaftar", description: "Tinjau formulir yang masuk dan tahap seleksinya.", href: "/recruitment/applicants", actionLabel: "Tinjau pendaftar", icon: UsersRound },
+    { title: "Pendaftaran", description: "Atur status dan tautan oprec.", href: "/recruitment", actionLabel: "Atur pendaftaran", icon: UserPlus },
     { title: "Monitoring absensi", description: "Pantau sesi dari seluruh divisi.", href: "/attendance", actionLabel: "Pantau sesi", icon: ClipboardList },
     { title: "Laporan", description: "Tinjau dan unduh rekap kehadiran.", href: "/reports", actionLabel: "Buka laporan", icon: ChartNoAxesCombined },
     { title: "Audit Log", description: "Lihat jejak perubahan sistem.", href: "/audit-log", actionLabel: "Tinjau aktivitas", icon: ShieldCheck },
@@ -59,6 +64,7 @@ const roleActions: Record<AppRoleId, DashboardAction[]> = {
     { title: "Riwayat absensi", description: "Catatan kehadiran pribadi pada sesi yang telah ditutup.", href: "/portal/anggota/riwayat-absensi", actionLabel: "Lihat riwayat", icon: ClipboardList },
     { title: "Ringkasan kehadiran", description: "Rekap Hadir, Izin, Sakit, dan Alpha pada periode aktif.", href: "/portal/anggota/ringkasan-kehadiran", actionLabel: "Lihat ringkasan", icon: ChartNoAxesCombined },
   ],
+  "calon-anggota": [],
 };
 
 function getMemberInitials(name: string) {

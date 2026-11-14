@@ -12,6 +12,7 @@ enum UserRole {
   ADMIN
   DIVISION_LEAD
   DIVISION_PJ
+  CANDIDATE
   MEMBER
 
   @@map("user_role")
@@ -60,6 +61,47 @@ enum AttendanceMethod {
   @@map("attendance_method")
 }
 
+enum ApplicantStage {
+  SUBMITTED
+  SCREENING
+  MEETING_INVITED
+  FORM_TWO_OPEN
+  FORM_TWO_SUBMITTED
+  FINAL_REVIEW
+
+  @@map("applicant_stage")
+}
+
+enum ApplicantDecision {
+  ACCEPTED
+  REJECTED
+  WAITLISTED
+
+  @@map("applicant_decision")
+}
+
+enum ApplicantMeetingMode {
+  IN_PERSON
+  ONLINE
+
+  @@map("applicant_meeting_mode")
+}
+
+enum ApplicantScreeningRating {
+  RECOMMENDED
+  CONSIDER
+  NOT_RECOMMENDED
+
+  @@map("applicant_screening_rating")
+}
+
+enum ApplicantMeetingAttendance {
+  PRESENT
+  ABSENT
+
+  @@map("applicant_meeting_attendance")
+}
+
 model Period {
   id          String       @id @default(uuid()) @db.Uuid
   name        String       @unique @db.VarChar(20)
@@ -74,6 +116,77 @@ model Period {
   @@map("periods")
 }
 
+model RecruitmentSetting {
+  id          String    @id @default("global") @db.VarChar(20)
+  open        Boolean   @default(false)
+  opensAt     DateTime? @map("opens_at") @db.Date
+  closesAt    DateTime? @map("closes_at") @db.Date
+  registerUrl String    @default("") @map("register_url") @db.VarChar(2048)
+  notifyUrl   String    @default("") @map("notify_url") @db.VarChar(2048)
+  zoomEnabled Boolean   @default(false) @map("zoom_enabled")
+  zoomUrl     String    @default("") @map("zoom_url") @db.VarChar(2048)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@map("recruitment_settings")
+}
+
+model RecruitmentMeetingSession {
+  id           String                   @id @default(uuid()) @db.Uuid
+  title        String                   @db.VarChar(120)
+  startsAt     DateTime                 @map("starts_at") @db.Timestamptz(3)
+  endsAt       DateTime                 @map("ends_at") @db.Timestamptz(3)
+  location     String                   @db.VarChar(240)
+  capacity     Int
+  isActive     Boolean                  @default(true) @map("is_active")
+  createdAt    DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  applications RecruitmentApplication[]
+
+  @@index([isActive, startsAt])
+  @@map("recruitment_meeting_sessions")
+}
+
+model StudyProgram {
+  id             String                   @id @default(uuid()) @db.Uuid
+  name           String                   @db.VarChar(160)
+  normalizedName String                   @unique @map("normalized_name") @db.VarChar(160)
+  createdAt      DateTime                 @default(now()) @map("created_at") @db.Timestamptz(3)
+  applications   RecruitmentApplication[]
+
+  @@index([name])
+  @@map("study_programs")
+}
+
+model RecruitmentApplication {
+  id                String                      @id @default(uuid()) @db.Uuid
+  userId            String                      @unique @map("user_id") @db.Uuid
+  fullName          String                      @map("full_name") @db.VarChar(160)
+  nim               String                      @db.VarChar(32)
+  email             String                      @db.VarChar(254)
+  studyProgramId    String                      @map("study_program_id") @db.Uuid
+  cohort            String                      @db.VarChar(4)
+  motivation        String?                     @db.Text
+  stage             ApplicantStage              @default(SUBMITTED)
+  decision          ApplicantDecision?
+  division          String?                     @db.VarChar(100)
+  divisionReason    String?                     @map("division_reason") @db.Text
+  experience        String?                     @db.Text
+  screeningRating   ApplicantScreeningRating?   @map("screening_rating")
+  meetingMode       ApplicantMeetingMode?       @map("meeting_mode")
+  meetingSessionId  String?                     @map("meeting_session_id") @db.Uuid
+  meetingAttendance ApplicantMeetingAttendance? @map("meeting_attendance")
+  meetingNotes      String?                     @map("meeting_notes") @db.Text
+  createdAt         DateTime                    @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime                    @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user              User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studyProgram      StudyProgram                @relation(fields: [studyProgramId], references: [id], onDelete: Restrict)
+  meetingSession    RecruitmentMeetingSession?  @relation(fields: [meetingSessionId], references: [id], onDelete: Restrict)
+
+  @@unique([nim])
+  @@index([stage, createdAt])
+  @@index([meetingSessionId])
+  @@map("recruitment_applications")
+}
+
 model Division {
   id        String   @id @default(uuid()) @db.Uuid
   name      String   @unique @db.VarChar(100)
@@ -86,23 +199,24 @@ model Division {
 }
 
 model User {
-  id            String      @id @default(uuid()) @db.Uuid
-  name          String      @db.VarChar(120)
-  email         String      @unique @db.VarChar(254)
-  passwordHash  String?     @map("password_hash") @db.VarChar(255)
-  emailVerified Boolean     @default(false) @map("email_verified")
-  image         String?     @db.VarChar(2048)
-  role          UserRole    @default(MEMBER)
-  isActive      Boolean     @default(true) @map("is_active")
-  managedDivision String?   @map("managed_division") @db.VarChar(100)
-  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt     DateTime    @updatedAt @map("updated_at") @db.Timestamptz(3)
-  member        Member?
-  createdSessions Session[] @relation("SessionCreator")
-  attendances   Attendance[] @relation("AttendanceRecorder")
-  auditLogs     AuditLog[]
-  authSessions  AuthSession[]
-  accounts      Account[]
+  id                     String                  @id @default(uuid()) @db.Uuid
+  name                   String                  @db.VarChar(120)
+  email                  String                  @unique @db.VarChar(254)
+  passwordHash           String?                 @map("password_hash") @db.VarChar(255)
+  emailVerified          Boolean                 @default(false) @map("email_verified")
+  image                  String?                 @db.VarChar(2048)
+  role                   UserRole                @default(MEMBER)
+  isActive               Boolean                 @default(true) @map("is_active")
+  managedDivision        String?                 @map("managed_division") @db.VarChar(100)
+  createdAt              DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+  member                 Member?
+  createdSessions        Session[]               @relation("SessionCreator")
+  attendances            Attendance[]            @relation("AttendanceRecorder")
+  auditLogs              AuditLog[]
+  authSessions           AuthSession[]
+  accounts               Account[]
+  recruitmentApplication RecruitmentApplication?
 
   @@index([role, isActive])
   @@map("users")
@@ -156,21 +270,21 @@ model Verification {
 }
 
 model Member {
-  id           String       @id @default(uuid()) @db.Uuid
-  memberCode   String       @unique @map("member_code") @db.VarChar(24)
-  fullName     String       @map("full_name") @db.VarChar(160)
-  nim          String       @unique @db.VarChar(32)
-  cohort       String       @db.VarChar(4)
-  photoUrl     String?      @map("photo_url") @db.VarChar(2048)
-  qrTokenHash  String?      @unique @map("qr_token_hash") @db.VarChar(128)
-  qrIssuedAt   DateTime?    @map("qr_issued_at") @db.Timestamptz(3)
-  qrRevokedAt  DateTime?    @map("qr_revoked_at") @db.Timestamptz(3)
-  userId       String?      @unique @map("user_id") @db.Uuid
-  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
-  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
-  user         User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  memberships  Membership[]
-  attendances  Attendance[]
+  id          String       @id @default(uuid()) @db.Uuid
+  memberCode  String       @unique @map("member_code") @db.VarChar(24)
+  fullName    String       @map("full_name") @db.VarChar(160)
+  nim         String       @unique @db.VarChar(32)
+  cohort      String       @db.VarChar(4)
+  photoUrl    String?      @map("photo_url") @db.VarChar(2048)
+  qrTokenHash String?      @unique @map("qr_token_hash") @db.VarChar(128)
+  qrIssuedAt  DateTime?    @map("qr_issued_at") @db.Timestamptz(3)
+  qrRevokedAt DateTime?    @map("qr_revoked_at") @db.Timestamptz(3)
+  userId      String?      @unique @map("user_id") @db.Uuid
+  createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime     @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  memberships Membership[]
+  attendances Attendance[]
 
   @@index([fullName])
   @@index([cohort])
@@ -178,15 +292,15 @@ model Member {
 }
 
 model Membership {
-  id        String           @id @default(uuid()) @db.Uuid
-  memberId  String           @map("member_id") @db.Uuid
-  periodId  String           @map("period_id") @db.Uuid
-  division  String           @db.VarChar(100)
-  status    MembershipStatus @default(ACTIVE)
-  joinedAt  DateTime         @default(now()) @map("joined_at") @db.Timestamptz(3)
-  endedAt   DateTime?        @map("ended_at") @db.Timestamptz(3)
-  member    Member           @relation(fields: [memberId], references: [id], onDelete: Restrict)
-  period    Period           @relation(fields: [periodId], references: [id], onDelete: Restrict)
+  id       String           @id @default(uuid()) @db.Uuid
+  memberId String           @map("member_id") @db.Uuid
+  periodId String           @map("period_id") @db.Uuid
+  division String           @db.VarChar(100)
+  status   MembershipStatus @default(ACTIVE)
+  joinedAt DateTime         @default(now()) @map("joined_at") @db.Timestamptz(3)
+  endedAt  DateTime?        @map("ended_at") @db.Timestamptz(3)
+  member   Member           @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  period   Period           @relation(fields: [periodId], references: [id], onDelete: Restrict)
 
   @@unique([memberId, periodId])
   @@index([periodId, status])
@@ -237,15 +351,15 @@ model Attendance {
 }
 
 model AuditLog {
-  id          String   @id @default(uuid()) @db.Uuid
-  userId      String?  @map("user_id") @db.Uuid
-  action      String   @db.VarChar(80)
-  entity      String   @db.VarChar(80)
-  entityId    String?  @map("entity_id") @db.VarChar(80)
-  oldValue    Json?    @map("old_value") @db.JsonB
-  newValue    Json?    @map("new_value") @db.JsonB
-  occurredAt  DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
-  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  action     String   @db.VarChar(80)
+  entity     String   @db.VarChar(80)
+  entityId   String?  @map("entity_id") @db.VarChar(80)
+  oldValue   Json?    @map("old_value") @db.JsonB
+  newValue   Json?    @map("new_value") @db.JsonB
+  occurredAt DateTime @default(now()) @map("occurred_at") @db.Timestamptz(3)
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([occurredAt])
   @@index([entity, entityId])

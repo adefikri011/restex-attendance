@@ -1,0 +1,215 @@
+.portal {
+  min-height: 100vh;
+  background: var(--ui-background);
+  color: var(--ui-text-primary);
+}
+
+.topbar {
+  position: relative;
+  z-index: 20;
+  height: 64px;
+  border-bottom: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+}
+
+.topbarInner {
+  display: flex;
+  width: min(100%, 1164px);
+  height: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 32px);
+}
+
+.logoLink {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoLink img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.actions > :global(details) > summary {
+  width: 44px;
+  height: 44px;
+}
+
+.account {
+  position: relative;
+}
+
+.accountTrigger {
+  display: inline-flex;
+  min-height: 44px;
+  max-width: 320px;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 10px 4px 5px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease;
+}
+
+.accountTrigger:hover,
+.accountTrigger[aria-expanded="true"] {
+  border-color: var(--ui-border);
+  background: var(--ui-surface-muted);
+}
+
+.accountTrigger:focus-visible,
+.signOutButton:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.accountMonogram {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--ui-border);
+  border-radius: 50%;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.accountName {
+  max-width: 210px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.accountTrigger > svg {
+  flex: 0 0 auto;
+  color: var(--ui-text-muted);
+}
+
+.accountMenu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: min(270px, calc(100vw - 32px));
+  padding: 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+  box-shadow: 0 12px 30px rgb(12 31 45 / 16%);
+}
+
+.accountDetails {
+  display: grid;
+  gap: 5px;
+  padding: 10px 11px 12px;
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.accountDetails strong {
+  overflow-wrap: anywhere;
+  color: var(--ui-text-primary);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.accountDetails span {
+  color: var(--ui-text-secondary);
+  font-size: 13px;
+}
+
+.signOutButton {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 9px;
+  margin-top: 5px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.signOutButton:hover {
+  background: var(--ui-surface-muted);
+}
+
+.signOutButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.signOutError {
+  width: min(calc(100% - 32px), 1100px);
+  margin: 12px auto 0;
+  color: var(--ui-danger-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.headerAccountSkeleton {
+  display: block;
+  width: 120px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--ui-surface-muted);
+}
+
+@media (max-width: 480px) {
+  .topbarInner {
+    gap: 8px;
+  }
+
+  .actions {
+    gap: 3px;
+  }
+
+  .accountTrigger {
+    gap: 6px;
+    padding-right: 7px;
+  }
+
+  .accountName {
+    display: none;
+  }
+}
+
+[data-theme="dark"] .accountMenu {
+  box-shadow: 0 0 0 1px var(--ui-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .accountTrigger {
+    transition: none;
+  }
+}

@@ -1,0 +1,411 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding: clamp(20px, 3vw, 36px);
+}
+
+.backLink {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--ui-text-accent);
+}
+
+.heading {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 4px;
+}
+
+.eyebrow {
+  color: var(--ui-text-accent);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.titleRow h1 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: clamp(25px, 3vw, 32px);
+  letter-spacing: -0.035em;
+}
+
+.titleRow p {
+  margin: 6px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+}
+
+.stage {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: 999px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.card {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid var(--ui-border);
+  border-radius: 15px;
+  background: var(--ui-surface);
+  box-shadow: 0 12px 32px rgb(34 55 70 / 4%);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ui-text-accent);
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 24px;
+  margin: 0;
+}
+
+.detailItem {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.detailIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 9px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+}
+
+.detailItem dt,
+.stageTwoGrid dt {
+  margin-bottom: 5px;
+  color: var(--ui-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.detailItem dd,
+.stageTwoGrid dd {
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.stageTwoGrid {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+}
+
+.stageTwoGrid > div {
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--ui-border);
+}
+
+.stageTwoGrid > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.motivation {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 13px;
+  line-height: 1.75;
+  white-space: pre-wrap;
+}
+
+.actionDescription {
+  margin: -8px 0 0;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.screeningForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.screeningForm label {
+  display: grid;
+  gap: 7px;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.screeningForm select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.screeningForm select:focus-visible,
+.saveStatusButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.saveStatusButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.saveStatusButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.actionError,
+.actionSuccess {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+}
+
+.actionError {
+  color: var(--ui-danger-text);
+}
+
+.actionSuccess {
+  color: var(--ui-success-text);
+}
+
+.ratingForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ui-border);
+}
+
+.ratingForm label {
+  display: grid;
+  gap: 7px;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.ratingForm select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.ratingForm select:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.savedRating {
+  margin: 0;
+  padding-top: 15px;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+}
+
+.savedRating strong {
+  color: var(--ui-text-primary);
+}
+
+.meetingReviewHeading {
+  display: grid;
+  gap: 5px;
+  padding-top: 16px;
+  border-top: 1px solid var(--ui-border);
+}
+
+.meetingReviewHeading h3 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 13px;
+}
+
+.meetingReviewHeading p {
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 11px;
+}
+
+.meetingReview {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1.35fr);
+  align-items: end;
+  gap: 12px;
+}
+
+.meetingReview > label {
+  display: grid;
+  gap: 7px;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.meetingReview select,
+.meetingReview textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.meetingReview textarea {
+  min-height: 105px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.meetingReview select:focus-visible,
+.meetingReview textarea:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.meetingNotesLabel span {
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  font-weight: 400;
+  text-align: right;
+}
+
+.meetingReview > button,
+.meetingReview > p {
+  grid-column: 1 / -1;
+}
+
+.meetingReviewReadOnly {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ui-border);
+}
+
+.meetingReviewReadOnly p {
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.meetingReviewReadOnly strong {
+  color: var(--ui-text-primary);
+}
+
+.spinner {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 640px) {
+  .titleRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .detailGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .screeningForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ratingForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .meetingReview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .saveStatusButton {
+    width: 100%;
+  }
+}

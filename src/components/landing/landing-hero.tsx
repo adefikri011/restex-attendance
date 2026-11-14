@@ -3,19 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import QRCode from "qrcode";
+import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 import { ACTIVE_PERIOD } from "@/data/active-period";
+import type {
+  RecruitmentSettings,
+  RecruitmentStatus,
+} from "@/lib/recruitment";
+import { formatTanggal } from "@/lib/recruitment";
 import styles from "./landing-hero.module.css";
 
 const HERO_TITLE = "Membangun teknologi, bukan cuma mempelajarinya.";
 const HERO_SUPPORTING_TEXT = "Riset, inovasi, dan kerja bersama.";
 const ACTIVE_PERIOD_LABEL = `Periode ${ACTIVE_PERIOD.label}`;
-const REGISTRATION_OPEN = false;
-const REGISTRATION_DEADLINE: string | null = null;
-const REGISTRATION_NOTIFY_HREF: string | null = null;
 const ABOUT_SECTION_HREF = "#tentang";
-const JOIN_HREF = REGISTRATION_OPEN ? "/gabung" : ABOUT_SECTION_HREF;
-// QR can point to /gabung once member registration opens.
+// QR can point to /pendaftaran once member registration opens.
 const QR_TARGET = process.env.NEXT_PUBLIC_SITE_URL?.trim() || "/";
 
 const copy = {
@@ -25,7 +27,9 @@ const copy = {
   cardName: "Nama: kamu?",
   notifyShort: "Kabari saya",
   notifyArrow: "Kabari saya →",
-  registrationClosed: "Oprec belum dibuka.",
+  registrationUpcoming: "Oprec belum dibuka.",
+  registrationClosed: "Oprec periode ini sudah ditutup.",
+  registrationOpen: "Pendaftaran dibuka.",
   register: "Daftar sekarang",
   activities: "Lihat kegiatan",
   notify: "Kabari saya saat oprec dibuka",
@@ -37,6 +41,64 @@ const copy = {
   qrAlt: "Kode QR untuk mengunjungi situs RESTEX",
   qrError: "Kode QR tidak dapat dibuat.",
 };
+
+function isInternalRecruitmentUrl(href: string) {
+  return href.startsWith("/") && !href.startsWith("//");
+}
+
+function isExternalRecruitmentUrl(href: string) {
+  return /^https:\/\//i.test(href);
+}
+
+function RecruitmentLink({
+  href,
+  className,
+  children,
+  tabIndex,
+  isHidden = false,
+}: {
+  href: string;
+  className: string;
+  children: ReactNode;
+  tabIndex?: number;
+  isHidden?: boolean;
+}) {
+  const visibilityProps = {
+    tabIndex,
+    "aria-hidden": isHidden,
+    inert: isHidden,
+  };
+
+  if (isInternalRecruitmentUrl(href)) {
+    return (
+      <Link className={className} href={href} {...visibilityProps}>
+        {children}
+      </Link>
+    );
+  }
+
+  if (isExternalRecruitmentUrl(href)) {
+    return (
+      <a
+        className={className}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        {...visibilityProps}
+      >
+        {children}
+      </a>
+    );
+  }
+
+  return null;
+}
+
+function getRegistrationLabel(status: RecruitmentStatus) {
+  if (status.state === "open") return copy.registrationOpen;
+  if (status.state === "upcoming") return copy.registrationUpcoming;
+  return copy.registrationClosed;
+}
 
 function Lanyard() {
   return (
@@ -65,7 +127,13 @@ function Lanyard() {
   );
 }
 
-export function LandingHero() {
+export function LandingHero({
+  recruitmentStatus,
+  recruitmentSettings,
+}: {
+  recruitmentStatus: RecruitmentStatus;
+  recruitmentSettings: RecruitmentSettings;
+}) {
   const peekRef = useRef<HTMLImageElement>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [hasSettled, setHasSettled] = useState(false);
@@ -75,6 +143,14 @@ export function LandingHero() {
   const [peekAvailable, setPeekAvailable] = useState(true);
   const [qrSource, setQrSource] = useState<string | null>(null);
   const [qrFailed, setQrFailed] = useState(false);
+  const registerUrl = recruitmentSettings.registerUrl.trim();
+  const notifyUrl = recruitmentSettings.notifyUrl.trim();
+  const hasRegisterUrl =
+    isInternalRecruitmentUrl(registerUrl) ||
+    isExternalRecruitmentUrl(registerUrl);
+  const hasNotifyUrl =
+    isInternalRecruitmentUrl(notifyUrl) ||
+    isExternalRecruitmentUrl(notifyUrl);
 
   useEffect(() => {
     const peek = peekRef.current;
@@ -154,22 +230,50 @@ export function LandingHero() {
           <p className={styles.supportingText}>{HERO_SUPPORTING_TEXT}</p>
 
           <div className={styles.actions}>
-            <Link className={styles.primaryAction} href={JOIN_HREF}>
-              {REGISTRATION_OPEN ? copy.register : copy.activities}
-            </Link>
-            {REGISTRATION_OPEN && REGISTRATION_DEADLINE && (
-              <span className={styles.deadline}>
-                {copy.deadline} {REGISTRATION_DEADLINE}
+            {recruitmentStatus.state === "open" && hasRegisterUrl ? (
+              <RecruitmentLink
+                className={styles.primaryAction}
+                href={
+                  isInternalRecruitmentUrl(registerUrl)
+                    ? "/pendaftaran"
+                    : registerUrl
+                }
+              >
+                {copy.register}
+              </RecruitmentLink>
+            ) : recruitmentStatus.state === "open" ? (
+              <span
+                className={styles.primaryAction}
+                aria-disabled="true"
+                title={copy.notifyUnavailable}
+              >
+                {copy.register}
               </span>
+            ) : (
+              <Link className={styles.primaryAction} href={ABOUT_SECTION_HREF}>
+                {copy.activities}
+              </Link>
             )}
-            {!REGISTRATION_OPEN &&
-              (REGISTRATION_NOTIFY_HREF ? (
-                <Link
+            {recruitmentStatus.state === "open" &&
+              recruitmentStatus.closesAt && (
+                <span className={styles.deadline}>
+                  {copy.deadline}{" "}
+                  <time dateTime={recruitmentStatus.closesAt}>
+                    {formatTanggal(recruitmentStatus.closesAt)}
+                  </time>
+                </span>
+              )}
+            {recruitmentStatus.state !== "open" &&
+              (hasNotifyUrl ? (
+                <RecruitmentLink
                   className={styles.textAction}
-                  href={REGISTRATION_NOTIFY_HREF}
+                  href={notifyUrl}
                 >
                   {copy.notify}
-                </Link>
+                  {isExternalRecruitmentUrl(notifyUrl) && (
+                    <span className="sr-only">(membuka tab baru)</span>
+                  )}
+                </RecruitmentLink>
               ) : (
                 <span
                   className={styles.unavailableAction}
@@ -179,9 +283,9 @@ export function LandingHero() {
                   {copy.notify}
                 </span>
               ))}
-            {REGISTRATION_OPEN && (
+            {recruitmentStatus.state === "open" && (
               <Link className={styles.textAction} href={ABOUT_SECTION_HREF}>
-                  {copy.about}
+                {copy.about}
               </Link>
             )}
           </div>
@@ -292,33 +396,15 @@ export function LandingHero() {
                     </span>
                   </span>
                 </button>
-                {REGISTRATION_OPEN ? (
-                  <Link
+                {recruitmentStatus.state === "open" && hasRegisterUrl ? (
+                  <RecruitmentLink
                     className={styles.joinAction}
-                    href="/gabung"
+                    href={registerUrl}
                     tabIndex={isFlipped ? 0 : -1}
-                    aria-hidden={!isFlipped}
-                    inert={!isFlipped}
+                    isHidden={!isFlipped}
                   >
                     {copy.register}
-                  </Link>
-                ) : REGISTRATION_NOTIFY_HREF ? (
-                  <div
-                    className={styles.notifyAction}
-                    aria-hidden={!isFlipped}
-                    inert={!isFlipped}
-                  >
-                    <span className={styles.registrationStatus}>
-                      {copy.registrationClosed}
-                    </span>
-                    <Link
-                      className={styles.notifyLink}
-                      href={REGISTRATION_NOTIFY_HREF}
-                      tabIndex={isFlipped ? 0 : -1}
-                    >
-                      {copy.notifyArrow}
-                    </Link>
-                  </div>
+                  </RecruitmentLink>
                 ) : (
                   <div
                     className={styles.notifyAction}
@@ -326,15 +412,36 @@ export function LandingHero() {
                     inert={!isFlipped}
                   >
                     <span className={styles.registrationStatus}>
-                      {copy.registrationClosed}
+                      {getRegistrationLabel(recruitmentStatus)}
                     </span>
-                    <span
-                      className={styles.notifyUnavailable}
-                      aria-disabled="true"
-                      title={copy.notifyUnavailable}
-                    >
-                      {copy.notifyArrow}
-                    </span>
+                    {recruitmentStatus.state === "open" ? (
+                      <span
+                        className={styles.notifyUnavailable}
+                        aria-disabled="true"
+                        title={copy.notifyUnavailable}
+                      >
+                        {copy.register}
+                      </span>
+                    ) : hasNotifyUrl ? (
+                      <a
+                        className={styles.notifyLink}
+                        href={notifyUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        tabIndex={isFlipped ? 0 : -1}
+                      >
+                        {copy.notifyArrow}
+                        <span className="sr-only">(membuka tab baru)</span>
+                      </a>
+                    ) : (
+                      <span
+                        className={styles.notifyUnavailable}
+                        aria-disabled="true"
+                        title={copy.notifyUnavailable}
+                      >
+                        {copy.notifyArrow}
+                      </span>
+                    )}
                   </div>
                 )}
               </div>

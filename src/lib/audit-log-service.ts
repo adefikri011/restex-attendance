@@ -22,7 +22,14 @@ export type AuditAction =
   | "session.opened"
   | "session.closed"
   | "attendance.recorded"
-  | "identity.qr_issued";
+  | "identity.qr_issued"
+  | "recruitment.updated"
+  | "recruitment.meeting_created"
+  | "recruitment.meeting_updated"
+  | "recruitment.meeting_deleted"
+  | "recruitment.applicant_updated"
+  | "recruitment.screening_rated"
+  | "recruitment.meeting_reviewed";
 
 export type AuditEntity =
   | "member"
@@ -31,7 +38,8 @@ export type AuditEntity =
   | "account"
   | "session"
   | "attendance"
-  | "identity";
+  | "identity"
+  | "recruitment";
 
 export async function writeAuditLog(
   transaction: AuditTransaction,
@@ -71,6 +79,13 @@ const actionLabels: Record<AuditAction, string> = {
   "session.closed": "Sesi absensi ditutup",
   "attendance.recorded": "Kehadiran dicatat melalui QR",
   "identity.qr_issued": "QR anggota dibuat atau diperbarui",
+  "recruitment.updated": "Pengaturan pendaftaran diperbarui",
+  "recruitment.meeting_created": "Sesi pertemuan dibuat",
+  "recruitment.meeting_updated": "Sesi pertemuan diperbarui",
+  "recruitment.meeting_deleted": "Sesi pertemuan dihapus",
+  "recruitment.applicant_updated": "Tahap pendaftar diperbarui",
+  "recruitment.screening_rated": "Penilaian screening diperbarui",
+  "recruitment.meeting_reviewed": "Hasil pertemuan diperbarui",
 };
 
 const entityCategories: Record<AuditEntity, AuditCategory> = {
@@ -81,6 +96,7 @@ const entityCategories: Record<AuditEntity, AuditCategory> = {
   session: "Absensi",
   attendance: "Absensi",
   identity: "Identitas",
+  recruitment: "Pengaturan",
 };
 
 const categoryEntities: Record<AuditCategory, AuditEntity[]> = {
@@ -89,6 +105,7 @@ const categoryEntities: Record<AuditCategory, AuditEntity[]> = {
   Periode: ["period"],
   "Akun & akses": ["account"],
   Identitas: ["identity"],
+  Pengaturan: ["recruitment"],
 };
 
 const roleLabels: Record<string, string> = {
@@ -96,7 +113,10 @@ const roleLabels: Record<string, string> = {
   ADMIN: "Admin",
   DIVISION_LEAD: "Ketua Divisi",
   DIVISION_PJ: "PJ Divisi",
+  PRESENT: "Hadir",
+  ABSENT: "Tidak hadir",
   MEMBER: "Anggota",
+  CANDIDATE: "Calon Anggota",
 };
 
 const entityLabels: Record<AuditEntity, string> = {
@@ -107,6 +127,7 @@ const entityLabels: Record<AuditEntity, string> = {
   session: "Sesi absensi",
   attendance: "Kehadiran",
   identity: "Identitas anggota",
+  recruitment: "Pengaturan pendaftaran",
 };
 
 type AuditValue = Record<string, Prisma.JsonValue | undefined>;

@@ -39,6 +39,7 @@ export type TurnstileWidgetHandle = {
 
 type TurnstileWidgetProps = {
   onTokenChange: (token: string | null) => void;
+  action?: string;
 };
 
 const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
@@ -46,7 +47,7 @@ const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY?.trim() ?? "";
 export const TurnstileWidget = forwardRef<
   TurnstileWidgetHandle,
   TurnstileWidgetProps
->(function TurnstileWidget({ onTokenChange }, ref) {
+>(function TurnstileWidget({ onTokenChange, action = "login" }, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const onTokenChangeRef = useRef(onTokenChange);
@@ -81,7 +82,7 @@ export const TurnstileWidget = forwardRef<
 
     const widgetId = turnstile.render(container, {
       sitekey: siteKey,
-      action: "login",
+      action,
       theme: "light",
       size: "flexible",
       callback: (token) => {
@@ -104,7 +105,7 @@ export const TurnstileWidget = forwardRef<
       turnstile.remove(widgetId);
       widgetIdRef.current = null;
     };
-  }, [scriptReady]);
+  }, [action, scriptReady]);
 
   return (
     <div className={styles.captcha}>

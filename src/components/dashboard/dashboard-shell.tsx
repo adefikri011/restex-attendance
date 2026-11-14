@@ -8,12 +8,15 @@ import {
   CalendarDays,
   CalendarRange,
   ChartNoAxesCombined,
+  ChevronDown,
+  ClipboardList,
   IdCard,
   LayoutDashboard,
   LogOut,
   Menu,
   ScrollText,
   UsersRound,
+  UserPlus,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -35,6 +38,7 @@ type NavigationItem = {
   label: string;
   icon: LucideIcon;
   href?: string;
+  children?: NavigationItem[];
 };
 
 const primaryNavigation: NavigationItem[] = [
@@ -43,6 +47,15 @@ const primaryNavigation: NavigationItem[] = [
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
   { label: "Periode", icon: CalendarRange, href: "/periods" },
+  {
+    label: "Rekrutmen",
+    icon: UserPlus,
+    children: [
+      { label: "Pendaftaran", icon: UserPlus, href: "/recruitment" },
+      { label: "Pendaftar", icon: ClipboardList, href: "/recruitment/applicants" },
+      { label: "Jadwal Pertemuan", icon: CalendarRange, href: "/recruitment/meetings" },
+    ],
+  },
   { label: "Laporan", icon: ChartNoAxesCombined, href: "/reports" },
 ];
 
@@ -60,39 +73,101 @@ function NavigationGroup({
   pathname: string;
   onNavigate: () => void;
 }) {
+  const [groupOpenStates, setGroupOpenStates] = useState<Record<string, boolean>>({});
+
+  function isItemActive(href: string | undefined, label: string) {
+    return Boolean(
+      href &&
+        (pathname === href ||
+          (href !== "/recruitment" && pathname.startsWith(`${href}/`)) ||
+          (label === "Dashboard" && pathname.startsWith(`${href}/`))),
+    );
+  }
+
   return (
     <ul className={styles.navigationList}>
-      {items.map(({ label, icon: Icon, href }) => {
-        const isActive =
-          pathname === href ||
-          (label === "Dashboard" && Boolean(href && pathname.startsWith(`${href}/`)));
-
+      {items.map(({ label, icon: Icon, href, children }) => {
+        const isGroupActive = Boolean(
+          children?.some(({ href: childHref, label: childLabel }) =>
+            isItemActive(childHref, childLabel),
+          ),
+        );
+        const isExpanded = groupOpenStates[label] ?? isGroupActive;
         return (
           <li key={label}>
-            {href ? (
-            <Link
-              href={href}
-              aria-current={isActive ? "page" : undefined}
-              className={`${styles.navigationItem} ${
-                isActive ? styles.activeNavigationItem : ""
-              }`}
-              onClick={onNavigate}
-            >
-              <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
-              <span>{label}</span>
-            </Link>
-          ) : (
-            <button
-              type="button"
-              className={styles.navigationItem}
-              disabled
-              title="Bagian ini akan dibuat pada tahap berikutnya"
-            >
-              <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
-              <span>{label}</span>
-              <span className={styles.comingSoon}>Segera</span>
-            </button>
-          )}
+            {children ? (
+              <>
+                <button
+                  type="button"
+                  className={`${styles.navigationItem} ${
+                    isGroupActive ? styles.activeNavigationItem : ""
+                  }`}
+                  aria-expanded={isExpanded}
+                  onClick={() =>
+                    setGroupOpenStates((current) => ({
+                      ...current,
+                      [label]: !isExpanded,
+                    }))
+                  }
+                >
+                  <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+                  <span>{label}</span>
+                  <ChevronDown
+                    className={`${styles.navigationChevron} ${
+                      isExpanded ? styles.navigationChevronExpanded : ""
+                    }`}
+                    size={15}
+                    aria-hidden="true"
+                  />
+                </button>
+                {isExpanded && (
+                  <ul className={styles.subNavigationList}>
+                    {children.map((child) => {
+                      const ChildIcon = child.icon;
+                      const childIsActive = isItemActive(child.href, child.label);
+                      return (
+                        <li key={child.label}>
+                          <Link
+                            href={child.href ?? "#"}
+                            aria-current={childIsActive ? "page" : undefined}
+                            className={`${styles.subNavigationItem} ${
+                              childIsActive ? styles.activeSubNavigationItem : ""
+                            }`}
+                            onClick={onNavigate}
+                          >
+                            <ChildIcon aria-hidden="true" size={16} strokeWidth={1.8} />
+                            <span>{child.label}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </>
+            ) : href ? (
+              <Link
+                href={href}
+                aria-current={isItemActive(href, label) ? "page" : undefined}
+                className={`${styles.navigationItem} ${
+                  isItemActive(href, label) ? styles.activeNavigationItem : ""
+                }`}
+                onClick={onNavigate}
+              >
+                <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+                <span>{label}</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className={styles.navigationItem}
+                disabled
+                title="Bagian ini akan dibuat pada tahap berikutnya"
+              >
+                <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
+                <span>{label}</span>
+                <span className={styles.comingSoon}>Segera</span>
+              </button>
+            )}
           </li>
         );
       })}
@@ -118,7 +193,7 @@ export function DashboardShell({
   const activeRole = appRoles.find((item) => item.id === role)!;
 
   useEffect(() => {
-    if (role === "anggota") return;
+    if (role === "anggota" || role === "calon-anggota") return;
 
     let isCurrent = true;
 

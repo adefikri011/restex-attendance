@@ -7,9 +7,11 @@ import { LandingDivisions } from "@/components/landing/landing-divisions";
 import { getLandingDivisions } from "@/components/landing/landing-division-data";
 import { LandingFooter } from "@/components/landing/landing-footer";
 import { LandingHero } from "@/components/landing/landing-hero";
+import { LandingJoin } from "@/components/landing/landing-join";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingProjects } from "@/components/landing/landing-projects";
 import { LandingStructure } from "@/components/structure/landing-structure";
+import { getCachedRecruitmentConfig } from "@/lib/recruitment-cache";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -24,19 +26,30 @@ async function LandingDivisionsContent() {
   return <LandingDivisions divisions={divisions} />;
 }
 
-export default function Home() {
+export default async function Home() {
+  await connection();
+  const { settings: recruitmentSettings, status: recruitmentStatus } =
+    await getCachedRecruitmentConfig();
+
   return (
     <>
       <main className={styles.page} id="top">
         <LandingNavbar />
-        <LandingHero />
+        <LandingHero
+          recruitmentStatus={recruitmentStatus}
+          recruitmentSettings={recruitmentSettings}
+        />
         <LandingAbout />
         <Suspense fallback={<LandingDivisions divisions={[]} />}>
           <LandingDivisionsContent />
         </Suspense>
-        <LandingAnnouncements />
+        <LandingAnnouncements recruitmentStatus={recruitmentStatus} />
         <LandingProjects />
         <LandingStructure />
+        <LandingJoin
+          status={recruitmentStatus}
+          settings={recruitmentSettings}
+        />
       </main>
       <LandingFooter />
     </>

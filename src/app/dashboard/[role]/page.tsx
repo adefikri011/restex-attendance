@@ -15,7 +15,9 @@ type RoleDashboardRouteProps = {
 
 export function generateStaticParams() {
   return appRoles
-    .filter((role) => role.id !== "anggota")
+    .filter(
+      (role) => role.id !== "anggota" && role.id !== "calon-anggota",
+    )
     .map((role) => ({ role: role.id }));
 }
 
@@ -39,7 +41,13 @@ export default async function RoleDashboardRoute({
   const { role: roleId } = await params;
   const role = getAppRole(roleId);
 
-  if (!role || role.id === "anggota") notFound();
+  if (
+    !role ||
+    role.id === "anggota" ||
+    role.id === "calon-anggota"
+  ) {
+    notFound();
+  }
   const user = await requirePageUser([role.id]);
   const dashboardData =
     role.id === "super-admin" || role.id === "admin"

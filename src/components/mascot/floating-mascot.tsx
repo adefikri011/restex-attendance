@@ -35,11 +35,13 @@ export function FloatingMascot() {
   const [isHidden, setIsHidden] = useState(false);
   const [phase, setPhase] = useState<"display" | "interval">("display");
   const pose = poses[poseIndex];
+  const isCandidatePortal = pathname === "/portal/calon-anggota";
+  const isRegistrationPage = pathname === "/pendaftaran";
   const isLoginPage = pathname === "/login";
   const isLandingPage = pathname === "/";
 
   useEffect(() => {
-    if (isLoginPage || isLandingPage) {
+    if (isLoginPage || isLandingPage || isRegistrationPage || isCandidatePortal) {
       return;
     }
 
@@ -56,7 +58,7 @@ export function FloatingMascot() {
     }, phase === "display" ? DISPLAY_DURATION : APPEARANCE_INTERVAL);
 
     return () => window.clearTimeout(timeout);
-  }, [isLandingPage, isLoginPage, phase]);
+  }, [isCandidatePortal, isLandingPage, isLoginPage, isRegistrationPage, phase]);
 
   function hideMascot() {
     setIsVisible(false);
@@ -69,7 +71,7 @@ export function FloatingMascot() {
     setPhase("display");
   }
 
-  if (isLoginPage || isLandingPage) {
+  if (isLoginPage || isLandingPage || isRegistrationPage || isCandidatePortal) {
     return null;
   }
 

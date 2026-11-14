@@ -18,6 +18,9 @@ export function DashboardHeader({
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
     "/periods": "Periode",
+    "/recruitment": "Pendaftaran",
+    "/recruitment/applicants": "Data Pendaftar",
+    "/recruitment/meetings": "Jadwal Pertemuan",
     "/reports": "Laporan",
     "/audit-log": "Audit Log",
     "/administrator-accounts": "Akun Pengurus",
@@ -28,6 +31,8 @@ export function DashboardHeader({
   };
   const pageTitle = pathname.startsWith("/attendance/")
     ? "Detail Sesi"
+    : pathname.startsWith("/recruitment/applicants/")
+      ? "Detail Pendaftar"
     : pathname.startsWith("/dashboard/")
       ? "Dashboard"
       : pageTitles[pathname] ?? "Dashboard";
@@ -41,7 +46,7 @@ export function DashboardHeader({
       </div>
 
       <div className={styles.headerActions}>
-        {role !== "anggota" && (
+        {role !== "anggota" && role !== "calon-anggota" && (
           <>
             <div className={styles.headerPeriod}>
               <span>Periode aktif</span>

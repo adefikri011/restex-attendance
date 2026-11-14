@@ -12,7 +12,13 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function ProfileRoute() {
-  const access = await requirePageUser();
+  const access = await requirePageUser([
+    "super-admin",
+    "admin",
+    "ketua-divisi",
+    "pj-divisi",
+    "anggota",
+  ]);
   const user = await prisma.user.findUnique({
     where: { id: access.id },
     select: {

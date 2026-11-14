@@ -28,6 +28,7 @@ const roleLabels: Record<AppRoleId, string> = {
   admin: "Admin",
   "ketua-divisi": "Ketua Divisi",
   "pj-divisi": "PJ Divisi",
+  "calon-anggota": "Calon Anggota",
   anggota: "Anggota",
 };
 

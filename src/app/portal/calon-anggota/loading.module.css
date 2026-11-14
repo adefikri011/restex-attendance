@@ -1,0 +1,37 @@
+.heading {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+
+.title,
+.lead {
+  display: block;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--ui-surface-muted), var(--ui-surface-subtle), var(--ui-surface-muted));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.title {
+  width: min(300px, 72vw);
+  height: 38px;
+}
+
+.lead {
+  width: min(270px, 65vw);
+  height: 20px;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title,
+  .lead {
+    animation: none;
+  }
+}

@@ -1,0 +1,208 @@
+.card {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--ui-border);
+  border-radius: 14px;
+  background: var(--ui-surface);
+  box-shadow: 0 8px 24px rgb(11 47 74 / 5%);
+}
+
+.heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+}
+
+.icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-accent);
+}
+
+.heading h2 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 15px;
+}
+
+.heading p {
+  margin: 5px 0 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.savedOnline,
+.savedSession {
+  display: grid;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-primary);
+  font-size: 12px;
+}
+
+.savedOnline {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  color: var(--ui-text-accent);
+}
+
+.savedOnline > div {
+  display: grid;
+  gap: 5px;
+}
+
+.savedOnline strong,
+.savedSession strong {
+  color: var(--ui-text-primary);
+}
+
+.savedOnline a {
+  width: fit-content;
+  color: var(--ui-text-accent);
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.savedSession span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ui-text-secondary);
+}
+
+.options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.option {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-background);
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.option:hover,
+.selected {
+  border-color: var(--ui-text-accent);
+  background: var(--ui-surface-subtle);
+}
+
+.option input {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+  accent-color: var(--ui-button-primary);
+}
+
+.option input:focus-visible {
+  outline: 2px solid var(--ui-text-accent);
+  outline-offset: 3px;
+}
+
+.optionText {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.optionText strong {
+  color: var(--ui-text-primary);
+  font-size: 12px;
+}
+
+.optionText > span,
+.optionText small {
+  overflow-wrap: anywhere;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.optionText small {
+  margin-top: 3px;
+  color: var(--ui-text-accent);
+  font-weight: 650;
+}
+
+.empty,
+.zoomNote,
+.error,
+.success {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.empty,
+.zoomNote {
+  color: var(--ui-text-secondary);
+}
+
+.saveButton {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.saveButton:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.saveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.error {
+  color: var(--ui-danger-text);
+}
+
+.success {
+  color: var(--ui-success-text);
+}
+
+@media (max-width: 640px) {
+  .card {
+    padding: 15px;
+  }
+
+  .options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .saveButton {
+    width: 100%;
+  }
+}

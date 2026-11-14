@@ -1,0 +1,492 @@
+.page {
+  display: grid;
+  gap: 20px;
+  padding: clamp(20px, 3vw, 36px);
+}
+
+.backLink {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.backLink:hover {
+  color: var(--ui-text-accent);
+}
+
+.heading {
+  display: grid;
+  gap: 7px;
+}
+
+.eyebrow {
+  color: var(--ui-text-accent);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+}
+
+.heading h1 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: clamp(25px, 3vw, 32px);
+  letter-spacing: -0.035em;
+}
+
+.heading p {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--ui-text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.section {
+  display: grid;
+  gap: 20px;
+  padding: 22px;
+  border: 1px solid var(--ui-border);
+  border-radius: 15px;
+  background: var(--ui-surface);
+  box-shadow: 0 12px 32px rgb(34 55 70 / 4%);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 11px;
+  background: var(--ui-surface-muted);
+  color: var(--ui-text-accent);
+}
+
+.sectionHeading h2 {
+  margin: 1px 0 4px;
+  color: var(--ui-text-primary);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.sectionHeading p {
+  max-width: 64ch;
+  margin: 0;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.createForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+}
+
+.createForm label,
+.sessionActions > label,
+.zoomUrl {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.createForm input,
+.sessionActions input[type="number"],
+.zoomUrl input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 9px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+
+.createForm input:focus-visible,
+.sessionActions input:focus-visible,
+.zoomUrl input:focus-visible,
+.zoomToggle input:focus-visible,
+.activeToggle input:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
+  outline-offset: 2px;
+}
+
+.primaryButton,
+.secondaryButton,
+.deleteButton {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.primaryButton {
+  justify-self: start;
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+}
+
+.secondaryButton,
+.deleteButton {
+  min-height: 38px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+}
+
+.deleteButton {
+  width: 38px;
+  padding: 0;
+  color: var(--ui-danger-text);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled,
+.deleteButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.sessionList {
+  display: grid;
+  gap: 12px;
+}
+
+.sessionCard {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid var(--ui-border);
+  border-radius: 12px;
+  background: var(--ui-surface);
+}
+
+.sessionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sessionHeader h3 {
+  margin: 0;
+  color: var(--ui-text-primary);
+  font-size: 14px;
+}
+
+.sessionDate {
+  margin: 5px 0 0;
+  color: var(--ui-text-secondary);
+  font-size: 12px;
+}
+
+.activeBadge,
+.inactiveBadge {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.activeBadge {
+  background: var(--ui-success-soft);
+  color: var(--ui-success-text);
+}
+
+.inactiveBadge {
+  background: var(--ui-surface-subtle);
+  color: var(--ui-text-muted);
+}
+
+.sessionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+}
+
+.sessionMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.participantDetails {
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+}
+
+.participantDetails summary {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  list-style-position: inside;
+}
+
+.participantDetails summary::marker {
+  color: var(--ui-text-muted);
+}
+
+.participantList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0 12px;
+  list-style: none;
+}
+
+.participantList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 11px 0;
+  border-top: 1px solid var(--ui-border);
+}
+
+.participantIdentity {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.participantName {
+  overflow: hidden;
+  color: var(--ui-text-primary);
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none;
+  text-overflow: ellipsis;
+}
+
+.participantName:hover,
+.reviewLink:hover {
+  color: var(--ui-text-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.participantIdentity > span {
+  overflow: hidden;
+  color: var(--ui-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+}
+
+.participantActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.attendancePresent,
+.attendanceAbsent,
+.attendancePending {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.attendancePresent {
+  color: var(--ui-success-text);
+}
+
+.attendanceAbsent {
+  color: var(--ui-danger-text);
+}
+
+.attendancePending {
+  color: var(--ui-text-muted);
+}
+
+.reviewLink {
+  color: var(--ui-text-accent);
+  font-size: 10px;
+  font-weight: 650;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.noParticipants {
+  margin: 0;
+  padding: 0 12px 12px;
+  color: var(--ui-text-muted);
+  font-size: 11px;
+}
+
+.sessionActions {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--ui-border);
+}
+
+.sessionActions > label:first-child {
+  width: 112px;
+}
+
+.activeToggle {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+}
+
+.activeToggle input,
+.zoomToggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ui-button-primary);
+}
+
+.zoomForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 1fr) auto;
+  align-items: end;
+  gap: 16px;
+}
+
+.zoomToggle {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.zoomToggle span {
+  display: grid;
+  gap: 4px;
+}
+
+.zoomToggle strong {
+  color: var(--ui-text-primary);
+  font-size: 12px;
+}
+
+.zoomToggle small {
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.error,
+.success {
+  margin: 0;
+  font-size: 12px;
+}
+
+.error {
+  color: var(--ui-danger-text);
+}
+
+.success {
+  color: var(--ui-success-text);
+}
+
+.emptyState {
+  margin: 0;
+  padding: 22px;
+  border: 1px dashed var(--ui-border);
+  border-radius: 10px;
+  color: var(--ui-text-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .createForm,
+  .zoomForm {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .primaryButton {
+    width: 100%;
+  }
+
+  .sessionActions {
+    flex-wrap: wrap;
+  }
+
+  .participantList li {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .participantActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sessionActions > label:first-child {
+    width: 100%;
+  }
+
+  .activeToggle {
+    flex: 1 1 100%;
+    margin: 0;
+  }
+
+  .zoomToggle {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .section {
+    padding: 17px;
+  }
+
+  .sessionMeta {
+    display: grid;
+    gap: 9px;
+  }
+
+  .secondaryButton {
+    flex: 1;
+  }
+}

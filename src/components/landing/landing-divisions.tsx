@@ -556,9 +556,7 @@ export function LandingDivisions({ divisions }: LandingDivisionsProps) {
                   key={activeIndex}
                 >
                   <BlueprintIllustration variant={activeIndex} />
-                  <p className={styles.visualCaption}>
-                    BLUEPRINT DIVISI <span>/{String(activeIndex + 1).padStart(2, "0")}</span>
-                  </p>
+                  
                 </div>
               </div>
             </div>
