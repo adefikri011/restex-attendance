@@ -64,6 +64,8 @@ export function CandidateAnnouncement({
 }: CandidateAnnouncementProps) {
   const router = useRouter();
   const [isResultRevealed, setIsResultRevealed] = useState(false);
+  const [isClaimingAcceptance, setIsClaimingAcceptance] = useState(false);
+  const [claimError, setClaimError] = useState("");
 
   const stageIndex = stage ? getCandidateStageIndex(stage) : -1;
   const activeStage = candidatePortalCopy.stages[stageIndex];
@@ -72,6 +74,32 @@ export function CandidateAnnouncement({
   const nextStage = !decision && stageIndex >= 0
     ? candidatePortalCopy.stages[stageIndex + 1]
     : undefined;
+
+  async function revealAnnouncement() {
+    setIsResultRevealed(true);
+    if (decision !== "ACCEPTED") return;
+    setIsClaimingAcceptance(true);
+    setClaimError("");
+    try {
+      const response = await fetch("/api/recruitment-applications/claim-acceptance", {
+        method: "POST",
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          typeof result === "object" && result !== null && "error" in result &&
+          typeof result.error === "string"
+            ? result.error
+            : "Akun anggota gagal disiapkan.",
+        );
+      }
+      router.replace("/portal/anggota");
+    } catch (error) {
+      setClaimError(error instanceof Error ? error.message : "Akun anggota gagal disiapkan.");
+    } finally {
+      setIsClaimingAcceptance(false);
+    }
+  }
 
   return (
     <div className={styles.portalGrid}>
@@ -123,10 +151,13 @@ export function CandidateAnnouncement({
                     <button
                       className={styles.openResultButton}
                       type="button"
-                      onClick={() => setIsResultRevealed(true)}
+                      onClick={() => void revealAnnouncement()}
+                      disabled={isClaimingAcceptance}
                     >
-                      {candidatePortalCopy.openAnnouncement} <ArrowUpRight size={17} aria-hidden="true" />
+                      {isClaimingAcceptance ? "Menyiapkan akun anggota..." : candidatePortalCopy.openAnnouncement}{" "}
+                      {!isClaimingAcceptance && <ArrowUpRight size={17} aria-hidden="true" />}
                     </button>
+                    {claimError && <p className={styles.resultMessage} role="alert">{claimError}</p>}
                   </>
                 )
               ) : (

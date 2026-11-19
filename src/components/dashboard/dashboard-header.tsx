@@ -22,6 +22,7 @@ export function DashboardHeader({
     "/recruitment/applicants": "Data Pendaftar",
     "/recruitment/meetings": "Jadwal Pertemuan",
     "/reports": "Laporan",
+    "/announcements/manage": "Kelola Pengumuman",
     "/audit-log": "Audit Log",
     "/administrator-accounts": "Akun Pengurus",
     "/portal/anggota": "Portal Anggota",

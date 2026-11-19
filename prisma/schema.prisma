@@ -102,6 +102,14 @@ enum ApplicantMeetingAttendance {
   @@map("applicant_meeting_attendance")
 }
 
+enum AnnouncementType {
+  ANNOUNCEMENT
+  ACTIVITY
+  OPPORTUNITY
+
+  @@map("announcement_type")
+}
+
 model Period {
   id          String       @id @default(uuid()) @db.Uuid
   name        String       @unique @db.VarChar(20)
@@ -128,6 +136,22 @@ model RecruitmentSetting {
   updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
 
   @@map("recruitment_settings")
+}
+
+model Announcement {
+  id          String           @id @default(uuid()) @db.Uuid
+  slug        String           @unique @db.VarChar(180)
+  title       String           @db.VarChar(180)
+  excerpt     String           @db.VarChar(320)
+  content     String           @db.Text
+  type        AnnouncementType @default(ANNOUNCEMENT)
+  isPublished Boolean          @default(false) @map("is_published")
+  publishedAt DateTime?        @map("published_at") @db.Timestamptz(3)
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([isPublished, publishedAt])
+  @@map("announcements")
 }
 
 model RecruitmentMeetingSession {

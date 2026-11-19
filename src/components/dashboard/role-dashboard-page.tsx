@@ -196,6 +196,15 @@ export function RoleDashboardPage({
               memastikan akun anggota sudah ditautkan.
             </p>
           )}
+          {memberData.isNewMember && (
+              <section className={styles.newMemberWelcome} aria-label="Ucapan anggota baru">
+                <strong>Selamat datang sebagai anggota RESTEX.</strong>
+                <p>
+                  Akunmu sudah aktif. Kamu sekarang bisa melihat profil,
+                  membuat kartu anggota, dan mengikuti kegiatan RESTEX.
+                </p>
+              </section>
+            )}
         </section>
       )}
 

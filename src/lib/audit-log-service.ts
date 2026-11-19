@@ -29,7 +29,9 @@ export type AuditAction =
   | "recruitment.meeting_deleted"
   | "recruitment.applicant_updated"
   | "recruitment.screening_rated"
-  | "recruitment.meeting_reviewed";
+  | "recruitment.meeting_reviewed"
+  | "recruitment.meeting_attendance_recorded"
+  | "recruitment.applicant_form_submitted";
 
 export type AuditEntity =
   | "member"
@@ -86,6 +88,8 @@ const actionLabels: Record<AuditAction, string> = {
   "recruitment.applicant_updated": "Tahap pendaftar diperbarui",
   "recruitment.screening_rated": "Penilaian screening diperbarui",
   "recruitment.meeting_reviewed": "Hasil pertemuan diperbarui",
+  "recruitment.meeting_attendance_recorded": "Kehadiran pertemuan dicatat",
+  "recruitment.applicant_form_submitted": "Formulir lanjutan dikirim",
 };
 
 const entityCategories: Record<AuditEntity, AuditCategory> = {

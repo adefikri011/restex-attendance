@@ -279,96 +279,6 @@
   color: var(--ui-text-primary);
 }
 
-.meetingReviewHeading {
-  display: grid;
-  gap: 5px;
-  padding-top: 16px;
-  border-top: 1px solid var(--ui-border);
-}
-
-.meetingReviewHeading h3 {
-  margin: 0;
-  color: var(--ui-text-primary);
-  font-size: 13px;
-}
-
-.meetingReviewHeading p {
-  margin: 0;
-  color: var(--ui-text-muted);
-  font-size: 11px;
-}
-
-.meetingReview {
-  display: grid;
-  grid-template-columns: minmax(180px, 0.65fr) minmax(0, 1.35fr);
-  align-items: end;
-  gap: 12px;
-}
-
-.meetingReview > label {
-  display: grid;
-  gap: 7px;
-  color: var(--ui-text-secondary);
-  font-size: 11px;
-  font-weight: 650;
-}
-
-.meetingReview select,
-.meetingReview textarea {
-  width: 100%;
-  min-height: 42px;
-  padding: 10px 11px;
-  border: 1px solid var(--ui-border);
-  border-radius: 9px;
-  background: var(--ui-surface);
-  color: var(--ui-text-primary);
-  font: inherit;
-  font-size: 12px;
-}
-
-.meetingReview textarea {
-  min-height: 105px;
-  resize: vertical;
-  line-height: 1.55;
-}
-
-.meetingReview select:focus-visible,
-.meetingReview textarea:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--ui-button-primary) 30%, transparent);
-  outline-offset: 2px;
-}
-
-.meetingNotesLabel span {
-  color: var(--ui-text-muted);
-  font-size: 10px;
-  font-weight: 400;
-  text-align: right;
-}
-
-.meetingReview > button,
-.meetingReview > p {
-  grid-column: 1 / -1;
-}
-
-.meetingReviewReadOnly {
-  display: grid;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid var(--ui-border);
-}
-
-.meetingReviewReadOnly p {
-  margin: 0;
-  color: var(--ui-text-secondary);
-  font-size: 12px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.meetingReviewReadOnly strong {
-  color: var(--ui-text-primary);
-}
-
 .spinner {
   animation: spin 900ms linear infinite;
 }
@@ -398,10 +308,6 @@
   }
 
   .ratingForm {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .meetingReview {
     grid-template-columns: minmax(0, 1fr);
   }
 

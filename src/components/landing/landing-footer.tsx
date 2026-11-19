@@ -71,7 +71,7 @@ export function LandingFooter() {
       <div className={styles.gridField} aria-hidden="true" />
       <div className={`${styles.container} site-container`}>
         <div className={styles.main}>
-          <div className={styles.identity}>
+          <div className={styles.identity} data-reveal="up" data-reveal-step="0">
             <div className={styles.logoPill}>
               <Image
                 src="/assets/image/logoNavbar.png"
@@ -92,7 +92,12 @@ export function LandingFooter() {
 
           <div className={styles.mascotSlot} aria-hidden="true" />
 
-          <nav className={styles.footerNavigation} aria-label="Navigasi footer">
+          <nav
+            className={styles.footerNavigation}
+            aria-label="Navigasi footer"
+            data-reveal="up"
+            data-reveal-step="1"
+          >
             <div className={styles.linkGroup}>
               <h2 className={styles.groupTitle}>Jelajahi</h2>
               <ul className={styles.linkList}>
@@ -143,7 +148,7 @@ export function LandingFooter() {
           </nav>
         </div>
 
-        <div className={styles.footerBottom}>
+        <div className={styles.footerBottom} data-reveal="up" data-reveal-step="2">
           <p className={styles.copyright}>
             © {COPYRIGHT_YEAR} RESTEX · UKM Rekayasa Teknologi, Universitas
             Nusa Putra

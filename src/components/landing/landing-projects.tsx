@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LANDING_PROJECTS, type LandingProject } from "./landing-project-data";
 import styles from "./landing-projects.module.css";
+import { SplitLines } from "./scroll-reveal";
 
 function ProjectArtwork({ visual }: { visual: LandingProject["visual"] }) {
   const visualLabel = {
@@ -16,6 +17,7 @@ function ProjectArtwork({ visual }: { visual: LandingProject["visual"] }) {
       fill="none"
       role="img"
       aria-label={`Ilustrasi konsep ${visualLabel}`}
+      data-project-artwork=""
     >
       <path className={styles.gridLine} d="M0 70h640M0 140h640M0 210h640M0 280h640M0 350h640M80 0v420M160 0v420M240 0v420M320 0v420M400 0v420M480 0v420M560 0v420" />
       {visual === "environment" && (
@@ -65,13 +67,18 @@ function ProjectArtwork({ visual }: { visual: LandingProject["visual"] }) {
 function ProjectCard({
   project,
   featured = false,
+  step = 0,
 }: {
   project: LandingProject;
   featured?: boolean;
+  step?: number;
 }) {
   return (
     <article
       className={`${styles.projectCard} ${featured ? styles.featured : ""}`}
+      data-reveal="up"
+      data-reveal-step={step}
+      style={{ "--stagger": "90ms" } as React.CSSProperties}
     >
       <div className={styles.projectVisual}>
         <ProjectArtwork visual={project.visual} />
@@ -99,24 +106,40 @@ export function LandingProjects() {
     >
       <div className={`${styles.content} site-container`}>
         <header className={styles.header}>
-          <div className={styles.headingCopy}>
+          <div
+            className={styles.headingCopy}
+            data-reveal="up"
+            data-reveal-step="0"
+          >
             <p className={styles.eyebrow}>Karya dan proyek</p>
-            <h2 className={styles.title} id="landing-projects-title">
-              Gagasan yang dirancang menjadi teknologi.
+            <h2
+              className={styles.title}
+              id="landing-projects-title"
+              data-reveal="lines"
+            >
+              <SplitLines>Gagasan yang dirancang menjadi teknologi.</SplitLines>
             </h2>
           </div>
-          <p className={styles.introduction}>
+          <p
+            className={styles.introduction}
+            data-reveal="up"
+            data-reveal-step="1"
+          >
             Lihat contoh konsep untuk portofolio riset, prototipe, dan karya
             anggota RESTEX.
           </p>
         </header>
 
-        <ProjectCard project={featuredProject} featured />
+        <ProjectCard project={featuredProject} featured step={0} />
 
         {otherProjects.length > 0 && (
           <div className={styles.projectGrid}>
-            {otherProjects.map((project) => (
-              <ProjectCard key={project.slug} project={project} />
+            {otherProjects.map((project, index) => (
+              <ProjectCard
+                key={project.slug}
+                project={project}
+                step={index + 1}
+              />
             ))}
           </div>
         )}

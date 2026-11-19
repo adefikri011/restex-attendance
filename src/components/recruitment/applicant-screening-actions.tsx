@@ -37,6 +37,7 @@ export function ApplicantScreeningActions({
   const router = useRouter();
   const initialChoice = decision ? `decision:${decision}` : `stage:${stage}`;
   const [choice, setChoice] = useState(initialChoice);
+  const formWasSubmittedByCandidate = choice === "stage:FORM_TWO_SUBMITTED";
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -86,7 +87,11 @@ export function ApplicantScreeningActions({
         <select value={choice} onChange={(event) => setChoice(event.target.value)}>
           <optgroup label="Tahap seleksi">
             {stages.map((item) => (
-              <option key={item.value} value={`stage:${item.value}`}>
+              <option
+                key={item.value}
+                value={`stage:${item.value}`}
+                disabled={item.value === "FORM_TWO_SUBMITTED"}
+              >
                 {item.label}
               </option>
             ))}
@@ -100,13 +105,21 @@ export function ApplicantScreeningActions({
           </optgroup>
         </select>
       </label>
-      <button type="submit" className={styles.saveStatusButton} disabled={isSaving}>
+      <button
+        type="submit"
+        className={styles.saveStatusButton}
+        disabled={isSaving || formWasSubmittedByCandidate}
+      >
         {isSaving ? (
           <LoaderCircle size={16} className={styles.spinner} aria-hidden="true" />
         ) : (
           <Check size={16} aria-hidden="true" />
         )}
-        {isSaving ? "Menyimpan..." : "Simpan tahap"}
+        {isSaving
+          ? "Menyimpan..."
+          : formWasSubmittedByCandidate
+            ? "Dikirim oleh calon"
+            : "Simpan tahap"}
       </button>
       {(error || success) && (
         <p className={error ? styles.actionError : styles.actionSuccess} role={error ? "alert" : "status"}>

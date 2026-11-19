@@ -15,7 +15,11 @@ import {
   Video,
   XCircle,
 } from "lucide-react";
-import type { ApplicantMeetingAttendance } from "@/generated/prisma/client";
+import type {
+  ApplicantDecision,
+  ApplicantMeetingAttendance,
+  ApplicantStage,
+} from "@/generated/prisma/client";
 import styles from "./recruitment-meetings-page.module.css";
 
 type MeetingApplicant = {
@@ -23,6 +27,8 @@ type MeetingApplicant = {
   fullName: string;
   email: string;
   meetingAttendance: ApplicantMeetingAttendance | null;
+  stage: ApplicantStage;
+  decision: ApplicantDecision | null;
 };
 
 type MeetingSession = {
@@ -73,65 +79,170 @@ function getErrorMessage(result: unknown, fallback: string) {
     : fallback;
 }
 
+type AttendanceFilter = "ALL" | "UNRECORDED" | ApplicantMeetingAttendance;
+
+function isEligibleForForm(
+  participant: MeetingApplicant,
+  attendance: ApplicantMeetingAttendance | null,
+) {
+  return (
+    participant.stage === "MEETING_INVITED" &&
+    participant.decision === null &&
+    attendance === "PRESENT"
+  );
+}
+
 function ParticipantList({
   participants,
   label,
+  filter,
+  attendanceById,
+  selectedIds,
+  isAdvancing,
+  onAttendanceSaved,
+  onToggleSelection,
 }: {
   participants: MeetingApplicant[];
   label: string;
+  filter: AttendanceFilter;
+  attendanceById: Record<string, ApplicantMeetingAttendance | null>;
+  selectedIds: string[];
+  isAdvancing: boolean;
+  onAttendanceSaved: (participantId: string, value: ApplicantMeetingAttendance | null) => void;
+  onToggleSelection: (participant: MeetingApplicant) => void;
 }) {
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const visibleParticipants = participants.filter((participant) => {
+    const value = attendanceById[participant.id] ?? null;
+    return (
+      filter === "ALL" ||
+      (filter === "UNRECORDED" && value === null) ||
+      value === filter
+    );
+  });
+
+  async function updateAttendance(
+    participantId: string,
+    nextAttendance: ApplicantMeetingAttendance,
+  ) {
+    const newAttendance =
+      attendanceById[participantId] === nextAttendance ? null : nextAttendance;
+    setError("");
+    setSavingId(participantId);
+    try {
+      const response = await fetch(`/api/recruitment-applications/${participantId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ meetingAttendance: newAttendance }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(getErrorMessage(result, "Kehadiran gagal disimpan."));
+      }
+      onAttendanceSaved(participantId, newAttendance);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Kehadiran gagal disimpan.",
+      );
+    } finally {
+      setSavingId(null);
+    }
+  }
+
   return (
-    <details className={styles.participantDetails}>
+    <details className={styles.participantDetails} open>
       <summary>
         <UsersRound size={15} aria-hidden="true" />
-        {label} ({participants.length})
+        {label} ({visibleParticipants.length})
       </summary>
-      {participants.length ? (
+      {error && (
+        <p className={styles.attendanceError} role="alert">
+          {error}
+        </p>
+      )}
+      {visibleParticipants.length ? (
         <ul className={styles.participantList}>
-          {participants.map((participant) => (
-            <li key={participant.id}>
-              <div className={styles.participantIdentity}>
-                <Link
-                  href={`/recruitment/applicants/${participant.id}`}
-                  className={styles.participantName}
-                >
-                  {participant.fullName}
-                </Link>
-                <span>{participant.email}</span>
-              </div>
-              <div className={styles.participantActions}>
-                <span
-                  className={
-                    participant.meetingAttendance === "PRESENT"
-                      ? styles.attendancePresent
-                      : participant.meetingAttendance === "ABSENT"
-                        ? styles.attendanceAbsent
-                        : styles.attendancePending
-                  }
-                >
-                  {participant.meetingAttendance === "PRESENT" ? (
-                    <CheckCircle2 size={13} aria-hidden="true" />
-                  ) : participant.meetingAttendance === "ABSENT" ? (
-                    <XCircle size={13} aria-hidden="true" />
-                  ) : null}
-                  {participant.meetingAttendance === "PRESENT"
-                    ? "Hadir"
-                    : participant.meetingAttendance === "ABSENT"
-                      ? "Tidak hadir"
-                      : "Belum dicatat"}
-                </span>
-                <Link
-                  href={`/recruitment/applicants/${participant.id}`}
-                  className={styles.reviewLink}
-                >
-                  Buka detail
-                </Link>
-              </div>
-            </li>
-          ))}
+          {visibleParticipants.map((participant) => {
+            const participantAttendance = attendanceById[participant.id] ?? null;
+            const canAdvance = isEligibleForForm(participant, participantAttendance);
+            return (
+              <li key={participant.id}>
+                <div className={styles.participantIdentity}>
+                  <span className={styles.participantName}>{participant.fullName}</span>
+                  <span>{participant.email}</span>
+                </div>
+                <div className={styles.participantActions}>
+                  <span className={styles.attendanceStatus}>
+                    {participantAttendance === "PRESENT"
+                      ? "Hadir"
+                      : participantAttendance === "ABSENT"
+                        ? "Tidak hadir"
+                        : "Belum dicatat"}
+                  </span>
+                  <button
+                    type="button"
+                    className={`${styles.attendanceButton} ${
+                      participantAttendance === "PRESENT" ? styles.selectedPresent : ""
+                    }`}
+                    aria-pressed={participantAttendance === "PRESENT"}
+                    disabled={
+                      savingId !== null ||
+                      isAdvancing ||
+                      participant.stage !== "MEETING_INVITED" ||
+                      participant.decision !== null
+                    }
+                    onClick={() => void updateAttendance(participant.id, "PRESENT")}
+                  >
+                    <CheckCircle2 size={14} aria-hidden="true" />
+                    Hadir
+                  </button>
+                  <button
+                    type="button"
+                    className={`${styles.attendanceButton} ${
+                      participantAttendance === "ABSENT" ? styles.selectedAbsent : ""
+                    }`}
+                    aria-pressed={participantAttendance === "ABSENT"}
+                    disabled={
+                      savingId !== null ||
+                      isAdvancing ||
+                      participant.stage !== "MEETING_INVITED" ||
+                      participant.decision !== null
+                    }
+                    onClick={() => void updateAttendance(participant.id, "ABSENT")}
+                  >
+                    <XCircle size={14} aria-hidden="true" />
+                    Tidak hadir
+                  </button>
+                  {canAdvance && (
+                    <label className={styles.advancementCheckbox}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(participant.id)}
+                        disabled={
+                          isAdvancing ||
+                          (!selectedIds.includes(participant.id) &&
+                            selectedIds.length >= 100)
+                        }
+                        onChange={() => onToggleSelection(participant)}
+                        aria-label={`Pilih ${participant.fullName} untuk formulir lanjutan`}
+                      />
+                      Lanjut
+                    </label>
+                  )}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : (
-        <p className={styles.noParticipants}>Belum ada calon yang memilih metode ini.</p>
+        <p className={styles.noParticipants}>
+          {participants.length
+            ? "Tidak ada peserta pada filter ini."
+            : "Belum ada calon yang memilih metode ini."}
+        </p>
       )}
     </details>
   );
@@ -143,6 +254,22 @@ export function RecruitmentMeetingsPage({
   initialOverview: MeetingOverview;
 }) {
   const router = useRouter();
+  const allParticipants = [
+    ...initialOverview.sessions.flatMap(({ applications }) => applications),
+    ...initialOverview.onlineApplications,
+  ];
+  const [attendanceFilter, setAttendanceFilter] = useState<AttendanceFilter>("ALL");
+  const [attendanceById, setAttendanceById] = useState<
+    Record<string, ApplicantMeetingAttendance | null>
+  >(() =>
+    Object.fromEntries(
+      allParticipants.map(({ id, meetingAttendance }) => [id, meetingAttendance]),
+    ),
+  );
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isAdvancing, setIsAdvancing] = useState(false);
+  const [bulkError, setBulkError] = useState("");
+  const [bulkSuccess, setBulkSuccess] = useState("");
   const [zoomEnabled, setZoomEnabled] = useState(initialOverview.zoomEnabled);
   const [zoomUrl, setZoomUrl] = useState(initialOverview.zoomUrl);
   const [capacities, setCapacities] = useState(
@@ -153,6 +280,101 @@ export function RecruitmentMeetingsPage({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const eligibleParticipants = allParticipants.filter((participant) =>
+    isEligibleForForm(
+      participant,
+      attendanceById[participant.id] ?? null,
+    ),
+  );
+
+  function handleAttendanceSaved(
+    participantId: string,
+    value: ApplicantMeetingAttendance | null,
+  ) {
+    setAttendanceById((current) => ({ ...current, [participantId]: value }));
+    if (value !== "PRESENT") {
+      setSelectedIds((current) => current.filter((id) => id !== participantId));
+    }
+  }
+
+  function toggleParticipant(participant: MeetingApplicant) {
+    if (selectedIds.includes(participant.id)) {
+      setSelectedIds((current) => current.filter((id) => id !== participant.id));
+    } else if (selectedIds.length >= 100) {
+      setBulkError("Maksimal 100 peserta dapat dipilih untuk satu proses.");
+      return;
+    } else {
+      setSelectedIds((current) => [...current, participant.id]);
+    }
+    setBulkError("");
+    setBulkSuccess("");
+  }
+
+  function toggleAllPresent() {
+    const allSelected =
+      eligibleParticipants.length > 0 &&
+      eligibleParticipants.every(({ id }) => selectedIds.includes(id));
+    if (allSelected) {
+      const eligibleIds = new Set(eligibleParticipants.map(({ id }) => id));
+      setSelectedIds((current) => current.filter((id) => !eligibleIds.has(id)));
+      return;
+    }
+    const additions = eligibleParticipants
+      .map(({ id }) => id)
+      .filter((id) => !selectedIds.includes(id));
+    setSelectedIds((current) => [...current, ...additions].slice(0, 100));
+    setBulkError(
+      selectedIds.length + additions.length > 100
+        ? "Pilihan dibatasi maksimal 100 peserta. Sebagian peserta belum dipilih."
+        : "",
+    );
+    setBulkSuccess("");
+  }
+
+  async function openFormForSelected() {
+    if (!selectedIds.length) return;
+    if (
+      !window.confirm(
+        `Buka formulir tahap lanjutan untuk ${selectedIds.length} peserta yang hadir?`,
+      )
+    ) {
+      return;
+    }
+    setIsAdvancing(true);
+    setBulkError("");
+    setBulkSuccess("");
+    try {
+      const response = await fetch(
+        "/api/recruitment-applications/bulk-open-form-two",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ applicationIds: selectedIds }),
+        },
+      );
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          getErrorMessage(result, "Formulir lanjutan gagal dibuka."),
+        );
+      }
+      const count =
+        isRecord(result) && typeof result.updatedCount === "number"
+          ? result.updatedCount
+          : selectedIds.length;
+      setSelectedIds([]);
+      setBulkSuccess(`Formulir tahap lanjutan dibuka untuk ${count} peserta.`);
+      router.refresh();
+    } catch (requestError) {
+      setBulkError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Formulir lanjutan gagal dibuka.",
+      );
+    } finally {
+      setIsAdvancing(false);
+    }
+  }
 
   async function submitJson(
     url: string,
@@ -336,6 +558,65 @@ export function RecruitmentMeetingsPage({
             <p>Nonaktifkan sesi untuk menghentikan pilihan baru tanpa menghapus pilihan yang sudah dibuat.</p>
           </div>
         </div>
+        <div className={styles.attendanceToolbar}>
+          <label>
+            Filter kehadiran
+            <select
+              value={attendanceFilter}
+              onChange={(event) =>
+                setAttendanceFilter(event.target.value as AttendanceFilter)
+              }
+            >
+              <option value="ALL">Semua peserta</option>
+              <option value="PRESENT">Hadir</option>
+              <option value="ABSENT">Tidak hadir</option>
+              <option value="UNRECORDED">Belum dicatat</option>
+            </select>
+          </label>
+          <span className={styles.eligibleCount}>
+            {eligibleParticipants.length} peserta hadir siap lanjut
+          </span>
+          <button
+            type="button"
+            className={styles.selectAllButton}
+            onClick={toggleAllPresent}
+            disabled={!eligibleParticipants.length || isAdvancing}
+          >
+            {eligibleParticipants.length > 0 &&
+            eligibleParticipants.every(({ id }) => selectedIds.includes(id))
+              ? "Batalkan pilih peserta hadir"
+              : "Pilih semua peserta hadir"}
+          </button>
+          {selectedIds.length > 0 && (
+            <div className={styles.bulkAdvanceBar}>
+              <span>{selectedIds.length} peserta dipilih</span>
+              <button
+                type="button"
+                className={styles.advanceButton}
+                onClick={() => void openFormForSelected()}
+                disabled={isAdvancing}
+              >
+                {isAdvancing ? "Membuka formulir..." : "Buka formulir lanjutan"}
+              </button>
+              <button
+                type="button"
+                className={styles.cancelSelectionButton}
+                onClick={() => setSelectedIds([])}
+                disabled={isAdvancing}
+              >
+                Batal pilih
+              </button>
+            </div>
+          )}
+          {(bulkError || bulkSuccess) && (
+            <p
+              className={bulkError ? styles.error : styles.success}
+              role={bulkError ? "alert" : "status"}
+            >
+              {bulkError || bulkSuccess}
+            </p>
+          )}
+        </div>
         {initialOverview.sessions.length ? (
           <div className={styles.sessionList}>
             {initialOverview.sessions.map((session) => (
@@ -366,6 +647,12 @@ export function RecruitmentMeetingsPage({
                 <ParticipantList
                   participants={session.applications}
                   label="Daftar peserta"
+                  filter={attendanceFilter}
+                  attendanceById={attendanceById}
+                  selectedIds={selectedIds}
+                  isAdvancing={isAdvancing}
+                  onAttendanceSaved={handleAttendanceSaved}
+                  onToggleSelection={toggleParticipant}
                 />
                 <form
                   className={styles.sessionActions}
@@ -434,6 +721,12 @@ export function RecruitmentMeetingsPage({
         <ParticipantList
           participants={initialOverview.onlineApplications}
           label="Daftar peserta Zoom"
+          filter={attendanceFilter}
+          attendanceById={attendanceById}
+          selectedIds={selectedIds}
+          isAdvancing={isAdvancing}
+          onAttendanceSaved={handleAttendanceSaved}
+          onToggleSelection={toggleParticipant}
         />
       </section>
 

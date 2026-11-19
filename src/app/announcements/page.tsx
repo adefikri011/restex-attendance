@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
+import { getPublishedAnnouncements } from "@/lib/announcement-service";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -7,19 +9,50 @@ export const metadata: Metadata = {
   description: "Pusat informasi dan pengumuman RESTEX.",
 };
 
-export default function AnnouncementsPage() {
+function formatDate(value: Date | null) {
+  return value
+    ? new Intl.DateTimeFormat("id-ID", {
+        dateStyle: "long",
+        timeZone: "Asia/Jakarta",
+      }).format(value)
+    : "";
+}
+
+export default async function AnnouncementsPage() {
+  await connection();
+  const announcements = await getPublishedAnnouncements();
+
   return (
     <main className={styles.page}>
       <div className={`${styles.content} site-container`}>
         <p className={styles.eyebrow}>RESTEX / SIGNAL CENTER</p>
-        <p className={styles.index}>ANNOUNCEMENTS · 00</p>
-        <h1 className={styles.title}>Pusat pengumuman sedang disiapkan.</h1>
+        <h1 className={styles.title}>Pengumuman RESTEX</h1>
         <p className={styles.description}>
-          Halaman ini akan memuat pengumuman RESTEX setelah informasi resminya
-          tersedia.
+          Informasi resmi kegiatan, kesempatan, dan kabar terbaru dari RESTEX.
         </p>
-        <Link className={styles.backLink} href="/#pengumuman">
-          Kembali ke pratinjau pengumuman <span aria-hidden="true">→</span>
+        <div className={styles.list}>
+          {announcements.length ? announcements.map((announcement) => (
+            <article className={styles.card} key={announcement.slug}>
+              <p className={styles.meta}>
+                {announcement.type === "ACTIVITY"
+                  ? "Kegiatan"
+                  : announcement.type === "OPPORTUNITY"
+                    ? "Kesempatan"
+                    : "Pengumuman"}
+                {announcement.publishedAt ? ` · ${formatDate(announcement.publishedAt)}` : ""}
+              </p>
+              <h2>{announcement.title}</h2>
+              <p>{announcement.excerpt}</p>
+              <Link href={`/announcements/${announcement.slug}`} className={styles.link}>
+                Baca pengumuman
+              </Link>
+            </article>
+          )) : (
+            <p className={styles.empty}>Belum ada pengumuman yang diterbitkan.</p>
+          )}
+        </div>
+        <Link className={styles.backLink} href="/">
+          Kembali ke beranda
         </Link>
       </div>
     </main>

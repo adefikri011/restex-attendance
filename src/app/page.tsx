@@ -10,8 +10,11 @@ import { LandingHero } from "@/components/landing/landing-hero";
 import { LandingJoin } from "@/components/landing/landing-join";
 import { LandingNavbar } from "@/components/landing/landing-navbar";
 import { LandingProjects } from "@/components/landing/landing-projects";
+import { ScrollReveal } from "@/components/landing/scroll-reveal";
 import { LandingStructure } from "@/components/structure/landing-structure";
 import { getCachedRecruitmentConfig } from "@/lib/recruitment-cache";
+import { getPublishedAnnouncements } from "@/lib/announcement-service";
+import "./scroll-reveal.css";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -30,9 +33,11 @@ export default async function Home() {
   await connection();
   const { settings: recruitmentSettings, status: recruitmentStatus } =
     await getCachedRecruitmentConfig();
+  const announcements = await getPublishedAnnouncements();
 
   return (
     <>
+      <ScrollReveal />
       <main className={styles.page} id="top">
         <LandingNavbar />
         <LandingHero
@@ -43,7 +48,10 @@ export default async function Home() {
         <Suspense fallback={<LandingDivisions divisions={[]} />}>
           <LandingDivisionsContent />
         </Suspense>
-        <LandingAnnouncements recruitmentStatus={recruitmentStatus} />
+        <LandingAnnouncements
+          recruitmentStatus={recruitmentStatus}
+          publishedAnnouncements={announcements}
+        />
         <LandingProjects />
         <LandingStructure />
         <LandingJoin

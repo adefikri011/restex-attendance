@@ -2,10 +2,11 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { RecruitmentStatus } from "@/lib/recruitment";
 import { formatTanggal } from "@/lib/recruitment";
 import styles from "./landing-announcements.module.css";
+import { SplitLines } from "./scroll-reveal";
 
 type PostType = "pengumuman" | "kegiatan" | "kesempatan";
 
@@ -16,6 +17,14 @@ type Post = {
   excerpt: string;
   publishedAt: string;
   coverImage?: string;
+};
+
+type PublishedAnnouncement = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  type: "ANNOUNCEMENT" | "ACTIVITY" | "OPPORTUNITY";
+  publishedAt: Date | string | null;
 };
 
 const POSTS: Post[] = [
@@ -96,7 +105,7 @@ function ArrowIndicator({
 
 function PostArtwork({ type }: { type: PostType }) {
   return (
-    <div className={styles.artworkPanel} aria-hidden="true">
+    <div className={styles.artworkPanel} aria-hidden="true" data-reveal="clip">
       <div className={styles.artworkWindow}>
         <div className={styles.artworkToolbar}>
           <span />
@@ -167,45 +176,30 @@ function PostArtwork({ type }: { type: PostType }) {
 
 export function LandingAnnouncements({
   recruitmentStatus,
+  publishedAnnouncements = [],
 }: {
   recruitmentStatus: RecruitmentStatus;
+  publishedAnnouncements?: PublishedAnnouncement[];
 }) {
-  const sectionRef = useRef<HTMLElement>(null);
   const touchStartX = useRef<number | null>(null);
-  const [revealState, setRevealState] = useState<
-    "idle" | "waiting" | "shown"
-  >("idle");
   const [activePostIndex, setActivePostIndex] = useState(0);
 
-  useEffect(() => {
-    let observer: IntersectionObserver | null = null;
-    const frame = window.requestAnimationFrame(() => {
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-      const section = sectionRef.current;
-      if (!section || !("IntersectionObserver" in window)) return;
-
-      setRevealState("waiting");
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setRevealState("shown");
-            observer?.disconnect();
-          }
-        },
-        { threshold: 0.08 },
-      );
-
-      observer.observe(section);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      observer?.disconnect();
-    };
-  }, []);
-
-  const posts = [...POSTS].sort(
+  const posts = [
+    ...publishedAnnouncements.map((announcement) => ({
+      type: announcement.type === "ACTIVITY"
+        ? "kegiatan"
+        : announcement.type === "OPPORTUNITY"
+          ? "kesempatan"
+          : "pengumuman",
+      slug: announcement.slug,
+      title: announcement.title,
+      excerpt: announcement.excerpt,
+      publishedAt: announcement.publishedAt
+        ? new Date(announcement.publishedAt).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10),
+    }) satisfies Post),
+    ...POSTS,
+  ].sort(
     (a, b) =>
       Date.parse(b.publishedAt) - Date.parse(a.publishedAt),
   );
@@ -225,15 +219,23 @@ export function LandingAnnouncements({
       className={styles.section}
       id="pengumuman"
       aria-labelledby="landing-announcements-title"
-      ref={sectionRef}
-      data-reveal={revealState}
     >
       <div className={`${styles.content} site-container`}>
         <header className={styles.header}>
-          <h2 className={styles.title} id="landing-announcements-title">
-            Kabar terbaru
+          <h2
+            className={styles.title}
+            id="landing-announcements-title"
+            data-reveal="lines"
+            data-reveal-step="0"
+          >
+            <SplitLines>Kabar terbaru</SplitLines>
           </h2>
-          <Link className={styles.viewAll} href="/kabar">
+          <Link
+            className={styles.viewAll}
+            href="/announcements"
+            data-reveal="up"
+            data-reveal-step="1"
+          >
             Lihat semua
             <ArrowIndicator />
           </Link>
@@ -268,10 +270,15 @@ export function LandingAnnouncements({
               key={activePost.slug}
               aria-roledescription="slide"
               aria-label={`${activePostIndex + 1} dari ${latestPosts.length}`}
+              data-reveal="up"
             >
               <PostArtwork type={activePost.type} />
               <div className={styles.postCopy}>
-                <div className={styles.postMeta}>
+                <div
+                  className={styles.postMeta}
+                  data-reveal="up"
+                  data-reveal-step="1"
+                >
                   <span className={styles.postType}>
                     {getTypeLabel(activePost.type)}
                   </span>
@@ -279,11 +286,25 @@ export function LandingAnnouncements({
                     {formatDate(activePost.publishedAt)}
                   </time>
                 </div>
-                <h3 className={styles.postTitle}>{activePost.title}</h3>
-                <p className={styles.postExcerpt}>{activePost.excerpt}</p>
+                <h3
+                  className={styles.postTitle}
+                  data-reveal="up"
+                  data-reveal-step="2"
+                >
+                  {activePost.title}
+                </h3>
+                <p
+                  className={styles.postExcerpt}
+                  data-reveal="up"
+                  data-reveal-step="3"
+                >
+                  {activePost.excerpt}
+                </p>
                 <Link
                   className={styles.postLink}
                   href={`/kabar/${activePost.slug}`}
+                  data-reveal="up"
+                  data-reveal-step="3"
                 >
                   Baca selengkapnya
                   <ArrowIndicator />
@@ -352,6 +373,7 @@ export function LandingAnnouncements({
           <Link
             className={styles.announcementFeature}
             href={`/kabar/${activeAnnouncement.slug}`}
+            data-reveal="up"
           >
             <span className={styles.announcementCopy}>
               <span className={styles.announcementMeta}>

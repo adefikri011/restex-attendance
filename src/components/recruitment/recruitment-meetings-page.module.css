@@ -240,6 +240,98 @@
   gap: 6px;
 }
 
+.attendanceToolbar {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--ui-border);
+  border-radius: 10px;
+  background: var(--ui-surface-subtle);
+}
+
+.attendanceToolbar > label {
+  display: grid;
+  min-width: 180px;
+  gap: 6px;
+  color: var(--ui-text-secondary);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.attendanceToolbar select {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 11px;
+}
+
+.attendanceToolbar select:focus-visible,
+.attendanceToolbar button:focus-visible,
+.advancementCheckbox input:focus-visible {
+  outline: 2px solid var(--ui-text-accent);
+  outline-offset: 2px;
+}
+
+.eligibleCount {
+  align-self: center;
+  color: var(--ui-text-secondary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.selectAllButton,
+.cancelSelectionButton {
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.selectAllButton:disabled,
+.cancelSelectionButton:disabled,
+.advanceButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.bulkAdvanceBar {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 9px;
+  padding-top: 11px;
+  border-top: 1px solid var(--ui-border);
+  color: var(--ui-text-primary);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.advanceButton {
+  min-height: 36px;
+  margin-left: auto;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ui-button-primary);
+  color: var(--ui-button-primary-text);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
 .participantDetails {
   border: 1px solid var(--ui-border);
   border-radius: 10px;
@@ -275,8 +367,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  padding: 11px 0;
+  gap: 16px;
+  padding: 12px 0;
   border-top: 1px solid var(--ui-border);
 }
 
@@ -291,15 +383,7 @@
   color: var(--ui-text-primary);
   font-size: 12px;
   font-weight: 650;
-  text-decoration: none;
   text-overflow: ellipsis;
-}
-
-.participantName:hover,
-.reviewLink:hover {
-  color: var(--ui-text-accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
 }
 
 .participantIdentity > span {
@@ -313,38 +397,82 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: 12px;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-.attendancePresent,
-.attendanceAbsent,
-.attendancePending {
+.attendanceStatus {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 10px;
+  margin-right: 4px;
+  color: var(--ui-text-muted);
+  font-size: 11px;
   font-weight: 650;
   white-space: nowrap;
 }
 
-.attendancePresent {
+.attendanceButton {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-secondary);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.attendanceButton:focus-visible {
+  outline: 2px solid var(--ui-text-accent);
+  outline-offset: 2px;
+}
+
+.attendanceButton:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.selectedPresent {
+  border-color: var(--ui-success-text);
+  background: var(--ui-success-soft);
   color: var(--ui-success-text);
 }
 
-.attendanceAbsent {
+.selectedAbsent {
+  border-color: var(--ui-danger-text);
+  background: var(--ui-danger-soft);
   color: var(--ui-danger-text);
 }
 
-.attendancePending {
-  color: var(--ui-text-muted);
+.attendanceError {
+  margin: 0;
+  padding: 0 12px 10px;
+  color: var(--ui-danger-text);
+  font-size: 11px;
 }
 
-.reviewLink {
+.advancementCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   color: var(--ui-text-accent);
   font-size: 10px;
-  font-weight: 650;
-  text-decoration: none;
+  font-weight: 700;
   white-space: nowrap;
+}
+
+.advancementCheckbox input {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--ui-button-primary);
 }
 
 .noParticipants {
@@ -459,7 +587,33 @@
 
   .participantActions {
     width: 100%;
-    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .attendanceToolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .attendanceToolbar > label {
+    width: 100%;
+  }
+
+  .eligibleCount {
+    align-self: flex-start;
+  }
+
+  .bulkAdvanceBar {
+    flex-wrap: wrap;
+  }
+
+  .advanceButton {
+    margin-left: 0;
+  }
+
+  .attendanceStatus {
+    width: 100%;
+    margin: 0 0 2px;
   }
 
   .sessionActions > label:first-child {

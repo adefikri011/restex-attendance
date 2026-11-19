@@ -11,6 +11,7 @@ import {
 } from "react";
 import type { LandingDivision } from "./landing-division-data";
 import styles from "./landing-divisions.module.css";
+import { SplitLines } from "./scroll-reveal";
 
 type LandingDivisionsProps = {
   divisions: LandingDivision[];
@@ -327,35 +328,6 @@ export function LandingDivisions({ divisions }: LandingDivisionsProps) {
     left: 0,
     width: 0,
   });
-  const [canReveal, setCanReveal] = useState(false);
-  const [isRevealed, setIsRevealed] = useState(false);
-
-  useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const section = sectionRef.current;
-    if (!section || !("IntersectionObserver" in window)) return;
-
-    let observer: IntersectionObserver | null = null;
-    const frame = window.requestAnimationFrame(() => {
-      setCanReveal(true);
-      observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsRevealed(true);
-            observer?.disconnect();
-          }
-        },
-        { threshold: 0.12 },
-      );
-      observer.observe(section);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(frame);
-      observer?.disconnect();
-    };
-  }, []);
 
   useEffect(
     () => () => {
@@ -464,17 +436,23 @@ export function LandingDivisions({ divisions }: LandingDivisionsProps) {
       </div>
 
       <div className={`${styles.content} site-container`}>
-        <div
-          className={`${styles.reveal} ${
-            canReveal && !isRevealed ? styles.waiting : ""
-          } ${isRevealed ? styles.revealed : ""}`}
-        >
+        <div className={styles.reveal}>
           <header className={styles.header}>
-            <p className={styles.eyebrow}>EXPLORE OUR DIVISIONS</p>
-            <h2 className={styles.title} id="landing-divisions-title">
-              Temukan ruang untuk berkembang.
+            <p className={styles.eyebrow} data-reveal="rise-sm" data-reveal-step="0">
+              EXPLORE OUR DIVISIONS
+            </p>
+            <h2
+              className={styles.title}
+              id="landing-divisions-title"
+              data-reveal="lines"
+            >
+              <SplitLines>Temukan ruang untuk berkembang.</SplitLines>
             </h2>
-            <p className={styles.introduction}>
+            <p
+              className={styles.introduction}
+              data-reveal="rise"
+              data-reveal-step="2"
+            >
               Setiap divisi memiliki peran, perspektif, dan cara berbeda untuk
               membangun teknologi bersama.
             </p>
@@ -488,6 +466,8 @@ export function LandingDivisions({ divisions }: LandingDivisionsProps) {
                 aria-label="Pilih divisi RESTEX"
                 aria-orientation="horizontal"
                 ref={tabListRef}
+                data-reveal="fade"
+                data-reveal-step="1"
               >
                 {divisions.map((division, index) => (
                   <button
@@ -529,6 +509,9 @@ export function LandingDivisions({ divisions }: LandingDivisionsProps) {
                 role="tabpanel"
                 aria-labelledby={`landing-division-tab-${activeIndex}`}
                 tabIndex={0}
+                data-reveal="fade"
+                data-reveal-step="2"
+                data-reveal-blueprint=""
               >
                 <div
                   className={`${styles.showcaseCopy} ${

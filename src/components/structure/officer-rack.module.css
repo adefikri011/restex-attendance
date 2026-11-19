@@ -2,6 +2,10 @@
   display: none;
 }
 
+.rope {
+  display: none;
+}
+
 .officers {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -53,23 +57,22 @@
     gap: 24px;
   }
 
-  .officer::before {
+  .rope {
     position: absolute;
     z-index: 2;
     top: -32px;
     left: 50%;
+    display: block;
     width: 2px;
     height: 50px;
     transform: translateX(-50%);
     background: rgb(11 47 74 / 35%);
-    content: "";
     transition: height 180ms ease-out;
   }
-
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .officer:hover::before {
+  .officer:hover .rope {
     height: 54px;
   }
 
@@ -83,7 +86,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .officer::before,
+  .rope,
   .officer :global(article) {
     transition: none;
   }

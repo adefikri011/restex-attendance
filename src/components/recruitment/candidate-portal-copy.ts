@@ -48,10 +48,14 @@ export const candidatePortalCopy = {
     {
       id: "FORM_TWO_OPEN",
       title: "Formulir lanjutan",
+      description: "Tim RESTEX membuka formulir lanjutan untuk kamu lengkapi.",
+      timelineDescription: "Lengkapi pilihan divisi dan pengalaman di bawah ini.",
     },
     {
       id: "FORM_TWO_SUBMITTED",
       title: "Formulir terkirim",
+      description: "Formulir lanjutanmu sudah diterima oleh tim RESTEX.",
+      timelineDescription: "Tim RESTEX akan meninjau jawaban formulirmu.",
     },
     {
       id: "FINAL_REVIEW",

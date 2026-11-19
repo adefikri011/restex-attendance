@@ -13,6 +13,7 @@ import {
   IdCard,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   Menu,
   ScrollText,
   UsersRound,
@@ -57,6 +58,7 @@ const primaryNavigation: NavigationItem[] = [
     ],
   },
   { label: "Laporan", icon: ChartNoAxesCombined, href: "/reports" },
+  { label: "Pengumuman", icon: Megaphone, href: "/announcements/manage" },
 ];
 
 const managementNavigation: NavigationItem[] = [

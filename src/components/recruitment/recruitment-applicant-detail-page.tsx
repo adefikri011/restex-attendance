@@ -9,11 +9,9 @@ import {
 } from "lucide-react";
 import type {
   ApplicantDecision,
-  ApplicantMeetingAttendance,
   ApplicantScreeningRating,
   ApplicantStage,
 } from "@/generated/prisma/client";
-import { ApplicantMeetingReview } from "./applicant-meeting-review";
 import { ApplicantScreeningActions } from "./applicant-screening-actions";
 import { ApplicantScreeningRating as ApplicantScreeningRatingControl } from "./applicant-screening-rating";
 import styles from "./recruitment-applicant-detail-page.module.css";
@@ -45,8 +43,6 @@ type Application = {
   decision: ApplicantDecision | null;
   screeningRating: ApplicantScreeningRating | null;
   meetingMode: "IN_PERSON" | "ONLINE" | null;
-  meetingAttendance: ApplicantMeetingAttendance | null;
-  meetingNotes: string | null;
   meetingSession: {
     title: string;
     startsAt: Date;
@@ -211,16 +207,6 @@ export function RecruitmentApplicantDetailPage({
           ) : (
             <p className={styles.motivation}>Pilihan sesi belum tersedia.</p>
           )}
-          <div className={styles.meetingReviewHeading}>
-            <h3>Presensi dan catatan wawancara</h3>
-            <p>Informasi internal untuk tim seleksi.</p>
-          </div>
-          <ApplicantMeetingReview
-            applicationId={application.id}
-            initialAttendance={application.meetingAttendance}
-            initialNotes={application.meetingNotes}
-            editable={application.decision === null}
-          />
         </section>
       )}
 

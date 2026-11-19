@@ -9,6 +9,7 @@ type MemberSummary = {
   cohort: string;
   division: string | null;
   membershipStatus: "Aktif" | "Cuti" | "Keluar" | "Alumni" | null;
+  joinedAt: string | null;
 };
 
 type MemberContext = {
@@ -20,6 +21,7 @@ type MemberContext = {
 export type MemberPortalData = {
   periodName: string | null;
   member: MemberSummary | null;
+  isNewMember: boolean;
 };
 
 export type MemberAttendanceSummary = {
@@ -103,7 +105,7 @@ async function getMemberContext(userId: string): Promise<MemberContext> {
             periodId: period.id,
           },
         },
-        select: { division: true, status: true },
+        select: { division: true, status: true, joinedAt: true },
       })
     : null;
 
@@ -121,6 +123,7 @@ async function getMemberContext(userId: string): Promise<MemberContext> {
         membershipStatus: membership
           ? membershipStatuses[membership.status]
           : null,
+        joinedAt: membership?.joinedAt.toISOString() ?? null,
       },
     },
   };
@@ -134,9 +137,15 @@ export async function getMemberPortalData(
   userId: string,
 ): Promise<MemberPortalData> {
   const context = await getMemberContext(userId);
+  const joinedAt = context.member?.summary.joinedAt;
+  const joinedAtTime = joinedAt ? Date.parse(joinedAt) : Number.NaN;
   return {
     periodName: context.periodName,
     member: context.member?.summary ?? null,
+    isNewMember:
+      Number.isFinite(joinedAtTime) &&
+      Date.now() >= joinedAtTime &&
+      Date.now() - joinedAtTime <= 24 * 60 * 60 * 1000,
   };
 }
 

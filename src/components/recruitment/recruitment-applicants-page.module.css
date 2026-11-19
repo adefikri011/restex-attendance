@@ -75,6 +75,35 @@
   border-bottom: 1px solid var(--ui-border);
 }
 
+.headerTools {
+  display: grid;
+  justify-items: end;
+  gap: 8px;
+}
+
+.bulkShortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.bulkShortcuts button {
+  padding: 5px 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 6px;
+  background: var(--ui-surface);
+  color: var(--ui-text-muted);
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.bulkShortcuts button:disabled {
+  cursor: not-allowed;
+  opacity: .5;
+}
+
 .resultCount {
   display: flex;
   align-items: center;
@@ -99,6 +128,15 @@
   border: 1px solid var(--ui-border);
   border-radius: 9px;
   color: var(--ui-text-muted);
+}
+
+.headerTools {
+  width: 100%;
+  justify-items: stretch;
+}
+
+.bulkShortcuts {
+  justify-content: flex-start;
 }
 
 .search:focus-within {
@@ -186,6 +224,17 @@
   border-color: var(--ui-button-primary);
   background: var(--ui-button-primary);
   color: var(--ui-button-primary-text);
+}
+
+.bulkBar select {
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--ui-border);
+  border-radius: 8px;
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  font: inherit;
+  font-size: 11px;
 }
 
 .inviteButton:disabled,

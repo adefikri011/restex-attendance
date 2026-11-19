@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ArrowUpRight, Search, Send, UsersRound } from "lucide-react";
+import { ArrowUpRight, Megaphone, Search, Send, UsersRound } from "lucide-react";
 import type {
   ApplicantDecision,
   ApplicantScreeningRating,
@@ -108,6 +108,13 @@ function isInvitable(application: Application) {
   );
 }
 
+function isResultAnnouncable(application: Application) {
+  return (
+    application.decision === null &&
+    (application.stage === "FORM_TWO_SUBMITTED" || application.stage === "FINAL_REVIEW")
+  );
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
@@ -129,39 +136,61 @@ export function RecruitmentApplicantsPage({
 }) {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectionMode, setSelectionMode] = useState<"invite" | "announce" | null>(null);
   const [isInviting, setIsInviting] = useState(false);
+  const [isAnnouncing, setIsAnnouncing] = useState(false);
+  const [announcementDecision, setAnnouncementDecision] = useState<ApplicantDecision>("ACCEPTED");
   const [actionError, setActionError] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const invitableApplications = applications.filter(isInvitable);
+  const announcableApplications = applications.filter(isResultAnnouncable);
   const allInvitableSelected =
     invitableApplications.length > 0 &&
     invitableApplications.every(({ id }) => selectedIds.includes(id));
+  const allAnnouncableSelected =
+    announcableApplications.length > 0 &&
+    announcableApplications.every(({ id }) => selectedIds.includes(id));
 
   function toggleSelection(id: string) {
-    if (!selectedIds.includes(id) && selectedIds.length >= 100) {
-      setActionError("Undangan massal dibatasi maksimal 100 pendaftar sekali proses.");
+    const application = applications.find((item) => item.id === id);
+    if (!application) return;
+    const itemMode = isInvitable(application) ? "invite" : "announce";
+    if (selectionMode && selectionMode !== itemMode) {
+      setActionError("Pilih pendaftar dari satu proses saja: undangan atau pengumuman hasil.");
       return;
     }
-    setSelectedIds((current) =>
-      current.includes(id)
-        ? current.filter((selectedId) => selectedId !== id)
-        : [...current, id],
-    );
+    if (!selectedIds.includes(id) && selectedIds.length >= 100) {
+      setActionError("Proses massal dibatasi maksimal 100 pendaftar sekali proses.");
+      return;
+    }
+    const isRemoving = selectedIds.includes(id);
+    setSelectedIds((current) => isRemoving
+      ? current.filter((selectedId) => selectedId !== id)
+      : [...current, id]);
+    if (!isRemoving) setSelectionMode(itemMode);
+    else if (selectedIds.length === 1) setSelectionMode(null);
     setActionError("");
     setActionMessage("");
   }
 
-  function toggleAllOnPage() {
-    const invitableIds = invitableApplications.map(({ id }) => id);
-    const newIds = invitableIds.filter((id) => !selectedIds.includes(id));
+  function toggleAllOnPage(mode: "invite" | "announce") {
+    if (selectionMode && selectionMode !== mode && selectedIds.length > 0) {
+      setActionError("Pilih pendaftar dari satu proses saja: undangan atau pengumuman hasil.");
+      return;
+    }
+    const eligible = mode === "invite" ? invitableApplications : announcableApplications;
+    const eligibleIds = eligible.map(({ id }) => id);
+    const newIds = eligibleIds.filter((id) => !selectedIds.includes(id));
+    const allSelected = mode === "invite" ? allInvitableSelected : allAnnouncableSelected;
     setSelectedIds((current) =>
-      allInvitableSelected
-        ? current.filter((id) => !invitableIds.includes(id))
+      allSelected
+        ? current.filter((id) => !eligibleIds.includes(id))
         : [...current, ...newIds].slice(0, 100),
     );
+    setSelectionMode(allSelected ? null : mode);
     setActionError(
-      !allInvitableSelected && selectedIds.length + newIds.length > 100
-        ? "Undangan massal dibatasi maksimal 100 pendaftar sekali proses."
+      !allSelected && selectedIds.length + newIds.length > 100
+        ? "Proses massal dibatasi maksimal 100 pendaftar sekali proses."
         : "",
     );
     setActionMessage("");
@@ -196,6 +225,7 @@ export function RecruitmentApplicantsPage({
           ? result.invitedCount
           : selectedIds.length;
       setSelectedIds([]);
+      setSelectionMode(null);
       setActionMessage(`${invitedCount} calon anggota berhasil diundang.`);
       router.refresh();
     } catch (error) {
@@ -204,6 +234,41 @@ export function RecruitmentApplicantsPage({
       );
     } finally {
       setIsInviting(false);
+    }
+  }
+
+  async function announceSelected() {
+      if (!selectedIds.length) return;
+      if (!window.confirm(`Umumkan hasil untuk ${selectedIds.length} pendaftar terpilih?`)) return;
+      setIsAnnouncing(true);
+      setActionError("");
+      setActionMessage("");
+      try {
+        const response = await fetch("/api/recruitment-applications/bulk-announce", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ applicationIds: selectedIds, decision: announcementDecision }),
+        });
+        const result: unknown = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            isRecord(result) && typeof result.error === "string"
+              ? result.error
+              : "Pengumuman hasil gagal disimpan.",
+          );
+        }
+        const announcedCount =
+          isRecord(result) && typeof result.announcedCount === "number"
+            ? result.announcedCount
+            : selectedIds.length;
+        setSelectedIds([]);
+        setSelectionMode(null);
+        setActionMessage(`Hasil ${announcedCount} calon anggota sudah diumumkan.`);
+        router.refresh();
+      } catch (error) {
+        setActionError(error instanceof Error ? error.message : "Pengumuman hasil gagal disimpan.");
+      } finally {
+        setIsAnnouncing(false);
     }
   }
 
@@ -231,6 +296,7 @@ export function RecruitmentApplicantsPage({
             <UsersRound size={18} aria-hidden="true" />
             <h2 id="applicants-title">{total} pendaftar</h2>
           </div>
+          <div className={styles.headerTools}>
           <form className={styles.search} action="/recruitment/applicants">
             <input type="hidden" name="page" value="1" />
             <Search size={17} aria-hidden="true" />
@@ -255,12 +321,21 @@ export function RecruitmentApplicantsPage({
             </select>
             <button type="submit">Terapkan</button>
           </form>
+          <div className={styles.bulkShortcuts}>
+            <button type="button" onClick={() => toggleAllOnPage("invite")} disabled={!invitableApplications.length || isInviting || isAnnouncing}>
+              Pilih calon undangan ({invitableApplications.length})
+            </button>
+            <button type="button" onClick={() => toggleAllOnPage("announce")} disabled={!announcableApplications.length || isInviting || isAnnouncing}>
+              Pilih calon untuk diumumkan ({announcableApplications.length})
+            </button>
+          </div>
+          </div>
         </div>
 
         {selectedIds.length > 0 && (
           <div className={styles.bulkBar}>
             <span>{selectedIds.length} pendaftar dipilih</span>
-            <button
+            {selectionMode === "invite" && <button
               type="button"
               className={styles.inviteButton}
               onClick={() => void inviteSelected()}
@@ -268,12 +343,38 @@ export function RecruitmentApplicantsPage({
             >
               <Send size={15} aria-hidden="true" />
               {isInviting ? "Mengundang..." : "Undang ke pertemuan"}
-            </button>
+            </button>}
+            {selectionMode === "announce" && (
+              <>
+                <select
+                  value={announcementDecision}
+                  onChange={(event) => setAnnouncementDecision(event.target.value as ApplicantDecision)}
+                  disabled={isAnnouncing}
+                  aria-label="Hasil seleksi yang diumumkan"
+                >
+                  <option value="ACCEPTED">Diterima</option>
+                  <option value="WAITLISTED">Daftar tunggu</option>
+                  <option value="REJECTED">Tidak diterima</option>
+                </select>
+                <button
+                  type="button"
+                  className={styles.inviteButton}
+                  onClick={() => void announceSelected()}
+                  disabled={isAnnouncing}
+                >
+                  <Megaphone size={15} aria-hidden="true" />
+                  {isAnnouncing ? "Mengumumkan..." : "Umumkan hasil"}
+                </button>
+              </>
+            )}
             <button
               type="button"
               className={styles.clearSelection}
-              onClick={() => setSelectedIds([])}
-              disabled={isInviting}
+              onClick={() => {
+                setSelectedIds([]);
+                setSelectionMode(null);
+              }}
+              disabled={isInviting || isAnnouncing}
             >
               Batal pilih
             </button>
@@ -296,11 +397,15 @@ export function RecruitmentApplicantsPage({
                   <th scope="col">
                     <input
                       type="checkbox"
-                      checked={allInvitableSelected}
-                      disabled={!invitableApplications.length || isInviting}
-                      onChange={toggleAllOnPage}
-                      aria-label="Pilih semua pendaftar yang bisa diundang pada halaman ini"
-                      title="Pilih semua yang bisa diundang di halaman ini"
+                      checked={selectionMode === "announce" ? allAnnouncableSelected : allInvitableSelected}
+                      disabled={
+                        (!invitableApplications.length && !announcableApplications.length) ||
+                        isInviting ||
+                        isAnnouncing
+                      }
+                      onChange={() => toggleAllOnPage(selectionMode ?? "invite")}
+                      aria-label="Pilih semua pendaftar pada halaman ini"
+                      title="Pilih semua pendaftar"
                     />
                   </th>
                   <th scope="col">Pendaftar</th>
@@ -320,8 +425,10 @@ export function RecruitmentApplicantsPage({
                         type="checkbox"
                         checked={selectedIds.includes(application.id)}
                         disabled={
-                          !isInvitable(application) ||
-                          isInviting ||
+                            (!isInvitable(application) && !isResultAnnouncable(application)) ||
+                            isInviting || isAnnouncing ||
+                            (selectionMode === "invite" && !isInvitable(application)) ||
+                            (selectionMode === "announce" && !isResultAnnouncable(application)) ||
                           (!selectedIds.includes(application.id) && selectedIds.length >= 100)
                         }
                         onChange={() => toggleSelection(application.id)}
@@ -372,11 +479,13 @@ export function RecruitmentApplicantsPage({
               type="button"
               className={styles.mobileSelectAll}
               disabled={!invitableApplications.length || isInviting}
-              onClick={toggleAllOnPage}
+              onClick={() => toggleAllOnPage(selectionMode ?? "invite")}
             >
-              {allInvitableSelected
+              {selectionMode === "announce" && allAnnouncableSelected
+                ? "Batalkan pilihan calon pengumuman"
+                : selectionMode !== "announce" && allInvitableSelected
                 ? "Batalkan pilihan halaman ini"
-                : `Pilih semua yang bisa diundang (${invitableApplications.length})`}
+                : `Pilih semua calon yang tersedia`}
             </button>
             {applications.map((application) => (
               <article className={styles.applicantCard} key={application.id}>
@@ -385,13 +494,15 @@ export function RecruitmentApplicantsPage({
                     type="checkbox"
                     checked={selectedIds.includes(application.id)}
                     disabled={
-                      !isInvitable(application) ||
-                      isInviting ||
+                      (!isInvitable(application) && !isResultAnnouncable(application)) ||
+                      isInviting || isAnnouncing ||
+                      (selectionMode === "invite" && !isInvitable(application)) ||
+                      (selectionMode === "announce" && !isResultAnnouncable(application)) ||
                       (!selectedIds.includes(application.id) && selectedIds.length >= 100)
                     }
                     onChange={() => toggleSelection(application.id)}
                   />
-                  Pilih untuk undangan
+                  {isResultAnnouncable(application) ? "Pilih untuk pengumuman hasil" : "Pilih untuk undangan"}
                 </label>
                 <div className={styles.applicantCardHeader}>
                   <span className={styles.avatar} aria-hidden="true">

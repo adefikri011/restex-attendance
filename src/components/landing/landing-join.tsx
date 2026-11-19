@@ -5,6 +5,7 @@ import type {
 } from "@/lib/recruitment";
 import { formatTanggal, RECRUITMENT } from "@/lib/recruitment";
 import styles from "./landing-join.module.css";
+import { SplitLines } from "./scroll-reveal";
 
 function isInternalUrl(href: string) {
   return href.startsWith("/") && !href.startsWith("//");
@@ -123,6 +124,7 @@ function StatusPanel({
       className={styles.statusPanel}
       role="group"
       aria-label={getAccessibleStatus(status)}
+      data-reveal="settle"
     >
       <span className={styles.redStrip} aria-hidden="true" />
       <span className={styles.cardHole} aria-hidden="true" />
@@ -198,40 +200,53 @@ function InformationList({
   title,
   items,
   ordered = false,
+  step = 0,
 }: {
   title: string;
   items: string[] | { title: string; description?: string }[];
   ordered?: boolean;
+  step?: number;
 }) {
   if (items.length === 0) return null;
   const List = ordered ? "ol" : "ul";
 
   return (
     <section className={styles.information}>
-      <h3 className={styles.informationTitle}>{title}</h3>
-      <List className={ordered ? styles.processList : styles.bulletList}>
-        {items.map((item, index) => {
-          if (typeof item === "string") {
-            return <li key={`${title}-${index}`}>{item}</li>;
-          }
+      <div
+        className={styles.infoLine}
+        data-reveal="line-x"
+        aria-hidden="true"
+      />
+      <div
+        data-reveal="up"
+        data-reveal-step={step}
+        style={{ "--stagger": "80ms" } as React.CSSProperties}
+      >
+        <h3 className={styles.informationTitle}>{title}</h3>
+        <List className={ordered ? styles.processList : styles.bulletList}>
+          {items.map((item, index) => {
+            if (typeof item === "string") {
+              return <li key={`${title}-${index}`}>{item}</li>;
+            }
 
-          return (
-            <li className={styles.processItem} key={`${title}-${index}`}>
-              <span className={styles.processNumber} aria-hidden="true">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <p className={styles.processName}>{item.title}</p>
-                {item.description && (
-                  <p className={styles.processDescription}>
-                    {item.description}
-                  </p>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </List>
+            return (
+              <li className={styles.processItem} key={`${title}-${index}`}>
+                <span className={styles.processNumber} aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <p className={styles.processName}>{item.title}</p>
+                  {item.description && (
+                    <p className={styles.processDescription}>
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </List>
+      </div>
     </section>
   );
 }
@@ -256,9 +271,9 @@ export function LandingJoin({
     >
       <div className={`${styles.content} site-container`}>
         <div className={styles.mainGrid}>
-          <header className={styles.heading}>
-            <h2 className={styles.title} id="gabung-judul">
-              {RECRUITMENT.heading}
+          <header className={styles.heading} data-reveal="up">
+            <h2 className={styles.title} id="gabung-judul" data-reveal="lines">
+              <SplitLines>{RECRUITMENT.heading}</SplitLines>
             </h2>
             <p className={styles.lead}>{RECRUITMENT.lead}</p>
           </header>
@@ -270,15 +285,18 @@ export function LandingJoin({
             <InformationList
               title="Siapa yang boleh daftar"
               items={RECRUITMENT.requirements}
+              step={0}
             />
             <InformationList
               title="Prosesnya"
               items={RECRUITMENT.process}
               ordered
+              step={1}
             />
             <InformationList
               title="Yang kamu dapat"
               items={RECRUITMENT.benefits}
+              step={2}
             />
           </div>
         )}

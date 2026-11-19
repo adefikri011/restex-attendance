@@ -48,9 +48,19 @@ export function OfficerPortrait({
   );
 }
 
-export function OfficerCard({ officer }: { officer: Officer }) {
+export function OfficerCard({
+  officer,
+  step = 0,
+}: {
+  officer: Officer;
+  step?: number;
+}) {
   return (
-    <article className={styles.card}>
+    <article
+      className={styles.card}
+      data-reveal="hang"
+      data-reveal-step={step}
+    >
       <span className={styles.hanger} aria-hidden="true" />
       <OfficerPortrait officer={officer} />
       <div className={styles.copy}>

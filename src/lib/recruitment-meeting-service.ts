@@ -89,6 +89,8 @@ export async function getRecruitmentMeetingOverview() {
             fullName: true,
             email: true,
             meetingAttendance: true,
+            stage: true,
+            decision: true,
           },
         },
       },
@@ -101,6 +103,8 @@ export async function getRecruitmentMeetingOverview() {
         fullName: true,
         email: true,
         meetingAttendance: true,
+        stage: true,
+        decision: true,
       },
     }),
     prisma.recruitmentSetting.findUnique({
@@ -322,7 +326,6 @@ export async function chooseRecruitmentMeeting(
           stage: true,
           decision: true,
           meetingAttendance: true,
-          meetingNotes: true,
         },
       });
       if (
@@ -335,9 +338,9 @@ export async function chooseRecruitmentMeeting(
           403,
         );
       }
-      if (application.meetingAttendance || application.meetingNotes) {
+      if (application.meetingAttendance) {
         throw new RecruitmentMeetingError(
-          "Pilihan pertemuan sudah ditutup karena admin mulai mencatat hasil wawancara.",
+          "Pilihan pertemuan sudah ditutup karena admin telah mencatat kehadiran.",
           409,
         );
       }
@@ -406,6 +409,9 @@ export async function getCandidateMeetingData(userId: string) {
       stage: true,
       decision: true,
       updatedAt: true,
+      division: true,
+      divisionReason: true,
+      experience: true,
       meetingMode: true,
       meetingSession: {
         select: { id: true, title: true, startsAt: true, endsAt: true, location: true },

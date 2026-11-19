@@ -98,24 +98,22 @@ export async function PATCH(
     );
   }
 
-  const hasMeetingAttendance = Object.hasOwn(body, "meetingAttendance");
-  const hasMeetingNotes = Object.hasOwn(body, "meetingNotes");
-  if (hasMeetingAttendance || hasMeetingNotes) {
-    if (
-      (hasMeetingAttendance &&
-        !isApplicantMeetingAttendance(body.meetingAttendance)) ||
-      (hasMeetingNotes &&
-        body.meetingNotes !== null &&
-        (typeof body.meetingNotes !== "string" || body.meetingNotes.length > 3000))
-    ) {
+  if (Object.hasOwn(body, "meetingNotes")) {
+    return NextResponse.json(
+      { error: "Catatan pertemuan tidak digunakan." },
+      { status: 400 },
+    );
+  }
+
+  if (Object.hasOwn(body, "meetingAttendance")) {
+    if (!isApplicantMeetingAttendance(body.meetingAttendance)) {
       return NextResponse.json(
-        { error: "Kehadiran atau catatan pertemuan tidak valid." },
+        { error: "Status kehadiran tidak valid." },
         { status: 400 },
       );
     }
 
-    const meetingNotes =
-      typeof body.meetingNotes === "string" ? body.meetingNotes.trim() || null : null;
+    const meetingAttendance = body.meetingAttendance;
     try {
       const application = await prisma.$transaction(async (transaction) => {
         const current = await transaction.recruitmentApplication.findUnique({
@@ -123,53 +121,42 @@ export async function PATCH(
           select: {
             id: true,
             fullName: true,
+            stage: true,
             decision: true,
             meetingMode: true,
             meetingAttendance: true,
-            meetingNotes: true,
           },
         });
         if (!current) return null;
-        if (!current.meetingMode || current.decision !== null) {
+        if (
+          !current.meetingMode ||
+          current.stage !== ApplicantStage.MEETING_INVITED ||
+          current.decision !== null
+        ) {
           throw new ApplicantUpdateError(
-            "Hasil pertemuan hanya dapat diubah untuk calon yang belum memiliki keputusan seleksi.",
+            "Kehadiran hanya dapat dicatat selama tahap pertemuan.",
             409,
           );
         }
 
-        const data = {
-          ...(hasMeetingAttendance
-            ? { meetingAttendance: body.meetingAttendance as ApplicantMeetingAttendance | null }
-            : {}),
-          ...(hasMeetingNotes ? { meetingNotes } : {}),
-        };
         const updated = await transaction.recruitmentApplication.update({
           where: { id: applicationId },
-          data,
-          select: {
-            id: true,
-            meetingAttendance: true,
-            meetingNotes: true,
-          },
+          data: { meetingAttendance },
+          select: { id: true, meetingAttendance: true },
         });
-        if (
-          current.meetingAttendance !== updated.meetingAttendance ||
-          current.meetingNotes !== updated.meetingNotes
-        ) {
+        if (current.meetingAttendance !== updated.meetingAttendance) {
           await writeAuditLog(transaction, {
             actorId: access.user.id,
-            action: "recruitment.meeting_reviewed",
+            action: "recruitment.meeting_attendance_recorded",
             entity: "recruitment",
             entityId: current.id,
             oldValue: {
               name: current.fullName,
               attendance: current.meetingAttendance ?? "Belum dicatat",
-              notesUpdated: Boolean(current.meetingNotes),
             },
             newValue: {
               name: current.fullName,
               attendance: updated.meetingAttendance ?? "Belum dicatat",
-              notesUpdated: Boolean(updated.meetingNotes),
             },
           });
         }
@@ -187,9 +174,9 @@ export async function PATCH(
       if (error instanceof ApplicantUpdateError) {
         return NextResponse.json({ error: error.message }, { status: error.status });
       }
-      console.error("Recruitment applicant meeting review update failed.", error);
+      console.error("Recruitment applicant attendance update failed.", error);
       return NextResponse.json(
-        { error: "Kehadiran atau catatan pertemuan gagal disimpan." },
+        { error: "Status kehadiran gagal disimpan." },
         { status: 500 },
       );
     }
@@ -286,9 +273,27 @@ export async function PATCH(
           fullName: true,
           stage: true,
           decision: true,
+          meetingAttendance: true,
         },
       });
       if (!current) return null;
+      if (
+        stage === ApplicantStage.FORM_TWO_OPEN &&
+        (current.stage !== ApplicantStage.MEETING_INVITED ||
+          current.meetingAttendance !== ApplicantMeetingAttendance.PRESENT ||
+          decision !== null)
+      ) {
+        throw new ApplicantUpdateError(
+          "Formulir lanjutan hanya dapat dibuka untuk peserta yang hadir.",
+          409,
+        );
+      }
+      if (stage === ApplicantStage.FORM_TWO_SUBMITTED) {
+        throw new ApplicantUpdateError(
+          "Formulir lanjutan harus dikirim oleh calon anggota melalui portal.",
+          409,
+        );
+      }
 
       const updated = await transaction.recruitmentApplication.update({
         where: { id: applicationId },
@@ -300,7 +305,6 @@ export async function PATCH(
                 meetingMode: null,
                 meetingSessionId: null,
                 meetingAttendance: null,
-                meetingNotes: null,
               }
             : {}),
         },
@@ -331,6 +335,9 @@ export async function PATCH(
     revalidatePath("/portal/calon-anggota");
     return NextResponse.json({ application });
   } catch (error) {
+    if (error instanceof ApplicantUpdateError) {
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    }
     console.error("Recruitment applicant status update failed.", error);
     return NextResponse.json(
       { error: "Tahap seleksi gagal diperbarui." },

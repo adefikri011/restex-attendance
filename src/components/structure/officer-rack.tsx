@@ -7,11 +7,17 @@ export function OfficerRack({ officers }: { officers: Officer[] }) {
 
   return (
     <div className={styles.rack}>
-      <div className={styles.rail} aria-hidden="true" />
+      <div className={styles.rail} aria-hidden="true" data-reveal="line-x" />
       <ul className={styles.officers} role="list">
-        {officers.map((officer) => (
+        {officers.map((officer, index) => (
           <li className={styles.officer} key={officer.id}>
-            <OfficerCard officer={officer} />
+            <span
+              className={styles.rope}
+              aria-hidden="true"
+              data-reveal="rope"
+              data-reveal-step={index}
+            />
+            <OfficerCard officer={officer} step={index} />
           </li>
         ))}
       </ul>

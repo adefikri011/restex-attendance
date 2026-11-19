@@ -80,7 +80,6 @@ export async function getRecruitmentApplicantDetail(id: string) {
       experience: true,
       meetingMode: true,
       meetingAttendance: true,
-      meetingNotes: true,
       meetingSession: {
         select: {
           title: true,

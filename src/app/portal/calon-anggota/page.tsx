@@ -5,6 +5,8 @@ import { candidatePortalCopy } from "@/components/recruitment/candidate-portal-c
 import { CandidatePortalShell } from "@/components/recruitment/candidate-portal-shell";
 import { requirePageUser } from "@/lib/auth-guard";
 import { getCandidateMeetingData } from "@/lib/recruitment-meeting-service";
+import { getDivisionNames } from "@/lib/division-service";
+import { CandidateSecondStageForm } from "@/components/recruitment/candidate-second-stage-form";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -17,10 +19,17 @@ export const instant = false;
 export default async function CandidatePortalRoute() {
   const user = await requirePageUser(["calon-anggota"]);
   let application: Awaited<ReturnType<typeof getCandidateMeetingData>> = null;
+  let divisions: string[] = [];
   let status: "ready" | "error" = "ready";
 
   try {
     application = await getCandidateMeetingData(user.id);
+    if (
+      application?.stage === "FORM_TWO_OPEN" &&
+      !application.decision
+    ) {
+      divisions = await getDivisionNames();
+    }
   } catch (error) {
     console.error("Candidate application status failed to load.", error);
     status = "error";
@@ -61,6 +70,18 @@ export default async function CandidatePortalRoute() {
           application?.stage === "MEETING_INVITED" &&
           !application.decision && (
             <CandidateMeetingChoice meeting={application} />
+          )}
+        {status === "ready" &&
+          application?.stage === "FORM_TWO_OPEN" &&
+          !application.decision && (
+            <CandidateSecondStageForm
+              divisions={divisions}
+              initialValues={{
+                division: application.division ?? "",
+                divisionReason: application.divisionReason ?? "",
+                experience: application.experience ?? "",
+              }}
+            />
           )}
       </main>
     </CandidatePortalShell>

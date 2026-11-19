@@ -100,7 +100,6 @@ export async function POST(request: Request) {
           meetingMode: null,
           meetingSessionId: null,
           meetingAttendance: null,
-          meetingNotes: null,
         },
       });
       if (update.count !== ids.length) {
