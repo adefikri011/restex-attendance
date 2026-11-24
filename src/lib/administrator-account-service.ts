@@ -17,6 +17,88 @@ export type NewAdministratorInput = {
   division: string | null;
 };
 
+function nextOfficerMemberCode(serial: number, year: number) {
+  return `RTX-${year}-${String(serial).padStart(3, "0")}`;
+}
+
+async function ensureOfficerMemberIdentity(
+  transaction: Prisma.TransactionClient,
+  input: {
+    userId: string;
+    name: string;
+    division: string | null;
+    periodId: string;
+    periodYear: number;
+  },
+) {
+  const existing = await transaction.member.findUnique({
+    where: { userId: input.userId },
+    select: { id: true },
+  });
+  if (existing) return existing.id;
+
+  const existingCodes = await transaction.member.findMany({
+    where: {
+      memberCode: { startsWith: `RTX-${input.periodYear}-` },
+    },
+    select: { memberCode: true },
+  });
+  const nextSerial =
+    existingCodes.reduce((largest, { memberCode }) => {
+      const serial = Number(memberCode.split("-").at(-1));
+      return Number.isInteger(serial) ? Math.max(largest, serial) : largest;
+    }, 0) + 1;
+  const memberCode = nextOfficerMemberCode(nextSerial, input.periodYear);
+
+  const member = await transaction.member.create({
+    data: {
+      id: randomUUID(),
+      memberCode,
+      fullName: input.name,
+      nim: `PENG-${input.userId.replace(/-/g, "").slice(0, 8).toUpperCase()}`,
+      cohort: String(input.periodYear),
+      user: { connect: { id: input.userId } },
+      memberships: {
+        create: {
+          id: randomUUID(),
+          period: { connect: { id: input.periodId } },
+          division: input.division ?? "Organisasi",
+          status: "ACTIVE",
+          joinedAt: new Date(),
+        },
+      },
+    },
+    select: { id: true },
+  });
+  return member.id;
+}
+
+export async function ensureOfficerMemberIdentityForUser(userId: string) {
+  const activePeriod = await prisma.period.findFirst({
+    where: { isActive: true },
+    orderBy: { startDate: "desc" },
+    select: { id: true, startDate: true },
+  });
+  if (!activePeriod) return null;
+  const officer = await prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: { in: ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD", "DIVISION_PJ"] },
+    },
+    select: { id: true, name: true, managedDivision: true },
+  });
+  if (!officer) return null;
+  return prisma.$transaction(async (transaction) =>
+    ensureOfficerMemberIdentity(transaction, {
+      userId: officer.id,
+      name: officer.name,
+      division: officer.managedDivision,
+      periodId: activePeriod.id,
+      periodYear: activePeriod.startDate.getUTCFullYear(),
+    }),
+  );
+}
+
 function formatDate(value: Date | null) {
   return value
     ? new Intl.DateTimeFormat("id-ID", {
@@ -31,6 +113,27 @@ function formatDate(value: Date | null) {
 }
 
 export async function getAdministratorAccountsPageData() {
+  await prisma.$transaction(async (transaction) => {
+    const activePeriod = await transaction.period.findFirst({
+      where: { isActive: true },
+      orderBy: { startDate: "desc" },
+      select: { id: true, startDate: true },
+    });
+    if (!activePeriod) return;
+    const officers = await transaction.user.findMany({
+      where: { role: { in: ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD", "DIVISION_PJ"] } },
+      select: { id: true, name: true, role: true, managedDivision: true },
+    });
+    for (const officer of officers) {
+      await ensureOfficerMemberIdentity(transaction, {
+        userId: officer.id,
+        name: officer.name,
+        division: officer.managedDivision,
+        periodId: activePeriod.id,
+        periodYear: activePeriod.startDate.getUTCFullYear(),
+      });
+    }
+  });
   const [activePeriod, divisions] = await Promise.all([
     prisma.period.findFirst({
       where: { isActive: true },
@@ -56,6 +159,9 @@ export async function getAdministratorAccountsPageData() {
           orderBy: { createdAt: "desc" },
           take: 1,
           select: { createdAt: true },
+        },
+        member: {
+          select: { memberCode: true, nim: true, cohort: true },
         },
       },
     }),
@@ -86,6 +192,9 @@ export async function getAdministratorAccountsPageData() {
     division: user.managedDivision,
     status: user.isActive ? "Aktif" : "Nonaktif",
     lastActiveAt: formatDate(user.authSessions[0]?.createdAt ?? null),
+    memberCode: user.member?.memberCode,
+    nim: user.member?.nim,
+    cohort: user.member?.cohort,
   }));
   const divisionMemberCounts = Object.fromEntries(
     divisions.map((division) => [
@@ -134,7 +243,7 @@ export async function createAdministratorAccount(
     const activePeriod = await transaction.period.findFirst({
       where: { isActive: true },
       orderBy: { startDate: "desc" },
-      select: { id: true, name: true },
+      select: { id: true, name: true, startDate: true },
     });
     if (!activePeriod) throw new Error("Tidak ada periode aktif.");
 
@@ -216,6 +325,13 @@ export async function createAdministratorAccount(
         role: user.role,
         division: user.managedDivision,
       },
+    });
+    await ensureOfficerMemberIdentity(transaction, {
+      userId,
+      name: user.name,
+      division: user.managedDivision,
+      periodId: activePeriod.id,
+      periodYear: activePeriod.startDate.getUTCFullYear(),
     });
 
     return {

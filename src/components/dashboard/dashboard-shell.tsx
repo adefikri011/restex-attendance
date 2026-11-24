@@ -44,7 +44,14 @@ type NavigationItem = {
 
 const primaryNavigation: NavigationItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Sesi Absensi", icon: CalendarDays, href: "/attendance" },
+  {
+    label: "Absensi",
+    icon: CalendarDays,
+    children: [
+      { label: "Absensi Anggota", icon: CalendarDays, href: "/attendance" },
+      { label: "Absensi Pengurus", icon: Activity, href: "/attendance/pengurus" },
+    ],
+  },
   { label: "Anggota", icon: UsersRound, href: "/members" },
   { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
   { label: "Periode", icon: CalendarRange, href: "/periods" },
@@ -244,15 +251,34 @@ export function DashboardShell({
         : activeRole.id === "ketua-divisi"
           ? [
               dashboardItem,
-              ...primaryNavigation.filter(({ label }) =>
-                ["Sesi Absensi", "Kartu Lanyard", "Laporan"].includes(label),
-              ),
+              ...primaryNavigation
+                .filter(({ label }) => ["Absensi", "Kartu Lanyard", "Laporan"].includes(label))
+                .map((item) =>
+                  item.label === "Absensi"
+                    ? {
+                        ...item,
+                        children: item.children?.filter(
+                          (child) => child.label === "Absensi Anggota",
+                        ),
+                      }
+                    : item,
+                ),
             ]
           : activeRole.id === "pj-divisi"
             ? [
                 dashboardItem,
                 ...primaryNavigation.filter(({ label }) =>
-                  ["Sesi Absensi", "Kartu Lanyard"].includes(label),
+                  ["Absensi", "Kartu Lanyard"].includes(label),
+                )
+                .map((item) =>
+                  item.label === "Absensi"
+                    ? {
+                        ...item,
+                        children: item.children?.filter(
+                          (child) => child.label === "Absensi Anggota",
+                        ),
+                      }
+                    : item,
                 ),
               ]
           : [dashboardItem];

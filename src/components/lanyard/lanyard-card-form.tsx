@@ -49,6 +49,13 @@ export function LanyardCardForm({
           <span>atau sesuaikan data untuk pratinjau</span>
         </div>
 
+        {details.role && (
+          <label className={styles.field}>
+            <span>Jabatan pengurus</span>
+            <input value={details.role} readOnly />
+          </label>
+        )}
+
         <label className={styles.field}>
           <span>Nama lengkap</span>
           <input

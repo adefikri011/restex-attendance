@@ -1,9 +1,8 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, UserRole } from "@/generated/prisma/client";
 import type { AppRoleId } from "@/components/auth/role-config";
 import { writeAuditLog } from "@/lib/audit-log-service";
-import { getMembersPageData } from "@/lib/member-service";
 import { prisma } from "@/lib/prisma";
 import { hashAttendanceQrToken, verifyAttendanceQrToken } from "@/lib/attendance-qr-token";
 import type {
@@ -21,6 +20,15 @@ type AttendanceViewer = {
   role: AppRoleId;
   managedDivision: string | null;
 };
+
+export type AttendanceAudience = "members" | "officers";
+const officerDatabaseRoles: UserRole[] = [
+  UserRole.SUPER_ADMIN,
+  UserRole.ADMIN,
+  UserRole.DIVISION_LEAD,
+  UserRole.DIVISION_PJ,
+];
+const officerAttendanceDivision = "Organisasi";
 
 const databaseActivityType: Record<ActivityType, "ROUTINE" | "WORKSHOP" | "SEMINAR" | "INTERNAL" | "OTHER"> = {
   Rutin: "ROUTINE",
@@ -58,6 +66,15 @@ const attendanceStatusFromDatabase: Record<
   EXCUSED: "Izin",
   SICK: "Sakit",
   ABSENT: "Alpha",
+};
+const databaseAttendanceStatus: Record<
+  AttendanceStatus,
+  "PRESENT" | "EXCUSED" | "SICK" | "ABSENT"
+> = {
+  Hadir: "PRESENT",
+  Izin: "EXCUSED",
+  Sakit: "SICK",
+  Alpha: "ABSENT",
 };
 
 const membershipStatusFromDatabase: Record<
@@ -152,24 +169,66 @@ function mapSession(session: {
   };
 }
 
-export async function getAttendancePageData(viewer: AttendanceViewer) {
+export async function getAttendancePageData(
+  viewer: AttendanceViewer,
+  audience: AttendanceAudience = "members",
+) {
   const division = getViewerDivision(viewer);
-  const [activePeriod, memberData] = await Promise.all([
-    prisma.period.findFirst({
-      where: { isActive: true },
-      orderBy: { startDate: "desc" },
-      select: { id: true, name: true },
-    }),
-    getMembersPageData(
-      viewer.role === "ketua-divisi" || viewer.role === "pj-divisi" ? division ?? null : undefined,
-    ),
-  ]);
-  if (!activePeriod) return { sessions: [], members: [], periodName: null, division };
+  const activePeriod = await prisma.period.findFirst({
+    where: { isActive: true },
+    orderBy: { startDate: "desc" },
+    select: { id: true, name: true },
+  });
+  if (!activePeriod) {
+    return {
+      sessions: [],
+      members: [],
+      periodName: null,
+      division: audience === "officers" ? officerAttendanceDivision : division,
+      audience,
+    };
+  }
+  const memberRows = await prisma.member.findMany({
+    where: {
+      memberships: {
+        some: {
+          periodId: activePeriod.id,
+          ...(audience === "officers"
+            ? {}
+            : division === undefined
+              ? {}
+              : { division }),
+          status: "ACTIVE",
+        },
+      },
+      ...(audience === "officers"
+        ? { user: { role: { in: officerDatabaseRoles } } }
+        : {}),
+    },
+    orderBy: { fullName: "asc" },
+    select: {
+      memberCode: true,
+      fullName: true,
+      nim: true,
+      photoUrl: true,
+      updatedAt: true,
+      user: { select: { image: true } },
+      memberships: {
+        where: { periodId: activePeriod.id },
+        take: 1,
+        select: { division: true, status: true },
+      },
+    },
+  });
 
   const rows = await prisma.session.findMany({
     where: {
       periodId: activePeriod.id,
-      ...(division === undefined ? {} : { division }),
+      ...(audience === "officers"
+        ? { division: officerAttendanceDivision }
+        : division === undefined
+          ? {}
+          : { division }),
     },
     orderBy: [{ scheduledAt: "desc" }, { createdAt: "desc" }],
     select: {
@@ -196,30 +255,43 @@ export async function getAttendancePageData(viewer: AttendanceViewer) {
     },
   });
 
+  const members: AttendanceMember[] = memberRows.flatMap((row) => {
+    const membership = row.memberships[0];
+    if (!membership) return [];
+    return [{
+      id: row.memberCode,
+      name: row.fullName,
+      nim: row.nim,
+      photoUrl: row.photoUrl && row.photoUrl !== row.user?.image
+        ? `/api/members/${encodeURIComponent(row.memberCode)}/photo?v=${row.updatedAt.getTime()}`
+        : null,
+      division: membership.division,
+      status: membershipStatusFromDatabase[membership.status],
+    }];
+  });
   return {
     sessions: rows.map(mapSession),
-    members: memberData.members.map(({ id, name, nim, division, status, photoUrl }) => ({
-      id,
-      name,
-      nim,
-      division,
-      status,
-      photoUrl,
-    })),
+    members,
     periodName: activePeriod.name,
-    division,
+    division: audience === "officers" ? officerAttendanceDivision : division,
+    audience,
   };
 }
 
 export async function getAttendanceSessionData(
   sessionId: string,
   viewer: AttendanceViewer,
+  audience: AttendanceAudience = "members",
 ) {
   const division = getViewerDivision(viewer);
   const session = await prisma.session.findFirst({
     where: {
       id: sessionId,
-      ...(division === undefined ? {} : { division }),
+      ...(audience === "officers"
+        ? { division: officerAttendanceDivision }
+        : division === undefined
+          ? {}
+          : { division }),
     },
     select: {
       id: true,
@@ -253,9 +325,16 @@ export async function getAttendanceSessionData(
       memberships: {
         some: {
           periodId: session.periodId,
-          ...(session.division === null ? {} : { division: session.division }),
+          ...(audience === "officers"
+            ? {}
+            : session.division === null
+              ? {}
+              : { division: session.division }),
         },
       },
+      ...(audience === "officers"
+        ? { user: { role: { in: officerDatabaseRoles } } }
+        : {}),
     },
     orderBy: { fullName: "asc" },
     select: {
@@ -290,17 +369,35 @@ export async function getAttendanceSessionData(
     session: mapSession(session),
     members,
     periodName: session.period.name,
-    canManage: viewer.role === "ketua-divisi" || viewer.role === "pj-divisi",
+    canManage:
+      audience === "officers"
+        ? viewer.role === "super-admin" || viewer.role === "admin"
+        : viewer.role === "ketua-divisi" || viewer.role === "pj-divisi",
+    canScan:
+      viewer.role === "super-admin" ||
+      viewer.role === "admin" ||
+      viewer.role === "ketua-divisi" ||
+      viewer.role === "pj-divisi",
+    audience,
   };
 }
 
 export async function createAttendanceSession(
   input: NewSessionInput,
   viewer: AttendanceViewer,
+  audience: AttendanceAudience = "members",
 ) {
-  const division = getViewerDivision(viewer);
-  if (!division || (viewer.role !== "ketua-divisi" && viewer.role !== "pj-divisi")) {
-    throw new Error("Hanya Ketua Divisi atau PJ yang dapat membuka sesi.");
+  const division = audience === "officers" ? officerAttendanceDivision : getViewerDivision(viewer);
+  const canCreate =
+    audience === "officers"
+      ? viewer.role === "super-admin" || viewer.role === "admin"
+      : viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
+  if (!division || !canCreate) {
+    throw new Error(
+      audience === "officers"
+        ? "Hanya Admin atau Super Admin yang dapat membuka sesi pengurus."
+        : "Hanya Ketua Divisi atau PJ yang dapat membuka sesi.",
+    );
   }
   if (
     input.title.trim().length < 3 ||
@@ -331,9 +428,22 @@ export async function createAttendanceSession(
     });
     if (!activePeriod) throw new Error("Tidak ada periode aktif.");
     const activeMemberCount = await transaction.membership.count({
-      where: { periodId: activePeriod.id, division, status: "ACTIVE" },
+      where: {
+        periodId: activePeriod.id,
+        ...(audience === "officers" ? {} : { division }),
+        status: "ACTIVE",
+        ...(audience === "officers"
+          ? { member: { user: { role: { in: officerDatabaseRoles } } } }
+          : {}),
+      },
     });
-    if (!activeMemberCount) throw new Error("Divisi belum memiliki anggota aktif.");
+    if (!activeMemberCount) {
+      throw new Error(
+        audience === "officers"
+          ? "Belum ada pengurus aktif."
+          : "Divisi belum memiliki anggota aktif.",
+      );
+    }
 
     const currentSession = await transaction.session.findFirst({
       where: {
@@ -400,12 +510,24 @@ export async function setAttendanceSessionStatus(
   viewer: AttendanceViewer,
 ) {
   const division = getViewerDivision(viewer);
-  if (!division || (viewer.role !== "ketua-divisi" && viewer.role !== "pj-divisi")) {
+  const isOrganizationManager =
+    viewer.role === "super-admin" || viewer.role === "admin";
+  if (
+    (!division && !isOrganizationManager) ||
+    (!isOrganizationManager &&
+      viewer.role !== "ketua-divisi" &&
+      viewer.role !== "pj-divisi")
+  ) {
     throw new Error("Hanya Ketua Divisi atau PJ yang dapat mengelola sesi.");
   }
   return prisma.$transaction(async (transaction) => {
     const session = await transaction.session.findFirst({
-      where: { id: sessionId, division },
+      where: {
+        id: sessionId,
+        ...(isOrganizationManager
+          ? { division: officerAttendanceDivision }
+          : { division }),
+      },
       select: { id: true, periodId: true, division: true, status: true, title: true },
     });
     if (!session) throw new Error("Sesi tidak ditemukan.");
@@ -418,8 +540,11 @@ export async function setAttendanceSessionStatus(
         transaction.membership.findMany({
           where: {
             periodId: session.periodId,
-            division: session.division,
+            ...(isOrganizationManager ? {} : { division: session.division }),
             status: "ACTIVE",
+            ...(isOrganizationManager
+              ? { member: { user: { role: { in: officerDatabaseRoles } } } }
+              : {}),
           },
           select: { memberId: true },
         }),
@@ -495,9 +620,17 @@ export async function recordAttendanceByQr(
   token: string,
   viewer: AttendanceViewer,
 ) {
-  const division = getViewerDivision(viewer);
-  if (!division || (viewer.role !== "ketua-divisi" && viewer.role !== "pj-divisi")) {
-    throw new Error("Hanya Ketua Divisi atau PJ yang dapat mencatat absensi.");
+  const managedDivision = getViewerDivision(viewer);
+  const isDivisionManager =
+    viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
+  const isOrganizationManager =
+    viewer.role === "super-admin" || viewer.role === "admin";
+  if (!isDivisionManager && !isOrganizationManager) {
+    throw new Error("Hanya pengurus yang dapat mencatat absensi.");
+  }
+
+  if (isDivisionManager && !managedDivision) {
+    throw new Error("Akun belum ditugaskan ke divisi.");
   }
   const tokenData = verifyAttendanceQrToken(token);
   if (!tokenData) throw new Error("QR anggota tidak valid atau sudah kedaluwarsa.");
@@ -506,8 +639,12 @@ export async function recordAttendanceByQr(
   try {
     return await prisma.$transaction(async (transaction) => {
       const session = await transaction.session.findFirst({
-        where: { id: sessionId, division, status: "ACTIVE" },
-        select: { id: true, periodId: true, title: true },
+        where: {
+          id: sessionId,
+          status: "ACTIVE",
+          ...(isDivisionManager ? { division: managedDivision ?? undefined } : {}),
+        },
+        select: { id: true, periodId: true, title: true, division: true },
       });
       if (!session) throw new Error("Sesi tidak ditemukan atau sudah ditutup.");
 
@@ -517,13 +654,20 @@ export async function recordAttendanceByQr(
           qrTokenHash: tokenHash,
           qrIssuedAt: new Date(tokenData.issuedAt),
           qrRevokedAt: null,
-          memberships: {
-            some: {
-              periodId: session.periodId,
-              division,
-              status: "ACTIVE",
-            },
-          },
+          ...(isDivisionManager
+            ? {
+                memberships: {
+                  some: {
+                    periodId: session.periodId,
+                    division: managedDivision ?? "",
+                    status: "ACTIVE",
+                  },
+                },
+              }
+            : {}),
+          ...(isOrganizationManager && session.division === officerAttendanceDivision
+            ? { user: { role: { in: officerDatabaseRoles } } }
+            : {}),
         },
         select: { id: true, memberCode: true, fullName: true },
       });
@@ -566,4 +710,113 @@ export async function recordAttendanceByQr(
     }
     throw error;
   }
+}
+
+export async function recordAttendanceManually(
+  sessionId: string,
+  memberCode: string,
+  status: AttendanceStatus,
+  reason: string,
+  viewer: AttendanceViewer,
+) {
+  const managedDivision = getViewerDivision(viewer);
+  const isDivisionManager =
+    viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
+  const isOrganizationManager =
+    viewer.role === "super-admin" || viewer.role === "admin";
+  if (!isDivisionManager && !isOrganizationManager) {
+    throw new Error("Hanya pengurus yang dapat mencatat absensi.");
+  }
+  if (reason.length > 240) throw new Error("Alasan terlalu panjang.");
+
+  return prisma.$transaction(async (transaction) => {
+    const session = await transaction.session.findFirst({
+      where: {
+        id: sessionId,
+        status: "ACTIVE",
+        ...(isDivisionManager
+          ? { division: managedDivision ?? undefined }
+          : { division: officerAttendanceDivision }),
+      },
+      select: { id: true, periodId: true, title: true },
+    });
+    if (!session) throw new Error("Sesi tidak ditemukan atau sudah ditutup.");
+
+    const member = await transaction.member.findFirst({
+      where: {
+        memberCode,
+        ...(isDivisionManager
+          ? {
+              memberships: {
+                some: {
+                  periodId: session.periodId,
+                  division: managedDivision ?? "",
+                  status: "ACTIVE",
+                },
+              },
+            }
+          : {
+              memberships: {
+                some: { periodId: session.periodId, status: "ACTIVE" },
+              },
+              user: { role: { in: officerDatabaseRoles } },
+            }),
+      },
+      select: { id: true, memberCode: true, fullName: true },
+    });
+    if (!member) throw new Error("Peserta tidak berlaku untuk sesi ini.");
+
+    const databaseStatus = databaseAttendanceStatus[status];
+    const attendance = await transaction.attendance.upsert({
+      where: {
+        sessionId_memberId: {
+          sessionId: session.id,
+          memberId: member.id,
+        },
+      },
+      create: {
+        sessionId: session.id,
+        memberId: member.id,
+        status: databaseStatus,
+        method: "MANUAL",
+        reason: reason || null,
+        recordedById: viewer.id,
+      },
+      update: {
+        status: databaseStatus,
+        method: "MANUAL",
+        reason: reason || null,
+        recordedAt: new Date(),
+        recordedById: viewer.id,
+      },
+      select: { status: true, recordedAt: true },
+    });
+    await writeAuditLog(transaction, {
+      actorId: viewer.id,
+      action: "attendance.recorded",
+      entity: "attendance",
+      entityId: `${session.id}:${member.id}`,
+      newValue: {
+        title: session.title,
+        memberName: member.fullName,
+        memberCode: member.memberCode,
+        status: databaseStatus,
+        method: "MANUAL",
+        reason: reason || undefined,
+      },
+    });
+    return {
+      memberCode: member.memberCode,
+      name: member.fullName,
+      status: attendanceStatusFromDatabase[attendance.status],
+      method: "Manual" as const,
+      reason: reason || undefined,
+      recordedBy: viewer.name,
+      time: new Intl.DateTimeFormat("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Jakarta",
+      }).format(attendance.recordedAt),
+    };
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }

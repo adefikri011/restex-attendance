@@ -24,12 +24,15 @@ import {
 } from "./attendance-data";
 import styles from "./attendance-session-detail.module.css";
 import { notifications } from "@/lib/notifications";
+import type { AttendanceAudience } from "@/lib/attendance-service";
 
 type AttendanceSessionDetailProps = {
   session: AttendanceSession;
   members: AttendanceMember[];
   canManage: boolean;
+  canScan: boolean;
   periodName: string;
+  audience?: AttendanceAudience;
 };
 
 const statusClassNames: Record<AttendanceStatus, string> = {
@@ -43,11 +46,17 @@ export function AttendanceSessionDetail({
   session: initialSession,
   members,
   canManage,
+  canScan,
   periodName,
+  audience = "members",
 }: AttendanceSessionDetailProps) {
   const [session, setSession] = useState(initialSession);
   const [isClosing, setIsClosing] = useState(false);
-  const sessionMembers = session.division
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
+  const [manualStatus, setManualStatus] = useState<AttendanceStatus>("Hadir");
+  const [manualReason, setManualReason] = useState("");
+  const [isSavingManual, setIsSavingManual] = useState(false);
+  const sessionMembers = session.division && audience !== "officers"
     ? members.filter((member) => member.division === session.division)
     : members;
   const activeMembers = getActiveMembers(sessionMembers);
@@ -61,11 +70,14 @@ export function AttendanceSessionDetail({
   async function closeSession() {
     setIsClosing(true);
     try {
-      const response = await fetch(`/api/attendance/sessions/${session.id}`, {
+      const response = await fetch(
+        `${audience === "officers" ? "/api/attendance/officer-sessions" : "/api/attendance/sessions"}/${session.id}`,
+        {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "CLOSED" }),
-      });
+        },
+      );
       const result: unknown = await response.json();
       if (!response.ok) {
         notifications.error(
@@ -121,11 +133,91 @@ export function AttendanceSessionDetail({
     }));
   }
 
+  function startManualEdit(memberId: string, currentStatus?: AttendanceStatus, reason?: string) {
+    setEditingMemberId(memberId);
+    setManualStatus(currentStatus ?? "Hadir");
+    setManualReason(reason ?? "");
+  }
+
+  async function saveManualAttendance(memberId: string) {
+    setIsSavingManual(true);
+    try {
+      const response = await fetch(`/api/attendance/sessions/${session.id}/manual`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          memberCode: memberId,
+          status: manualStatus,
+          reason: manualReason,
+        }),
+      });
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        notifications.error(
+          "Status kehadiran gagal disimpan",
+          typeof result === "object" &&
+            result !== null &&
+            "error" in result &&
+            typeof result.error === "string"
+            ? result.error
+            : "Status kehadiran gagal disimpan.",
+        );
+        return;
+      }
+      if (
+        typeof result !== "object" ||
+        result === null ||
+        !("attendance" in result) ||
+        typeof result.attendance !== "object" ||
+        result.attendance === null ||
+        !("memberCode" in result.attendance) ||
+        typeof result.attendance.memberCode !== "string"
+      ) {
+        throw new Error("Respons status kehadiran tidak valid.");
+      }
+      const attendance = result.attendance;
+      const recordedMemberCode =
+        typeof attendance.memberCode === "string" ? attendance.memberCode : "";
+      setSession((current) => ({
+        ...current,
+        attendance: [
+          ...current.attendance.filter(
+            (entry) => entry.memberId !== recordedMemberCode,
+          ),
+          {
+            memberId: recordedMemberCode,
+            status: manualStatus,
+            method: "Manual",
+            reason: manualReason.trim() || undefined,
+            recordedBy:
+              "recordedBy" in attendance && typeof attendance.recordedBy === "string"
+                ? attendance.recordedBy
+                : undefined,
+            time:
+              "time" in attendance && typeof attendance.time === "string"
+                ? attendance.time
+                : undefined,
+          },
+        ],
+      }));
+      setEditingMemberId(null);
+      notifications.success("Status kehadiran disimpan", "Rekap sudah diperbarui.");
+    } catch (error) {
+      console.error("Manual attendance request failed.", error);
+      notifications.error(
+        "Status kehadiran gagal disimpan",
+        error instanceof Error ? error.message : "Layanan absensi tidak dapat dihubungi.",
+      );
+    } finally {
+      setIsSavingManual(false);
+    }
+  }
+
   return (
     <div className={styles.page}>
-      <Link href="/attendance" className={styles.backLink}>
+      <Link href={audience === "officers" ? "/attendance/pengurus" : "/attendance"} className={styles.backLink}>
         <ArrowLeft size={16} aria-hidden="true" />
-        Kembali ke monitoring
+        {audience === "officers" ? "Kembali ke absensi pengurus" : "Kembali ke monitoring"}
       </Link>
 
       <header className={styles.heading}>
@@ -189,13 +281,13 @@ export function AttendanceSessionDetail({
         <div className={styles.overviewItem}>
           <UsersRound size={16} aria-hidden="true" />
           <span>
-            <small>Anggota aktif</small>
-            <strong>{activeMembers.length} anggota</strong>
+            <small>{audience === "officers" ? "Pengurus aktif" : "Anggota aktif"}</small>
+            <strong>{activeMembers.length} {audience === "officers" ? "pengurus" : "anggota"}</strong>
           </span>
         </div>
       </section>
 
-      {canManage && session.status === "Aktif" && (
+      {canScan && session.status === "Aktif" && (
         <AttendanceScanner
           sessionId={session.id}
           onRecorded={({ memberCode, recordedBy }) =>
@@ -281,7 +373,9 @@ export function AttendanceSessionDetail({
         <section className={styles.rosterPanel} aria-labelledby="roster-title">
           <div className={styles.sectionHeading}>
             <div>
-              <span className={styles.eyebrow}>MONITORING ANGGOTA</span>
+              <span className={styles.eyebrow}>
+                MONITORING {audience === "officers" ? "PENGURUS" : "ANGGOTA"}
+              </span>
               <h2 id="roster-title">Daftar kehadiran</h2>
             </div>
             <span className={styles.recordedCount}>
@@ -298,6 +392,9 @@ export function AttendanceSessionDetail({
                   <th scope="col">Metode</th>
                   <th scope="col">Waktu tercatat</th>
                   <th scope="col">Operator</th>
+                  {canScan && session.status === "Aktif" && (
+                    <th scope="col">Koreksi</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -344,6 +441,58 @@ export function AttendanceSessionDetail({
                       <td data-label="Metode">{entry?.method ?? "—"}</td>
                       <td data-label="Waktu tercatat">{entry?.time ?? "—"}</td>
                       <td data-label="Operator">{entry?.recordedBy ?? "—"}</td>
+                      {canScan && session.status === "Aktif" && (
+                        <td data-label="Koreksi">
+                          {editingMemberId === member.id ? (
+                            <div className={styles.manualStatusForm}>
+                              <select
+                                value={manualStatus}
+                                onChange={(event) =>
+                                  setManualStatus(event.target.value as AttendanceStatus)
+                                }
+                                aria-label={`Status ${member.name}`}
+                              >
+                                <option value="Hadir">Hadir</option>
+                                <option value="Izin">Izin</option>
+                                <option value="Sakit">Sakit</option>
+                                <option value="Alpha">Alpha</option>
+                              </select>
+                              <input
+                                value={manualReason}
+                                onChange={(event) => setManualReason(event.target.value)}
+                                maxLength={240}
+                                placeholder="Alasan (opsional)"
+                                aria-label={`Alasan ${member.name}`}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => void saveManualAttendance(member.id)}
+                                disabled={isSavingManual}
+                              >
+                                Simpan
+                              </button>
+                              <button
+                                type="button"
+                                className={styles.manualCancel}
+                                onClick={() => setEditingMemberId(null)}
+                                disabled={isSavingManual}
+                              >
+                                Batal
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className={styles.manualEditButton}
+                              onClick={() =>
+                                startManualEdit(member.id, entry?.status, entry?.reason)
+                              }
+                            >
+                              {entry ? "Ubah" : "Isi status"}
+                            </button>
+                          )}
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -355,7 +504,7 @@ export function AttendanceSessionDetail({
 
       <p className={styles.demoNote}>
         {canManage
-          ? "Sesi dan kehadiran tersimpan pada database. Setiap scan mencatat waktu dan akun operator."
+          ? `Sesi dan kehadiran ${audience === "officers" ? "pengurus" : "anggota"} tersimpan pada database. Setiap scan mencatat waktu dan akun operator.`
           : "Halaman ini hanya untuk monitoring; pembukaan sesi dan scan QR dilakukan Ketua Divisi atau PJ."}
       </p>
     </div>

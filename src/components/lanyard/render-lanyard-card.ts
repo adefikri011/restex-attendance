@@ -300,7 +300,7 @@ function drawFront(
   context.textBaseline = "middle";
   drawFittedText(
     context,
-    divisionLabel.toLocaleUpperCase("id"),
+    (details.role ?? divisionLabel).toLocaleUpperCase("id"),
     28,
     505,
     320,

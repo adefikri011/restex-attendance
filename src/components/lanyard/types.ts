@@ -4,4 +4,5 @@ export type LanyardCardDetails = {
   nim: string;
   division: string;
   cohort: string;
+  role?: string;
 };

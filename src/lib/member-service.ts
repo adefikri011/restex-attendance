@@ -72,7 +72,7 @@ export async function getMembersPageData(division?: string | null) {
       cohort: true,
       photoUrl: true,
       updatedAt: true,
-      user: { select: { email: true, image: true } },
+      user: { select: { email: true, image: true, role: true } },
       memberships: {
         where: {
           periodId: activePeriod.id,
@@ -103,6 +103,17 @@ export async function getMembersPageData(division?: string | null) {
         cohort: row.cohort,
         status: statusFromDatabase[membership.status],
         attendance: null,
+        role: (
+          row.user?.role === "SUPER_ADMIN"
+            ? "Super Admin"
+            : row.user?.role === "ADMIN"
+              ? "Admin"
+              : row.user?.role === "DIVISION_LEAD"
+                ? "Ketua Divisi"
+                : row.user?.role === "DIVISION_PJ"
+                  ? "PJ Divisi"
+                  : undefined
+        ) as Member["role"],
         joinedAt: new Intl.DateTimeFormat("id-ID", {
           day: "2-digit",
           month: "short",

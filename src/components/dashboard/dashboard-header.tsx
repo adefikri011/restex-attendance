@@ -15,6 +15,7 @@ export function DashboardHeader({
   const pageTitles: Record<string, string> = {
     "/dashboard": "Dashboard",
     "/attendance": "Monitoring Absensi",
+    "/attendance/pengurus": "Absensi Pengurus",
     "/members": "Anggota",
     "/lanyard-card": "Kartu Lanyard",
     "/periods": "Periode",

@@ -390,6 +390,55 @@
   white-space: nowrap;
 }
 
+.manualEditButton,
+.manualStatusForm button {
+  min-height: 28px;
+  padding: 5px 9px;
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.manualEditButton:hover,
+.manualStatusForm button:hover {
+  background: var(--ui-surface-subtle);
+}
+
+.manualStatusForm {
+  display: grid;
+  min-width: 190px;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 5px;
+}
+
+.manualStatusForm select,
+.manualStatusForm input {
+  min-width: 0;
+  min-height: 28px;
+  padding: 4px 7px;
+  border: 1px solid var(--ui-border);
+  border-radius: 7px;
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+  font: inherit;
+  font-size: 9px;
+}
+
+.manualStatusForm button {
+  background: var(--ui-text-accent);
+  color: var(--ui-surface);
+}
+
+.manualStatusForm .manualCancel {
+  background: var(--ui-surface);
+  color: var(--ui-text-accent);
+}
+
 .metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

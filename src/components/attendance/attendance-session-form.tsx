@@ -14,6 +14,7 @@ import { notifications } from "@/lib/notifications";
 type AttendanceSessionFormProps = {
   onCancel: () => void;
   onCreated: (session: AttendanceSession) => void;
+  audience?: "members" | "officers";
 };
 
 function getToday() {
@@ -24,6 +25,7 @@ function getToday() {
 export function AttendanceSessionForm({
   onCancel,
   onCreated,
+  audience = "members",
 }: AttendanceSessionFormProps) {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ActivityType>("Rutin");
@@ -38,11 +40,16 @@ export function AttendanceSessionForm({
     setIsSubmitting(true);
 
     try {
-      const response = await fetch("/api/attendance/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, type, date, time, location, notes }),
-      });
+      const response = await fetch(
+        audience === "officers"
+          ? "/api/attendance/officer-sessions"
+          : "/api/attendance/sessions",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, type, date, time, location, notes }),
+        },
+      );
       const result: unknown = await response.json();
       if (!response.ok) {
         notifications.error(
@@ -76,7 +83,9 @@ export function AttendanceSessionForm({
     <section className={styles.sessionFormPanel} aria-labelledby="create-session-title">
       <header className={styles.sessionFormHeading}>
         <div>
-          <span className={styles.panelEyebrow}>SESI BARU · DIVISI</span>
+          <span className={styles.panelEyebrow}>
+            SESI BARU · {audience === "officers" ? "PENGURUS" : "DIVISI"}
+          </span>
           <h2 id="create-session-title">Buka sesi absensi</h2>
           <p>Sesi langsung aktif setelah dibuat dan siap menerima scan QR.</p>
         </div>

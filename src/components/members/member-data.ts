@@ -11,6 +11,7 @@ export type Member = {
   status: MembershipStatus;
   attendance: number | null;
   joinedAt: string;
+  role?: "Super Admin" | "Admin" | "Ketua Divisi" | "PJ Divisi";
 };
 
 export type MemberCredential = Member & {

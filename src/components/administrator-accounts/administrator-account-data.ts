@@ -17,6 +17,9 @@ export type AdministratorAccount = {
   division: string | null;
   status: AdministratorAccountStatus;
   lastActiveAt: string | null;
+  memberCode?: string;
+  nim?: string;
+  cohort?: string;
 };
 
 export function getAdministratorInitials(name: string) {

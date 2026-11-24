@@ -7,10 +7,10 @@ export async function POST(
   request: Request,
   context: RouteContext<"/api/attendance/sessions/[sessionId]/scan">,
 ) {
-  const access = await getApiUser(["ketua-divisi", "pj-divisi"]);
+  const access = await getApiUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Hanya Ketua Divisi atau PJ yang dapat mencatat absensi." },
+      { error: "Hanya pengurus yang dapat mencatat absensi." },
       { status: access.status },
     );
   }

@@ -26,6 +26,7 @@ import {
   type AttendanceSession,
   type SessionStatus,
 } from "./attendance-data";
+import type { AttendanceAudience } from "@/lib/attendance-service";
 import { notifications } from "@/lib/notifications";
 
 const filters: Array<{ label: string; value: SessionStatus | "Semua" }> = [
@@ -41,6 +42,7 @@ type AttendancePageProps = {
   periodName: string | null;
   role: AppRoleId;
   division: string | undefined;
+  audience?: AttendanceAudience;
 };
 
 export function AttendancePage({
@@ -49,6 +51,7 @@ export function AttendancePage({
   periodName,
   role,
   division,
+  audience = "members",
 }: AttendancePageProps) {
   const router = useRouter();
   const [sessions, setSessions] = useState(initialSessions);
@@ -57,10 +60,13 @@ export function AttendancePage({
     useState<SessionStatus | "Semua">("Semua");
   const [search, setSearch] = useState("");
   const activeMembers = getActiveMembers(members);
-  const canManage = role === "ketua-divisi" || role === "pj-divisi";
+  const isOfficerAttendance = audience === "officers";
+  const canManage = isOfficerAttendance
+    ? role === "super-admin" || role === "admin"
+    : role === "ketua-divisi" || role === "pj-divisi";
 
   function getCounts(session: AttendanceSession) {
-    const sessionMembers = session.division
+    const sessionMembers = session.division && !isOfficerAttendance
       ? activeMembers.filter((member) => member.division === session.division)
       : activeMembers;
     return getSessionCounts(session, sessionMembers.length);
@@ -70,7 +76,7 @@ export function AttendancePage({
     setSessions((current) => [session, ...current]);
     setIsCreateOpen(false);
     notifications.success("Sesi absensi berhasil dibuka", session.title);
-    router.push(`/attendance/${session.id}`);
+    router.push(`${isOfficerAttendance ? "/attendance/pengurus" : "/attendance"}/${session.id}`);
   }
 
   const activeSession = sessions.find((session) => session.status === "Aktif");
@@ -121,12 +127,18 @@ export function AttendancePage({
         <header className={styles.pageHeading}>
         <div>
           <span className={styles.pageEyebrow}>
-            {canManage ? "ABSENSI DIVISI" : "MONITORING ABSENSI"} · {periodName ?? "TANPA PERIODE AKTIF"}
+            {canManage
+              ? isOfficerAttendance
+              ? "ABSENSI PENGURUS"
+              : "ABSENSI DIVISI"
+              : "MONITORING ABSENSI"} · {periodName ?? "TANPA PERIODE AKTIF"}
           </span>
-          <h1>{canManage ? "Absensi Divisi" : "Monitoring Absensi"}</h1>
+          <h1>{isOfficerAttendance ? "Absensi Pengurus" : canManage ? "Absensi Divisi" : "Monitoring Absensi"}</h1>
           <p>
             {canManage
-              ? `Kelola sesi dan catat kehadiran anggota${division ? ` ${division}` : ""}.`
+              ? isOfficerAttendance
+                ? "Kelola sesi dan catat kehadiran pengurus."
+                : `Kelola sesi dan catat kehadiran anggota${division ? ` ${division}` : ""}.`
               : "Pantau sesi yang berlangsung dan tinjau rekap kehadiran anggota."}
           </p>
         </div>
@@ -159,7 +171,11 @@ export function AttendancePage({
       )}
 
       {canManage && isCreateOpen && (
-        <AttendanceSessionForm onCancel={() => setIsCreateOpen(false)} onCreated={handleCreated} />
+        <AttendanceSessionForm
+          onCancel={() => setIsCreateOpen(false)}
+          onCreated={handleCreated}
+          audience={audience}
+        />
       )}
 
       {activeSession ? (
@@ -211,7 +227,9 @@ export function AttendancePage({
             <h2>Belum ada sesi yang berjalan</h2>
             <p>
               {canManage
-                ? "Buka sesi kegiatan untuk mulai mencatat kehadiran anggota."
+                ? isOfficerAttendance
+                  ? "Buka sesi kegiatan untuk mulai mencatat kehadiran pengurus."
+                  : "Buka sesi kegiatan untuk mulai mencatat kehadiran anggota."
                 : "Sesi aktif akan muncul di sini setelah dibuka oleh pengurus divisi."}
             </p>
           </div>
@@ -276,7 +294,9 @@ export function AttendancePage({
             <h2 id="sessions-title">Semua sesi</h2>
             <p>
               {canManage
-                ? "Riwayat sesi dan kehadiran divisi yang menjadi tanggung jawabmu."
+                ? isOfficerAttendance
+                  ? "Riwayat sesi dan kehadiran pengurus pada periode aktif."
+                  : "Riwayat sesi dan kehadiran divisi yang menjadi tanggung jawabmu."
                 : "Admin memiliki akses baca untuk seluruh sesi pada periode aktif."}
             </p>
           </div>
@@ -379,7 +399,7 @@ export function AttendancePage({
                     </td>
                     <td data-label="Detail">
                       <Link
-                        href={`/attendance/${session.id}`}
+                        href={`${isOfficerAttendance ? "/attendance/pengurus" : "/attendance"}/${session.id}`}
                         className={styles.detailsAction}
                       >
                         Detail
