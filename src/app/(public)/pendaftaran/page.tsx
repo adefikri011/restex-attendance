@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { ApplicationForm } from "@/components/recruitment/application-form";
@@ -22,7 +23,15 @@ export default async function RegistrationPage() {
       <div className={`${styles.content} site-container`}>
         <nav className={styles.topbar} aria-label="Navigasi pendaftaran">
           <Link className={styles.brand} href="/">
-            <span className={styles.brandMark} aria-hidden="true">R</span>
+            <Image
+              className={styles.brandMark}
+              src="/assets/image/logoNavbar.png"
+              alt="Logo RESTEX"
+              width={38}
+              height={38}
+              priority
+              unoptimized
+            />
             <span className={styles.brandName}>RESTEX<span>REKRUTMEN</span></span>
           </Link>
           <Link className={styles.homeLink} href="/">
