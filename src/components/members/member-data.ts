@@ -18,11 +18,15 @@ export type MemberCredential = Member & {
   initialPassword: string;
 };
 
-const legacyDivisionEmailCodes: Record<string, string> = {
-  "Software Development": "sd",
-  "Network & Security": "ns",
-  "UI/UX Design": "ux",
-  "Research & Development": "rd",
+const divisionEmailCodes: Record<string, string> = {
+  "manufacture mechanical": "mm",
+  "network security": "ns",
+  programing: "pg",
+  research: "rs",
+  "research development": "rd",
+  "software development": "sd",
+  "ui ux design": "ux",
+  "wiring electrical": "we",
 };
 
 export function getPeriodEmailCode(periodName: string) {
@@ -44,27 +48,37 @@ export function generateMemberEmail(
   division: string,
   periodName?: string,
 ) {
-  const nameSlug = name
+  const nameParts = name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLocaleLowerCase("id")
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean)
+    .slice(0, 2);
+  const nameSlug = nameParts.join(".");
+  const divisionParts = division
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("id")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const divisionKey = divisionParts.join(" ");
   const divisionCode =
-    legacyDivisionEmailCodes[division] ??
-    division
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLocaleLowerCase("id")
-      .split(/[^a-z0-9]+/)
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 4);
+    divisionEmailCodes[divisionKey] ??
+    (divisionParts.length > 1
+      ? divisionParts.map((part) => part[0]).join("").slice(0, 2)
+      : divisionParts[0]?.slice(0, 2) ?? "");
 
   if (!nameSlug || !divisionCode) return "";
-  const periodSuffix = periodName ? `_${getPeriodEmailCode(periodName)}` : "";
-  return `${nameSlug}_${divisionCode}${periodSuffix}@restex.id`;
+  let periodCode = "";
+  if (periodName) {
+    const periodYear = periodName.match(/\d{4}/)?.[0];
+    periodCode = periodYear
+      ? periodYear.slice(-2)
+      : getPeriodEmailCode(periodName).slice(0, 2);
+  }
+
+  return `${nameSlug}_${divisionCode}${periodCode}@restex.id`;
 }
 
 export const initialMembers: Member[] = [

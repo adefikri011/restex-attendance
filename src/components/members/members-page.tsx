@@ -12,6 +12,7 @@ import {
   type MembershipStatus,
 } from "./member-data";
 import { MemberDetailDialog } from "./member-detail-dialog";
+import { MemberImportDialog } from "./member-import-dialog";
 import { MemberStatusTabs, type StatusFilter } from "./member-status-tabs";
 import { MemberTable } from "./member-table";
 import { MemberToolbar } from "./member-toolbar";
@@ -117,6 +118,12 @@ export function MembersPage({
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
+  const [importProgress, setImportProgress] = useState(0);
+  const [importStage, setImportStage] = useState<"uploading" | "processing" | null>(
+    null,
+  );
+  const [importError, setImportError] = useState("");
   const [credentials, setCredentials] = useState<MemberCredential[]>([]);
 
   const divisions = useMemo(
@@ -239,21 +246,46 @@ export function MembersPage({
     }
   }
 
-  async function importFile(file: File | undefined) {
-    if (!file) return;
+  async function importFile(file: File) {
     setIsImporting(true);
+    setImportProgress(0);
+    setImportStage("uploading");
+    setImportError("");
     setCredentials([]);
 
     try {
       const formData = new FormData();
       formData.set("file", file);
-      const response = await fetch("/api/members/import", {
-        method: "POST",
-        body: formData,
+      const { ok, result } = await new Promise<{
+        ok: boolean;
+        result: unknown;
+      }>((resolve, reject) => {
+        const request = new XMLHttpRequest();
+        request.open("POST", "/api/members/import");
+        request.responseType = "json";
+        request.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            setImportProgress(
+              Math.min(99, Math.round((event.loaded / event.total) * 100)),
+            );
+          }
+        };
+        request.upload.onload = () => {
+          setImportProgress(100);
+          setImportStage("processing");
+        };
+        request.onload = () => {
+          resolve({
+            ok: request.status >= 200 && request.status < 300,
+            result: request.response,
+          });
+        };
+        request.onerror = () => reject(new Error("File gagal diunggah."));
+        request.onabort = () => reject(new Error("Unggahan dibatalkan."));
+        request.send(formData);
       });
-      const result: unknown = await response.json();
 
-      if (!response.ok) {
+      if (!ok) {
         const message =
           isRecord(result) && typeof result.error === "string"
             ? result.error
@@ -270,10 +302,7 @@ export function MembersPage({
                 .slice(0, 8)
                 .map((issue) => `Baris ${issue.row}: ${issue.message}`)
             : [];
-        notifications.error(
-          "Impor anggota gagal",
-          [message, ...issues].join(" "),
-        );
+        setImportError([message, ...issues].join(" "));
         return;
       }
 
@@ -282,8 +311,7 @@ export function MembersPage({
         !Array.isArray(result.members) ||
         !result.members.every(isMemberCredential)
       ) {
-        notifications.error(
-          "Impor anggota gagal",
+        setImportError(
           "Respons server tidak valid. Muat ulang halaman dan periksa daftar anggota.",
         );
         return;
@@ -299,18 +327,22 @@ export function MembersPage({
       setDivision("Semua");
       setSearch("");
       setPage(1);
+      setIsImportDialogOpen(false);
       notifications.success(
         "Impor anggota berhasil",
         `${created.length} anggota berhasil ditambahkan.`,
       );
     } catch (error) {
       console.error("Member import failed.", error);
-      notifications.error(
-        "File gagal diunggah",
-        "Periksa koneksi lalu coba kembali.",
+      setImportError(
+        error instanceof Error
+          ? `${error.message} Periksa koneksi lalu coba kembali.`
+          : "File gagal diunggah. Periksa koneksi lalu coba kembali.",
       );
     } finally {
       setIsImporting(false);
+      setImportStage(null);
+      setImportProgress(0);
     }
   }
 
@@ -450,7 +482,10 @@ export function MembersPage({
           isImporting={isImporting}
           onSearchChange={updateSearch}
           onDivisionChange={updateDivision}
-          onImport={importFile}
+          onImport={() => {
+            setImportError("");
+            setIsImportDialogOpen(true);
+          }}
           onDownloadTemplate={downloadTemplate}
           onAddMember={() => {
             setIsAddDialogOpen(true);
@@ -536,6 +571,20 @@ export function MembersPage({
           onSave={saveMember}
         />
       )}
+      <MemberImportDialog
+        key={isImportDialogOpen ? "open" : "closed"}
+        open={isImportDialogOpen}
+        isImporting={isImporting}
+        progress={importProgress}
+        stage={importStage}
+        error={importError}
+        onClose={() => {
+          setImportError("");
+          setIsImportDialogOpen(false);
+        }}
+        onClearError={() => setImportError("")}
+        onImport={importFile}
+      />
     </div>
   );
 }

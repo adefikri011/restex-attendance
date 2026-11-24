@@ -8,7 +8,7 @@ type MemberToolbarProps = {
   isImporting: boolean;
   onSearchChange: (value: string) => void;
   onDivisionChange: (value: string) => void;
-  onImport: (file: File | undefined) => void | Promise<void>;
+  onImport: () => void;
   onDownloadTemplate: () => void;
   onAddMember: () => void;
 };
@@ -63,20 +63,15 @@ export function MemberToolbar({
           <span>Template</span>
         </button>
 
-        <label className={styles.importButton}>
+        <button
+          type="button"
+          className={styles.importButton}
+          disabled={isImporting}
+          onClick={onImport}
+        >
           <Upload size={15} aria-hidden="true" />
           <span>{isImporting ? "Mengimpor..." : "Import Excel"}</span>
-          <input
-            type="file"
-            accept=".xlsx"
-            aria-label="Pilih file Excel anggota"
-            disabled={isImporting}
-            onChange={(event) => {
-              void onImport(event.target.files?.[0]);
-              event.target.value = "";
-            }}
-          />
-        </label>
+        </button>
 
         <button type="button" className={styles.exportButton} disabled title="Export belum tersedia">
           <FileDown size={15} aria-hidden="true" />

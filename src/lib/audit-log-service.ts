@@ -7,6 +7,14 @@ import type {
 import { prisma } from "@/lib/prisma";
 
 type AuditTransaction = Prisma.TransactionClient;
+type AuditLogInput = {
+  actorId: string;
+  action: AuditAction;
+  entity: AuditEntity;
+  entityId?: string | null;
+  oldValue?: Prisma.InputJsonValue;
+  newValue?: Prisma.InputJsonValue;
+};
 
 export type AuditAction =
   | "member.created"
@@ -47,14 +55,7 @@ export type AuditEntity =
 
 export async function writeAuditLog(
   transaction: AuditTransaction,
-  input: {
-    actorId: string;
-    action: AuditAction;
-    entity: AuditEntity;
-    entityId?: string | null;
-    oldValue?: Prisma.InputJsonValue;
-    newValue?: Prisma.InputJsonValue;
-  },
+  input: AuditLogInput,
 ) {
   await transaction.auditLog.create({
     data: {
@@ -65,6 +66,24 @@ export async function writeAuditLog(
       oldValue: input.oldValue,
       newValue: input.newValue,
     },
+  });
+}
+
+export async function writeAuditLogs(
+  transaction: AuditTransaction,
+  inputs: AuditLogInput[],
+) {
+  if (inputs.length === 0) return;
+
+  await transaction.auditLog.createMany({
+    data: inputs.map((input) => ({
+      userId: input.actorId,
+      action: input.action,
+      entity: input.entity,
+      entityId: input.entityId ?? null,
+      oldValue: input.oldValue,
+      newValue: input.newValue,
+    })),
   });
 }
 

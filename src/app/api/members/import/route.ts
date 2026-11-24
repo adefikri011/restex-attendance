@@ -4,11 +4,20 @@ import { getApiUser } from "@/lib/auth-guard";
 import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { createMembers, type NewMemberInput } from "@/lib/member-service";
-
-const maxFileSize = 2 * 1024 * 1024;
-const maxImportedRows = 50;
+import {
+  MAX_MEMBER_IMPORT_FILE_SIZE,
+  MAX_MEMBER_IMPORT_ROWS,
+} from "@/lib/member-import-constants";
 
 type ImportIssue = { row: number; message: string };
+
+const columnAliases: Record<string, string[]> = {
+  name: ["nama", "namalengkap", "name", "fullname"],
+  nim: ["nim", "nomorindukmahasiswa"],
+  division: ["divisi", "division"],
+  cohort: ["angkatan", "cohort", "tahunangkatan"],
+  status: ["status", "statuskeanggotaan"],
+};
 
 function normalizeHeader(value: string) {
   return value
@@ -22,6 +31,22 @@ function cellText(row: import("exceljs").Row, column: number | undefined) {
   return column ? row.getCell(column).text.trim() : "";
 }
 
+function getHeaders(worksheet: import("exceljs").Worksheet) {
+  const headers = new Map<string, number>();
+  worksheet.getRow(1).eachCell((cell, column) => {
+    const key = normalizeHeader(cell.text);
+    if (key) headers.set(key, column);
+  });
+  return headers;
+}
+
+function hasMemberHeaders(worksheet: import("exceljs").Worksheet) {
+  const headers = getHeaders(worksheet);
+  return ["name", "nim", "division", "cohort"].every((field) =>
+    columnAliases[field].some((alias) => headers.has(alias)),
+  );
+}
+
 export async function POST(request: Request) {
   const access = await getApiUser(["super-admin", "admin"]);
   if (!access.user) {
@@ -32,7 +57,7 @@ export async function POST(request: Request) {
   }
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > maxFileSize + 64_000) {
+  if (contentLength > MAX_MEMBER_IMPORT_FILE_SIZE + 64_000) {
     return NextResponse.json(
       { error: "Ukuran file maksimal 2 MB." },
       { status: 413 },
@@ -56,7 +81,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  if (file.size > maxFileSize) {
+  if (file.size > MAX_MEMBER_IMPORT_FILE_SIZE) {
     return NextResponse.json(
       { error: "Ukuran file maksimal 2 MB." },
       { status: 413 },
@@ -83,33 +108,41 @@ export async function POST(request: Request) {
     );
   }
 
-  const worksheet = workbook.worksheets[0];
-  if (!worksheet || worksheet.rowCount < 2) {
+  const namedMemberSheet = workbook.getWorksheet("Anggota");
+  const worksheet =
+    workbook.worksheets.find(
+      (sheet) =>
+        sheet.name === "Anggota" &&
+        sheet.state === "visible" &&
+        hasMemberHeaders(sheet),
+    ) ??
+    workbook.worksheets.find(
+      (sheet) => sheet.state === "visible" && hasMemberHeaders(sheet),
+    ) ??
+    (namedMemberSheet?.state === "visible" ? namedMemberSheet : undefined) ??
+    workbook.worksheets.find(
+      (sheet) => sheet.state === "visible" && sheet.actualRowCount > 0,
+    );
+  if (!worksheet) {
+    return NextResponse.json(
+      { error: "Sheet data anggota tidak ditemukan. Gunakan sheet Anggota dari template." },
+      { status: 400 },
+    );
+  }
+  if (worksheet.rowCount < 2) {
     return NextResponse.json(
       { error: "File Excel belum memiliki baris data." },
       { status: 400 },
     );
   }
-  if (worksheet.rowCount > maxImportedRows + 1) {
+  if (worksheet.rowCount > MAX_MEMBER_IMPORT_ROWS + 1) {
     return NextResponse.json(
-      { error: `Maksimal ${maxImportedRows} anggota per file.` },
+      { error: `Maksimal ${MAX_MEMBER_IMPORT_ROWS} anggota per file.` },
       { status: 413 },
     );
   }
 
-  const headers = new Map<string, number>();
-  worksheet.getRow(1).eachCell((cell, column) => {
-    const key = normalizeHeader(cell.text);
-    if (key) headers.set(key, column);
-  });
-
-  const columnAliases: Record<string, string[]> = {
-    name: ["nama", "namalengkap", "name", "fullname"],
-    nim: ["nim", "nomorindukmahasiswa"],
-    division: ["divisi", "division"],
-    cohort: ["angkatan", "cohort", "tahunangkatan"],
-    status: ["status", "statuskeanggotaan"],
-  };
+  const headers = getHeaders(worksheet);
   function getColumn(aliases: string[]) {
     return aliases.map((alias) => headers.get(alias)).find((column) => column !== undefined);
   }
@@ -137,9 +170,19 @@ export async function POST(request: Request) {
     );
   }
 
+  const divisions = await getDivisionNames();
+  if (divisions.length === 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Belum ada divisi aktif. Tambahkan atau aktifkan divisi terlebih dahulu sebelum mengimpor anggota.",
+      },
+      { status: 409 },
+    );
+  }
+
   const inputs: { row: number; input: NewMemberInput }[] = [];
   const issues: ImportIssue[] = [];
-  const divisions = await getDivisionNames();
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber += 1) {
     const row = worksheet.getRow(rowNumber);
     const rawStatus = cellText(row, columns.status);
@@ -192,6 +235,7 @@ export async function POST(request: Request) {
     const members = await createMembers(
       inputs.map(({ input }) => input),
       access.user.id,
+      { maxWaitMs: 10_000, timeoutMs: 30_000 },
     );
     return NextResponse.json({ members }, { status: 201 });
   } catch (error) {
@@ -219,6 +263,7 @@ export async function POST(request: Request) {
     }
 
     console.error("Member spreadsheet import failed.", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
       code: typeof code === "string" ? code : "unknown",
     });
     return NextResponse.json(

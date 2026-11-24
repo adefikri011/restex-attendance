@@ -10,7 +10,7 @@ import {
   type MembershipStatus,
 } from "@/components/members/member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
-import { writeAuditLog } from "@/lib/audit-log-service";
+import { writeAuditLog, writeAuditLogs } from "@/lib/audit-log-service";
 import { getDivisionNames } from "@/lib/division-service";
 import { prisma } from "@/lib/prisma";
 
@@ -151,7 +151,16 @@ function createUniqueEmail(
   return email;
 }
 
-async function createMembersTransaction(inputs: NewMemberInput[], actorId: string) {
+type CreateMembersOptions = {
+  maxWaitMs?: number;
+  timeoutMs?: number;
+};
+
+async function createMembersTransaction(
+  inputs: NewMemberInput[],
+  actorId: string,
+  options: Required<CreateMembersOptions>,
+) {
   const passwordHash = await hashPassword(initialAccountPassword);
 
   return prisma.$transaction(
@@ -202,53 +211,67 @@ async function createMembersTransaction(inputs: NewMemberInput[], actorId: strin
           return Number.isInteger(serial) ? Math.max(largest, serial) : largest;
         }, 0) + 1;
 
-      const created: CreatedMember[] = [];
-      for (const [index, input] of inputs.entries()) {
-        const userId = randomUUID();
-        const memberId = randomUUID();
-        const email = createUniqueEmail(input, activePeriod.name, usedEmails);
-        const memberCode = nextMemberCode(nextSerial + index, year);
+      const entries = inputs.map((input, index) => {
         const joinedAt = new Date();
+        return {
+          input,
+          userId: randomUUID(),
+          accountId: randomUUID(),
+          memberId: randomUUID(),
+          memberCode: nextMemberCode(nextSerial + index, year),
+          email: createUniqueEmail(input, activePeriod.name, usedEmails),
+          joinedAt,
+        };
+      });
 
-        await transaction.user.create({
-          data: {
-            id: userId,
-            name: input.name,
-            email,
-            emailVerified: false,
-            role: "MEMBER",
-            isActive: input.status === "Aktif",
-            accounts: {
-              create: {
-                id: randomUUID(),
-                accountId: userId,
-                providerId: "credential",
-                password: passwordHash,
-              },
-            },
-          },
-        });
-
-        await transaction.member.create({
-          data: {
-            id: memberId,
-            memberCode,
-            fullName: input.name,
-            nim: input.nim,
-            cohort: input.cohort,
-            user: { connect: { id: userId } },
-            memberships: {
-              create: {
-                id: randomUUID(),
-                period: { connect: { id: activePeriod.id } },
-                division: input.division,
-                status: statusToDatabase[input.status],
-                joinedAt,
-              },
-            },
-          },
-        });
-        await writeAuditLog(transaction, {
+      await transaction.user.createMany({
+        data: entries.map(({ input, userId, email, joinedAt }) => ({
+          id: userId,
+          name: input.name,
+          email,
+          emailVerified: false,
+          role: "MEMBER",
+          isActive: input.status === "Aktif",
+          createdAt: joinedAt,
+          updatedAt: joinedAt,
+        })),
+      });
+      await transaction.account.createMany({
+        data: entries.map(({ userId, accountId, joinedAt }) => ({
+          id: accountId,
+          accountId: userId,
+          providerId: "credential",
+          userId,
+          password: passwordHash,
+          createdAt: joinedAt,
+          updatedAt: joinedAt,
+        })),
+      });
+      await transaction.member.createMany({
+        data: entries.map(({ input, memberId, memberCode, userId, joinedAt }) => ({
+          id: memberId,
+          memberCode,
+          fullName: input.name,
+          nim: input.nim,
+          cohort: input.cohort,
+          userId,
+          createdAt: joinedAt,
+          updatedAt: joinedAt,
+        })),
+      });
+      await transaction.membership.createMany({
+        data: entries.map(({ input, memberId, joinedAt }) => ({
+          id: randomUUID(),
+          memberId,
+          periodId: activePeriod.id,
+          division: input.division,
+          status: statusToDatabase[input.status],
+          joinedAt,
+        })),
+      });
+      await writeAuditLogs(
+        transaction,
+        entries.map(({ input, memberCode }) => ({
           actorId,
           action: "member.created",
           entity: "member",
@@ -259,42 +282,52 @@ async function createMembersTransaction(inputs: NewMemberInput[], actorId: strin
             division: input.division,
             status: statusToDatabase[input.status],
           },
-        });
+        })),
+      );
 
-        created.push({
-          id: memberCode,
-          name: input.name,
-          email,
-          nim: input.nim,
-          division: input.division,
-          cohort: input.cohort,
-          status: input.status,
-          attendance: null,
-          joinedAt: new Intl.DateTimeFormat("id-ID", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            timeZone: "Asia/Jakarta",
-          }).format(joinedAt),
-          initialPassword: initialAccountPassword,
-        });
-      }
-
-      return created;
+      return entries.map(({ input, email, memberCode, joinedAt }) => ({
+        id: memberCode,
+        name: input.name,
+        email,
+        nim: input.nim,
+        division: input.division,
+        cohort: input.cohort,
+        status: input.status,
+        attendance: null,
+        joinedAt: new Intl.DateTimeFormat("id-ID", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "Asia/Jakarta",
+        }).format(joinedAt),
+        initialPassword: initialAccountPassword,
+      }));
     },
-    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    {
+      isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+      maxWait: options.maxWaitMs,
+      timeout: options.timeoutMs,
+    },
   );
 }
 
-export async function createMembers(inputs: NewMemberInput[], actorId: string) {
+export async function createMembers(
+  inputs: NewMemberInput[],
+  actorId: string,
+  options: CreateMembersOptions = {},
+) {
+  const transactionOptions = {
+    maxWaitMs: options.maxWaitMs ?? 2_000,
+    timeoutMs: options.timeoutMs ?? 5_000,
+  };
   try {
-    return await createMembersTransaction(inputs, actorId);
+    return await createMembersTransaction(inputs, actorId, transactionOptions);
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2034"
     ) {
-      return createMembersTransaction(inputs, actorId);
+      return createMembersTransaction(inputs, actorId, transactionOptions);
     }
 
     throw error;

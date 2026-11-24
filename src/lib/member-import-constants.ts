@@ -1,0 +1,2 @@
+export const MAX_MEMBER_IMPORT_FILE_SIZE = 2 * 1024 * 1024;
+export const MAX_MEMBER_IMPORT_ROWS = 100;

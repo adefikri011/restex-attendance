@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getApiUser } from "@/lib/auth-guard";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import { getDivisionNames } from "@/lib/division-service";
+import { MAX_MEMBER_IMPORT_ROWS } from "@/lib/member-import-constants";
 
 export async function GET() {
   const access = await getApiUser(["super-admin", "admin"]);
@@ -37,7 +38,11 @@ export async function GET() {
   worksheet.getRow(1).font = { bold: true };
   worksheet.getColumn(2).numFmt = "@";
   worksheet.getColumn(4).numFmt = "@";
-  for (let rowNumber = 2; rowNumber <= 51; rowNumber += 1) {
+  for (
+    let rowNumber = 2;
+    rowNumber <= MAX_MEMBER_IMPORT_ROWS + 1;
+    rowNumber += 1
+  ) {
     if (divisions.length) {
       worksheet.getCell(rowNumber, 3).dataValidation = {
         type: "list",
@@ -63,7 +68,7 @@ export async function GET() {
         ? `Divisi yang dapat dipilih: ${divisions.join(", ")}.`
         : "Tidak ada divisi aktif. Aktifkan divisi sebelum mengimpor anggota.",
     ],
-    ["Maksimal 50 anggota per file. Jika ada satu baris tidak valid, seluruh impor dibatalkan."],
+    [`Maksimal ${MAX_MEMBER_IMPORT_ROWS} anggota per file. Jika ada satu baris tidak valid, seluruh impor dibatalkan.`],
     ["Email akun dibuat otomatis dari nama, kode divisi, dan periode aktif."],
     [`Password awal semua akun anggota adalah ${initialAccountPassword}.`],
   ]);
