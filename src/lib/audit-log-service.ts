@@ -12,6 +12,8 @@ export type AuditAction =
   | "member.created"
   | "member.updated"
   | "period.created"
+  | "period.activated"
+  | "period.deactivated"
   | "division.created"
   | "division.updated"
   | "division.deleted"
@@ -70,6 +72,8 @@ const actionLabels: Record<AuditAction, string> = {
   "member.created": "Anggota ditambahkan",
   "member.updated": "Data anggota diperbarui",
   "period.created": "Periode kepengurusan dibuat",
+  "period.activated": "Periode kepengurusan diaktifkan",
+  "period.deactivated": "Periode kepengurusan diakhiri",
   "division.created": "Divisi dibuat",
   "division.updated": "Divisi diperbarui",
   "division.deleted": "Divisi dihapus",

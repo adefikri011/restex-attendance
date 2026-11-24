@@ -2,7 +2,10 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { Prisma } from "@/generated/prisma/client";
 import type { PeriodRecord, PeriodStatus } from "@/components/periods/periods-data";
-import { getPeriodName } from "@/components/periods/periods-data";
+import {
+  getDefaultPeriodEndDate,
+  getPeriodName,
+} from "@/components/periods/periods-data";
 import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
 
@@ -15,6 +18,15 @@ export class PeriodInputError extends Error {}
 
 export class PeriodConflictError extends Error {}
 
+export class PeriodActivationError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 function getJakartaDate() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
@@ -22,6 +34,12 @@ function getJakartaDate() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+}
+
+function addDays(value: string, days: number) {
+  const date = toDate(value);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
 }
 
 function toDate(value: string) {
@@ -34,7 +52,7 @@ function getPeriodStatus(
   today: string,
 ): PeriodStatus {
   if (isActive) return "Aktif";
-  return endDate.toISOString().slice(0, 10) < today ? "Selesai" : "Akan datang";
+  return endDate.toISOString().slice(0, 10) <= today ? "Selesai" : "Akan datang";
 }
 
 export async function getPeriodsPageData() {
@@ -175,6 +193,7 @@ export async function createPeriod(input: NewPeriodInput, actorId: string) {
   return prisma.$transaction(async (transaction) => {
     const overlappingPeriod = await transaction.period.findFirst({
       where: {
+        isActive: false,
         startDate: { lte: endDate },
         endDate: { gte: startDate },
       },
@@ -228,5 +247,149 @@ export async function createPeriod(input: NewPeriodInput, actorId: string) {
       sessionCount: 0,
       attendanceRate: 0,
     } satisfies PeriodRecord;
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
+}
+
+export async function activatePeriod(periodId: string, actorId: string) {
+  const today = getJakartaDate();
+  const activationDate = toDate(today);
+  const previousDate = toDate(addDays(today, -1));
+
+  await prisma.$transaction(async (transaction) => {
+    const period = await transaction.period.findUnique({
+      where: { id: periodId },
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+        isActive: true,
+      },
+    });
+    if (!period) {
+      throw new PeriodActivationError("Periode tidak ditemukan.", 404);
+    }
+    if (period.isActive) {
+      throw new PeriodActivationError("Periode ini sudah aktif.", 409);
+    }
+
+    const originalStartDate = period.startDate.toISOString().slice(0, 10);
+    const originalEndDate = period.endDate.toISOString().slice(0, 10);
+    if (originalEndDate < today) {
+      throw new PeriodActivationError(
+        "Periode yang sudah selesai tidak dapat diaktifkan kembali.",
+        409,
+      );
+    }
+
+    const isEndDateAutomatic =
+      originalEndDate === getDefaultPeriodEndDate(originalStartDate);
+    const endDate = isEndDateAutomatic
+      ? toDate(getDefaultPeriodEndDate(today))
+      : period.endDate;
+    const endDateString = endDate.toISOString().slice(0, 10);
+    if (endDateString <= today) {
+      throw new PeriodActivationError(
+        "Tanggal selesai periode harus setelah tanggal aktivasi.",
+        409,
+      );
+    }
+
+    const overlappingPeriod = await transaction.period.findFirst({
+      where: {
+        id: { not: period.id },
+        isActive: false,
+        startDate: { lte: endDate },
+        endDate: { gte: activationDate },
+      },
+      select: { id: true },
+    });
+    if (overlappingPeriod) {
+      throw new PeriodActivationError(
+        "Rentang tanggal bertabrakan dengan periode lain yang belum aktif.",
+        409,
+      );
+    }
+
+    const previousPeriods = await transaction.period.findMany({
+      where: { isActive: true, id: { not: period.id } },
+      select: { id: true, name: true, startDate: true, endDate: true },
+    });
+    for (const previousPeriod of previousPeriods) {
+      const previousStart = previousPeriod.startDate.toISOString().slice(0, 10);
+      if (previousStart > today) {
+        throw new PeriodActivationError(
+          "Periode aktif sebelumnya memiliki tanggal mulai di masa depan. Periksa datanya terlebih dahulu.",
+          409,
+        );
+      }
+
+      const closedEndDate = previousStart === today ? activationDate : previousDate;
+      const closedName = getPeriodName(
+        previousStart,
+        closedEndDate.toISOString().slice(0, 10),
+      );
+      await transaction.period.update({
+        where: { id: previousPeriod.id },
+        data: {
+          isActive: false,
+          endDate: closedEndDate,
+          name: closedName,
+        },
+      });
+      await writeAuditLog(transaction, {
+        actorId,
+        action: "period.deactivated",
+        entity: "period",
+        entityId: previousPeriod.id,
+        oldValue: {
+          name: previousPeriod.name,
+          startDate: previousStart,
+          endDate: previousPeriod.endDate.toISOString().slice(0, 10),
+          isActive: true,
+        },
+        newValue: {
+          name: closedName,
+          startDate: previousStart,
+          endDate: closedEndDate.toISOString().slice(0, 10),
+          isActive: false,
+        },
+      });
+    }
+
+    const name = getPeriodName(today, endDateString);
+    const activated = await transaction.period.update({
+      where: { id: period.id },
+      data: {
+        startDate: activationDate,
+        endDate,
+        name,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        name: true,
+        startDate: true,
+        endDate: true,
+      },
+    });
+    await writeAuditLog(transaction, {
+      actorId,
+      action: "period.activated",
+      entity: "period",
+      entityId: activated.id,
+      oldValue: {
+        name: period.name,
+        startDate: originalStartDate,
+        endDate: originalEndDate,
+        isActive: false,
+      },
+      newValue: {
+        name: activated.name,
+        startDate: today,
+        endDate: endDateString,
+        isActive: true,
+      },
+    });
   }, { isolationLevel: Prisma.TransactionIsolationLevel.Serializable });
 }

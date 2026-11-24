@@ -454,6 +454,14 @@
   white-space: nowrap;
 }
 
+.periodCardActions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 5px;
+}
+
+.activateButton,
 .detailButton,
 .iconButton {
   display: inline-flex;
@@ -468,6 +476,25 @@
   font-size: 9px;
   font-weight: 650;
   cursor: pointer;
+}
+
+.activateButton {
+  min-height: 34px;
+  padding: 0 9px;
+  border: 1px solid var(--ui-border);
+  background: var(--ui-surface);
+  color: var(--ui-text-primary);
+  white-space: nowrap;
+}
+
+.activateButton:hover:not(:disabled) {
+  border-color: var(--ui-text-accent);
+  background: var(--ui-surface-muted);
+}
+
+.activateButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .detailButton {
@@ -753,7 +780,12 @@
   }
 
   .detailButton {
-    margin-left: auto;
+    margin-left: 0;
+  }
+
+  .periodCardActions {
+    width: 100%;
+    justify-content: flex-end;
   }
 
   .periodDetails {

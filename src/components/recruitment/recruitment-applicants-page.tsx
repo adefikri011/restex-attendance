@@ -136,7 +136,7 @@ export function RecruitmentApplicantsPage({
   rating: ApplicantRatingFilter;
 }) {
   const router = useRouter();
-  const { confirm, dialog } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState<"invite" | "announce" | null>(null);
   const [isInviting, setIsInviting] = useState(false);
@@ -282,7 +282,6 @@ export function RecruitmentApplicantsPage({
 
   return (
     <main className={styles.page}>
-      {dialog}
       <header className={styles.heading}>
         <div>
           <span className={styles.eyebrow}>PENGELOLAAN REKRUTMEN</span>

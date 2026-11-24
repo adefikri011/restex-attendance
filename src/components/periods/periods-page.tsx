@@ -14,6 +14,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { PeriodForm } from "./period-form";
+import { useConfirmDialog } from "@/components/ui/use-confirm-dialog";
 import {
   formatPeriodDateRange,
   type PeriodRecord,
@@ -62,10 +63,12 @@ export function PeriodsPage({
   initialPeriods: PeriodRecord[];
   canManagePeriods: boolean;
 }) {
+  const { confirm } = useConfirmDialog();
   const [periods, setPeriods] = useState<PeriodRecord[]>(initialPeriods);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [filter, setFilter] = useState<"Semua" | PeriodStatus>("Semua");
   const [expandedPeriodId, setExpandedPeriodId] = useState<string | null>(null);
+  const [activatingPeriodId, setActivatingPeriodId] = useState<string | null>(null);
   const activePeriod = periods.find((period) => period.status === "Aktif");
   const otherPeriods = periods.filter((period) => period.status !== "Aktif");
   const filteredPeriods = useMemo(
@@ -99,6 +102,60 @@ export function PeriodsPage({
     setIsFormOpen(false);
     setFilter("Semua");
     notifications.success("Periode berhasil disimpan", `Periode ${period.name} siap dikelola.`);
+  }
+
+  async function activatePeriod(period: PeriodRecord) {
+    const confirmed = await confirm({
+      title: `Aktifkan periode ${period.name}?`,
+      description:
+        "Tanggal mulai akan menjadi hari ini. Periode aktif sebelumnya akan diakhiri sehari sebelumnya. Tanggal akhir mengikuti tanggal mulai, kecuali sebelumnya diatur manual.",
+      confirmLabel: "Aktifkan periode",
+    });
+    if (!confirmed) return;
+
+    setActivatingPeriodId(period.id);
+    try {
+      const response = await fetch(
+        `/api/periods/${encodeURIComponent(period.id)}/activate`,
+        { method: "POST" },
+      );
+      const result: unknown = await response.json();
+      if (!response.ok) {
+        throw new Error(
+          isRecord(result) && typeof result.error === "string"
+            ? result.error
+            : "Periode gagal diaktifkan.",
+        );
+      }
+
+      if (
+        !isRecord(result) ||
+        !Array.isArray(result.periods) ||
+        !result.periods.every(isPeriodRecord)
+      ) {
+        throw new Error("Respons server tidak valid. Muat ulang halaman.");
+      }
+
+      const updatedPeriods = result.periods;
+      const activatedPeriod = updatedPeriods.find(({ id }) => id === period.id);
+      if (!activatedPeriod || activatedPeriod.status !== "Aktif") {
+        throw new Error("Periode belum tercatat sebagai aktif. Muat ulang halaman.");
+      }
+
+      setPeriods(updatedPeriods);
+      setExpandedPeriodId(null);
+      notifications.success(
+        "Periode berhasil diaktifkan",
+        `${activatedPeriod.name} mulai ${formatPeriodDateRange(activatedPeriod.startDate, activatedPeriod.endDate)}.`,
+      );
+    } catch (error) {
+      notifications.error(
+        "Periode gagal diaktifkan",
+        error instanceof Error ? error.message : "Silakan coba lagi.",
+      );
+    } finally {
+      setActivatingPeriodId(null);
+    }
   }
 
   function toggleDetails(periodId: string) {
@@ -311,19 +368,34 @@ export function PeriodsPage({
                         {period.sessionCount} sesi
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      className={styles.detailButton}
-                      aria-expanded={isExpanded}
-                      onClick={() => toggleDetails(period.id)}
-                    >
-                      {isExpanded ? "Tutup ringkasan" : "Ringkasan"}
-                      {isExpanded ? (
-                        <ChevronUp size={15} aria-hidden="true" />
-                      ) : (
-                        <ChevronDown size={15} aria-hidden="true" />
+                    <div className={styles.periodCardActions}>
+                      {canManagePeriods && period.status === "Akan datang" && (
+                        <button
+                          type="button"
+                          className={styles.activateButton}
+                          onClick={() => void activatePeriod(period)}
+                          disabled={activatingPeriodId !== null}
+                        >
+                          <CheckCircle2 size={14} aria-hidden="true" />
+                          {activatingPeriodId === period.id
+                            ? "Mengaktifkan..."
+                            : "Aktifkan sekarang"}
+                        </button>
                       )}
-                    </button>
+                      <button
+                        type="button"
+                        className={styles.detailButton}
+                        aria-expanded={isExpanded}
+                        onClick={() => toggleDetails(period.id)}
+                      >
+                        {isExpanded ? "Tutup ringkasan" : "Ringkasan"}
+                        {isExpanded ? (
+                          <ChevronUp size={15} aria-hidden="true" />
+                        ) : (
+                          <ChevronDown size={15} aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                   {isExpanded && (
                     <div className={styles.periodDetails}>

@@ -48,7 +48,7 @@ export function DivisionManager({
   initialDivisions,
   onDivisionsChange,
 }: DivisionManagerProps) {
-  const { confirm, dialog } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const [divisions, setDivisions] = useState(initialDivisions);
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -169,7 +169,6 @@ export function DivisionManager({
 
   return (
     <section className={styles.divisionManager} aria-labelledby="division-manager-title">
-      {dialog}
       <header className={styles.divisionManagerHeader}>
         <div>
           <span className={styles.divisionManagerIcon}><Building2 size={16} aria-hidden="true" /></span>

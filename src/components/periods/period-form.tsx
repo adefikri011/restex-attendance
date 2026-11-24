@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { CalendarPlus, X } from "lucide-react";
-import type { PeriodRecord } from "./periods-data";
+import { getDefaultPeriodEndDate, type PeriodRecord } from "./periods-data";
 import styles from "./periods.module.css";
 import { notifications } from "@/lib/notifications";
 
@@ -23,13 +23,11 @@ function getDefaultDates(periods: PeriodRecord[]) {
   );
   const startDate = new Date(`${latestEndDate}T00:00:00.000Z`);
   startDate.setUTCDate(startDate.getUTCDate() + 1);
-  const endDate = new Date(startDate);
-  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
-  endDate.setUTCDate(endDate.getUTCDate() - 1);
+  const startDateString = startDate.toISOString().slice(0, 10);
 
   return {
-    startDate: startDate.toISOString().slice(0, 10),
-    endDate: endDate.toISOString().slice(0, 10),
+    startDate: startDateString,
+    endDate: getDefaultPeriodEndDate(startDateString),
   };
 }
 
@@ -37,6 +35,7 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
   const [defaults] = useState(() => getDefaultDates(periods));
   const [startDate, setStartDate] = useState(defaults.startDate);
   const [endDate, setEndDate] = useState(defaults.endDate);
+  const [isEndDateManual, setIsEndDateManual] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -115,7 +114,15 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
             required
             type="date"
             value={startDate}
-            onChange={(event) => setStartDate(event.target.value)}
+            onChange={(event) => {
+              const nextStartDate = event.target.value;
+              setStartDate(nextStartDate);
+              if (!isEndDateManual) {
+                setEndDate(
+                  nextStartDate ? getDefaultPeriodEndDate(nextStartDate) : "",
+                );
+              }
+            }}
           />
         </label>
         <label>
@@ -123,8 +130,12 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
           <input
             required
             type="date"
+            min={startDate}
             value={endDate}
-            onChange={(event) => setEndDate(event.target.value)}
+            onChange={(event) => {
+              setEndDate(event.target.value);
+              setIsEndDateManual(true);
+            }}
           />
         </label>
         <div className={styles.formActions}>
@@ -142,8 +153,8 @@ export function PeriodForm({ periods, onCancel, onCreate }: PeriodFormProps) {
         </div>
       </form>
       <p className={styles.formNote}>
-        Aktivasi periode dan transisi status anggota dikelola terpisah agar riwayat
-        keanggotaan tetap terjaga.
+        Tanggal selesai mengikuti tanggal mulai selama belum diatur manual. Periode
+        tetap berupa rencana sampai diaktifkan.
       </p>
     </section>
   );

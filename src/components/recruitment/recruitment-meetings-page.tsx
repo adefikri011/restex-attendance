@@ -255,7 +255,7 @@ export function RecruitmentMeetingsPage({
   initialOverview: MeetingOverview;
 }) {
   const router = useRouter();
-  const { confirm, dialog } = useConfirmDialog();
+  const { confirm } = useConfirmDialog();
   const allParticipants = [
     ...initialOverview.sessions.flatMap(({ applications }) => applications),
     ...initialOverview.onlineApplications,
@@ -497,7 +497,6 @@ export function RecruitmentMeetingsPage({
 
   return (
     <main className={styles.page}>
-      {dialog}
       <Link className={styles.backLink} href="/recruitment/applicants">
         <ArrowLeft size={17} aria-hidden="true" />
         Kembali ke data pendaftar

@@ -24,6 +24,13 @@ export function formatPeriodDateRange(startDate: string, endDate: string) {
   return `${start} – ${end}`;
 }
 
+export function getDefaultPeriodEndDate(startDate: string) {
+  const endDate = new Date(`${startDate}T00:00:00.000Z`);
+  endDate.setUTCFullYear(endDate.getUTCFullYear() + 1);
+  endDate.setUTCDate(endDate.getUTCDate() - 1);
+  return endDate.toISOString().slice(0, 10);
+}
+
 export function getPeriodName(startDate: string, endDate: string) {
   const startYear = startDate.slice(0, 4);
   const endYear = endDate.slice(0, 4);
