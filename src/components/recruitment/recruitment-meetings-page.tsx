@@ -20,6 +20,7 @@ import type {
   ApplicantMeetingAttendance,
   ApplicantStage,
 } from "@/generated/prisma/client";
+import { useConfirmDialog } from "@/components/ui/use-confirm-dialog";
 import styles from "./recruitment-meetings-page.module.css";
 
 type MeetingApplicant = {
@@ -254,6 +255,7 @@ export function RecruitmentMeetingsPage({
   initialOverview: MeetingOverview;
 }) {
   const router = useRouter();
+  const { confirm, dialog } = useConfirmDialog();
   const allParticipants = [
     ...initialOverview.sessions.flatMap(({ applications }) => applications),
     ...initialOverview.onlineApplications,
@@ -333,11 +335,11 @@ export function RecruitmentMeetingsPage({
 
   async function openFormForSelected() {
     if (!selectedIds.length) return;
-    if (
-      !window.confirm(
-        `Buka formulir tahap lanjutan untuk ${selectedIds.length} peserta yang hadir?`,
-      )
-    ) {
+    if (!(await confirm({
+      title: "Buka formulir tahap lanjutan?",
+      description: `Formulir akan dibuka untuk ${selectedIds.length} peserta yang hadir.`,
+      confirmLabel: "Buka formulir",
+    }))) {
       return;
     }
     setIsAdvancing(true);
@@ -445,7 +447,12 @@ export function RecruitmentMeetingsPage({
   }
 
   async function handleDeleteSession(session: MeetingSession) {
-    if (!window.confirm(`Hapus sesi "${session.title}"?`)) return;
+    if (!(await confirm({
+      title: "Hapus sesi pertemuan?",
+      description: `Sesi "${session.title}" akan dihapus dan tidak dapat dipulihkan.`,
+      confirmLabel: "Hapus sesi",
+      destructive: true,
+    }))) return;
     setError("");
     setSuccess("");
     setIsSaving(true);
@@ -490,6 +497,7 @@ export function RecruitmentMeetingsPage({
 
   return (
     <main className={styles.page}>
+      {dialog}
       <Link className={styles.backLink} href="/recruitment/applicants">
         <ArrowLeft size={17} aria-hidden="true" />
         Kembali ke data pendaftar

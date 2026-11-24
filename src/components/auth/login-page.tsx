@@ -53,6 +53,21 @@ export function LoginPage() {
       return;
     }
 
+    if (loginMethod === "email" && !email.trim()) {
+      setNotice("Masukkan email untuk masuk.");
+      return;
+    }
+
+    if (loginMethod === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setNotice("Masukkan email dengan format yang benar.");
+      return;
+    }
+
+    if (!password) {
+      setNotice("Masukkan kata sandi untuk melanjutkan.");
+      return;
+    }
+
     if (!captchaToken) {
       setNotice("Selesaikan verifikasi keamanan sebelum masuk.");
       return;
@@ -244,7 +259,7 @@ export function LoginPage() {
                 Scan QR lanyard
               </button>
             </div>
-            <form className={styles.loginForm} onSubmit={handleLogin}>
+            <form className={styles.loginForm} noValidate onSubmit={handleLogin}>
               {loginMethod === "email" ? (
                 <label className={styles.formLabel}>
                   Email

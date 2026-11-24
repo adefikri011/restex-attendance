@@ -10,6 +10,7 @@ import type {
   ApplicantStage,
 } from "@/generated/prisma/client";
 import type { ApplicantRatingFilter } from "@/lib/recruitment-applicant-service";
+import { useConfirmDialog } from "@/components/ui/use-confirm-dialog";
 import styles from "./recruitment-applicants-page.module.css";
 
 const stageLabels: Record<ApplicantStage, string> = {
@@ -135,6 +136,7 @@ export function RecruitmentApplicantsPage({
   rating: ApplicantRatingFilter;
 }) {
   const router = useRouter();
+  const { confirm, dialog } = useConfirmDialog();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [selectionMode, setSelectionMode] = useState<"invite" | "announce" | null>(null);
   const [isInviting, setIsInviting] = useState(false);
@@ -198,9 +200,11 @@ export function RecruitmentApplicantsPage({
 
   async function inviteSelected() {
     if (!selectedIds.length) return;
-    const confirmed = window.confirm(
-      `Undang ${selectedIds.length} pendaftar terpilih ke tahap pertemuan?`,
-    );
+    const confirmed = await confirm({
+      title: "Undang pendaftar terpilih?",
+      description: `${selectedIds.length} pendaftar akan diundang ke tahap pertemuan.`,
+      confirmLabel: "Kirim undangan",
+    });
     if (!confirmed) return;
 
     setIsInviting(true);
@@ -239,7 +243,11 @@ export function RecruitmentApplicantsPage({
 
   async function announceSelected() {
       if (!selectedIds.length) return;
-      if (!window.confirm(`Umumkan hasil untuk ${selectedIds.length} pendaftar terpilih?`)) return;
+      if (!(await confirm({
+        title: "Umumkan hasil seleksi?",
+        description: `Hasil akan diumumkan untuk ${selectedIds.length} pendaftar terpilih.`,
+        confirmLabel: "Umumkan hasil",
+      }))) return;
       setIsAnnouncing(true);
       setActionError("");
       setActionMessage("");
@@ -274,6 +282,7 @@ export function RecruitmentApplicantsPage({
 
   return (
     <main className={styles.page}>
+      {dialog}
       <header className={styles.heading}>
         <div>
           <span className={styles.eyebrow}>PENGELOLAAN REKRUTMEN</span>

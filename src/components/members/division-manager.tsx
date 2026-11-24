@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 import { Building2, Check, Pencil, Plus, ToggleLeft, ToggleRight, Trash2, X } from "lucide-react";
 import type { DivisionSummary } from "@/lib/division-service";
 import { notifications } from "@/lib/notifications";
+import { useConfirmDialog } from "@/components/ui/use-confirm-dialog";
 import styles from "./members.module.css";
 
 type DivisionManagerProps = {
@@ -47,6 +48,7 @@ export function DivisionManager({
   initialDivisions,
   onDivisionsChange,
 }: DivisionManagerProps) {
+  const { confirm, dialog } = useConfirmDialog();
   const [divisions, setDivisions] = useState(initialDivisions);
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -139,7 +141,12 @@ export function DivisionManager({
   }
 
   async function removeDivision(division: DivisionSummary) {
-    if (!window.confirm(`Hapus divisi "${division.name}"?`)) return;
+    if (!(await confirm({
+      title: "Hapus divisi?",
+      description: `Divisi "${division.name}" akan dihapus. Tindakan ini tidak dapat dipulihkan.`,
+      confirmLabel: "Hapus divisi",
+      destructive: true,
+    }))) return;
     setIsSaving(true);
     try {
       const response = await fetch(`/api/divisions/${encodeURIComponent(division.id)}`, {
@@ -162,6 +169,7 @@ export function DivisionManager({
 
   return (
     <section className={styles.divisionManager} aria-labelledby="division-manager-title">
+      {dialog}
       <header className={styles.divisionManagerHeader}>
         <div>
           <span className={styles.divisionManagerIcon}><Building2 size={16} aria-hidden="true" /></span>

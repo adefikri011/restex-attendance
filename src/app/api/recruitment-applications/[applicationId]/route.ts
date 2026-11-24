@@ -284,7 +284,7 @@ export async function PATCH(
           decision !== null)
       ) {
         throw new ApplicantUpdateError(
-          "Formulir lanjutan hanya dapat dibuka untuk peserta yang hadir.",
+          "Formulir lanjutan hanya dapat dibuka untuk peserta yang hadir di pertemuan.",
           409,
         );
       }

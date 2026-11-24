@@ -5,6 +5,7 @@ import { ThemeProvider as NextThemeProvider } from "next-themes";
 import type { ReactNode } from "react";
 import { NotificationViewport } from "@/lib/notifications";
 import { FloatingMascot } from "@/components/mascot/floating-mascot";
+import { FormValidationFeedback } from "@/components/feedback/form-validation-feedback";
 import { themeOptions } from "./theme-config";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -17,6 +18,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <NotificationViewport />
+      <FormValidationFeedback />
       <Suspense fallback={null}>
         <FloatingMascot />
       </Suspense>
