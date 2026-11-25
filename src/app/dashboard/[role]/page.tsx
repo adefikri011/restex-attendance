@@ -57,11 +57,16 @@ export default async function RoleDashboardRoute({
         : undefined;
 
   return (
-    <DashboardShell role={role.id} displayName={user.name}>
+    <DashboardShell
+      role={role.id}
+      displayName={user.name}
+      accessiblePages={user.accessiblePages}
+    >
       <RoleDashboardPage
         roleId={role.id}
         displayName={user.name}
         dashboardData={dashboardData}
+        accessiblePages={user.accessiblePages}
       />
     </DashboardShell>
   );

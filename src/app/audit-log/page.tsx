@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function AuditLogRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "audit-log");
   const data = await getAuditLogPageData({
     range: "7 hari",
     category: "Semua",
@@ -21,7 +21,7 @@ export default async function AuditLogRoute() {
   });
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AuditLogPage initialData={data} />
     </DashboardShell>
   );

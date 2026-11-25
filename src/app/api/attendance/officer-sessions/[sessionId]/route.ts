@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { setAttendanceSessionStatus } from "@/lib/attendance-service";
 
 export async function PATCH(
   request: Request,
   context: RouteContext<"/api/attendance/officer-sessions/[sessionId]">,
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUserForPage("officer-attendance");
   if (!access.user) {
     return NextResponse.json(
-      { error: "Hanya Admin atau Super Admin yang dapat mengelola sesi pengurus." },
+      { error: "Akses absensi pengurus tidak tersedia untuk akun ini." },
       { status: access.status },
     );
   }
@@ -34,6 +34,9 @@ export async function PATCH(
     const session = await setAttendanceSessionStatus(sessionId, body.status, access.user);
     return NextResponse.json({ ok: true, session });
   } catch (error) {
+    if (error instanceof Error && error.message.includes("Akses absensi")) {
+      return NextResponse.json({ error: error.message }, { status: 403 });
+    }
     if (error instanceof Error && error.message.includes("tidak ditemukan")) {
       return NextResponse.json({ error: error.message }, { status: 404 });
     }

@@ -16,6 +16,7 @@ import {
   Megaphone,
   Menu,
   ScrollText,
+  ShieldCheck,
   UsersRound,
   UserPlus,
   X,
@@ -25,6 +26,10 @@ import { useEffect, useState } from "react";
 import { appRoles, type AppRoleId } from "@/components/auth/role-config";
 import { UserAvatar } from "@/components/avatar/user-avatar";
 import { authClient } from "@/lib/auth-client";
+import {
+  isPageAccessKey,
+  type PageAccessKey,
+} from "@/lib/page-access-config";
 import { MemberDialog } from "@/components/members/member-dialog";
 import { DashboardHeader } from "./dashboard-header";
 import styles from "./dashboard-shell.module.css";
@@ -33,12 +38,15 @@ type DashboardShellProps = {
   children: React.ReactNode;
   role: AppRoleId;
   displayName: string;
+  accessiblePages?: readonly PageAccessKey[];
 };
 
 type NavigationItem = {
   label: string;
   icon: LucideIcon;
   href?: string;
+  pageKey?: PageAccessKey;
+  superAdminOnly?: boolean;
   children?: NavigationItem[];
 };
 
@@ -48,29 +56,30 @@ const primaryNavigation: NavigationItem[] = [
     label: "Absensi",
     icon: CalendarDays,
     children: [
-      { label: "Absensi Anggota", icon: CalendarDays, href: "/attendance" },
-      { label: "Absensi Pengurus", icon: Activity, href: "/attendance/pengurus" },
+      { label: "Absensi Anggota", icon: CalendarDays, href: "/attendance", pageKey: "attendance" },
+      { label: "Absensi Pengurus", icon: Activity, href: "/attendance/pengurus", pageKey: "officer-attendance" },
     ],
   },
-  { label: "Anggota", icon: UsersRound, href: "/members" },
-  { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card" },
-  { label: "Periode", icon: CalendarRange, href: "/periods" },
+  { label: "Anggota", icon: UsersRound, href: "/members", pageKey: "members" },
+  { label: "Kartu Lanyard", icon: IdCard, href: "/lanyard-card", pageKey: "lanyard-card" },
+  { label: "Periode", icon: CalendarRange, href: "/periods", pageKey: "periods" },
   {
     label: "Rekrutmen",
     icon: UserPlus,
     children: [
-      { label: "Pendaftaran", icon: UserPlus, href: "/recruitment" },
-      { label: "Pendaftar", icon: ClipboardList, href: "/recruitment/applicants" },
-      { label: "Jadwal Pertemuan", icon: CalendarRange, href: "/recruitment/meetings" },
+      { label: "Pendaftaran", icon: UserPlus, href: "/recruitment", pageKey: "recruitment-settings" },
+      { label: "Pendaftar", icon: ClipboardList, href: "/recruitment/applicants", pageKey: "recruitment-applicants" },
+      { label: "Jadwal Pertemuan", icon: CalendarRange, href: "/recruitment/meetings", pageKey: "recruitment-meetings" },
     ],
   },
-  { label: "Laporan", icon: ChartNoAxesCombined, href: "/reports" },
-  { label: "Pengumuman", icon: Megaphone, href: "/announcements/manage" },
+  { label: "Laporan", icon: ChartNoAxesCombined, href: "/reports", pageKey: "reports" },
+  { label: "Pengumuman", icon: Megaphone, href: "/announcements/manage", pageKey: "announcements" },
 ];
 
 const managementNavigation: NavigationItem[] = [
-  { label: "Audit Log", icon: ScrollText, href: "/audit-log" },
-  { label: "Akun Pengurus", icon: Activity, href: "/administrator-accounts" },
+  { label: "Audit Log", icon: ScrollText, href: "/audit-log", pageKey: "audit-log" },
+  { label: "Akun Pengurus", icon: Activity, href: "/administrator-accounts", superAdminOnly: true },
+  { label: "Akses Halaman", icon: ShieldCheck, href: "/access-control", superAdminOnly: true },
 ];
 
 function NavigationGroup({
@@ -188,6 +197,7 @@ export function DashboardShell({
   children,
   role,
   displayName,
+  accessiblePages: initialAccessiblePages,
 }: DashboardShellProps) {
   const [isNavigationOpen, setIsNavigationOpen] = useState(false);
   const [logoutError, setLogoutError] = useState("");
@@ -197,6 +207,9 @@ export function DashboardShell({
   const [periodLoadState, setPeriodLoadState] = useState<
     "loading" | "ready" | "error"
   >("loading");
+  const [accessiblePages, setAccessiblePages] = useState<
+    readonly PageAccessKey[] | null
+  >(initialAccessiblePages ?? null);
   const pathname = usePathname();
   const router = useRouter();
   const activeRole = appRoles.find((item) => item.id === role)!;
@@ -238,12 +251,44 @@ export function DashboardShell({
     };
   }, [role]);
 
+  useEffect(() => {
+    let isCurrent = true;
+    async function loadPageAccess() {
+      try {
+        const response = await fetch("/api/access-control/current", {
+          cache: "no-store",
+        });
+        const result: unknown = await response.json();
+        if (
+          !response.ok ||
+          typeof result !== "object" ||
+          result === null ||
+          !("pages" in result) ||
+          !Array.isArray(result.pages) ||
+          !result.pages.every(
+            (page): page is PageAccessKey =>
+              typeof page === "string" && isPageAccessKey(page),
+          )
+        ) {
+          throw new Error("Hak akses halaman gagal dimuat.");
+        }
+        if (isCurrent) setAccessiblePages(result.pages);
+      } catch (error) {
+        console.error("Page access request failed.", error);
+      }
+    }
+    void loadPageAccess();
+    return () => {
+      isCurrent = false;
+    };
+  }, []);
+
   const dashboardItem = {
     ...primaryNavigation[0],
     label: activeRole.id === "anggota" ? "Portal Anggota" : "Dashboard",
     href: activeRole.dashboardPath,
   };
-  const visiblePrimaryNavigation =
+  const defaultPrimaryNavigation =
     activeRole.id === "super-admin"
       ? [dashboardItem, ...primaryNavigation.slice(1)]
       : activeRole.id === "admin"
@@ -282,12 +327,38 @@ export function DashboardShell({
                 ),
               ]
           : [dashboardItem];
-  const visibleManagementNavigation =
+  const defaultManagementNavigation =
     activeRole.id === "super-admin"
       ? managementNavigation
       : activeRole.id === "admin"
         ? managementNavigation.filter(({ label }) => label === "Audit Log")
         : [];
+  function filterNavigationItems(items: NavigationItem[]) {
+    return items
+      .filter((item) => !item.superAdminOnly || role === "super-admin")
+      .map((item) => ({
+        ...item,
+        children: item.children?.filter(
+          (child) =>
+            !child.pageKey || accessiblePages?.includes(child.pageKey) !== false,
+        ),
+      }))
+      .filter((item) => {
+        if (item.children) return item.children.length > 0;
+        return !item.pageKey || accessiblePages?.includes(item.pageKey) !== false;
+      });
+  }
+  const visiblePrimaryNavigation = filterNavigationItems(
+    accessiblePages
+      ? [
+          dashboardItem,
+          ...primaryNavigation.slice(1),
+        ]
+      : defaultPrimaryNavigation,
+  );
+  const visibleManagementNavigation = filterNavigationItems(
+    accessiblePages ? managementNavigation : defaultManagementNavigation,
+  );
   const profileInitials = displayName
     .split(" ")
     .slice(0, 2)

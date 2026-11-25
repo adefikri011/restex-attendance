@@ -1,22 +1,26 @@
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForAnyPage } from "@/lib/auth-guard";
 import { getProfileImage, isProfileObjectKey, R2NotConfiguredError } from "@/lib/r2-storage";
 import { prisma } from "@/lib/prisma";
-
-const cardRoles = ["super-admin", "admin", "ketua-divisi", "pj-divisi"] as const;
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ memberCode: string }> },
 ) {
-  const access = await getApiUser(cardRoles);
+  const access = await getApiUserForAnyPage(["members", "lanyard-card"]);
   if (!access.user) {
     return NextResponse.json({ error: "Akses foto anggota ditolak." }, { status: access.status });
   }
 
   const { memberCode } = await context.params;
+  const managedDivision = access.user.managedDivision;
   const isDivisionManager =
-    access.user.role === "ketua-divisi" || access.user.role === "pj-divisi";
+    access.user.role === "ketua-divisi" ||
+    access.user.role === "pj-divisi" ||
+    Boolean(managedDivision);
+  if (isDivisionManager && !managedDivision) {
+    return NextResponse.json({ error: "Akun belum ditugaskan ke divisi." }, { status: 403 });
+  }
   if (isDivisionManager && !access.user.managedDivision) {
     return NextResponse.json({ error: "Akun belum ditugaskan ke divisi." }, { status: 403 });
   }
@@ -26,7 +30,7 @@ export async function GET(
       memberCode,
       memberships: {
         some: {
-          ...(isDivisionManager ? { division: access.user.managedDivision! } : {}),
+          ...(managedDivision ? { division: managedDivision } : {}),
         },
       },
     },

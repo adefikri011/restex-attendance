@@ -1,6 +1,6 @@
 import { Prisma } from "@/generated/prisma/client";
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { createAttendanceQrToken, hashAttendanceQrToken } from "@/lib/attendance-qr-token";
 import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
@@ -9,13 +9,15 @@ export async function POST(
   _request: Request,
   context: RouteContext<"/api/members/[memberCode]/qr-token">,
 ) {
-  const access = await getApiUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const access = await getApiUserForPage("lanyard-card");
   if (!access.user) {
     return NextResponse.json({ error: "Akses membuat QR anggota ditolak." }, { status: access.status });
   }
   const { memberCode } = await context.params;
   const isDivisionManager =
-    access.user.role === "ketua-divisi" || access.user.role === "pj-divisi";
+    access.user.role === "ketua-divisi" ||
+    access.user.role === "pj-divisi" ||
+    Boolean(access.user.managedDivision);
   const managedDivision = isDivisionManager ? access.user.managedDivision : null;
   if (isDivisionManager && !managedDivision) {
     return NextResponse.json({ error: "Akun belum ditugaskan ke divisi." }, { status: 403 });

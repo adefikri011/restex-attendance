@@ -17,13 +17,13 @@ export default async function AttendanceSessionRoute({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const user = await requirePageUser(undefined, "attendance");
   const { sessionId } = await params;
   const data = await getAttendanceSessionData(sessionId, user);
   if (!data) notFound();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AttendanceSessionDetail {...data} />
     </DashboardShell>
   );

@@ -12,7 +12,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 export async function GET() {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "periods");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk melihat periode." },
@@ -25,7 +25,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin"]);
+  const access = await getApiUser(undefined, "periods");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Super Admin yang dapat membuat periode." },

@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function PeriodsRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "periods");
   const { periods } = await getPeriodsPageData();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <PeriodsPage
         initialPeriods={periods}
         canManagePeriods={user.role === "super-admin"}

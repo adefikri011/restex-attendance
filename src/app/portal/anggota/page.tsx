@@ -16,7 +16,11 @@ export default async function MemberPortalRoute() {
   const memberData = await getMemberPortalData(user.id);
 
   return (
-    <DashboardShell role="anggota" displayName={user.name}>
+    <DashboardShell
+      role="anggota"
+      displayName={user.name}
+      accessiblePages={user.accessiblePages}
+    >
       <RoleDashboardPage
         roleId="anggota"
         displayName={user.name}

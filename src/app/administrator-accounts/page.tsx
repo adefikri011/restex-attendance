@@ -16,7 +16,7 @@ export default async function AdministratorAccountsRoute() {
   const accountData = await getAdministratorAccountsPageData();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AdministratorAccountsPage {...accountData} />
     </DashboardShell>
   );

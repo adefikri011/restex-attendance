@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import { getDivisionNames } from "@/lib/division-service";
 import { MAX_MEMBER_IMPORT_ROWS } from "@/lib/member-import-constants";
 
 export async function GET() {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUserForPage("members");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk mengunduh template." },

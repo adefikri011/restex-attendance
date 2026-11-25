@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { Prisma, UserRole } from "@/generated/prisma/client";
 import type { AppRoleId } from "@/components/auth/role-config";
+import type { PageAccessKey } from "@/lib/page-access-config";
 import { writeAuditLog } from "@/lib/audit-log-service";
 import { prisma } from "@/lib/prisma";
 import { hashAttendanceQrToken, verifyAttendanceQrToken } from "@/lib/attendance-qr-token";
@@ -19,6 +20,7 @@ type AttendanceViewer = {
   name: string;
   role: AppRoleId;
   managedDivision: string | null;
+  accessiblePages: readonly PageAccessKey[];
 };
 
 export type AttendanceAudience = "members" | "officers";
@@ -29,6 +31,15 @@ const officerDatabaseRoles: UserRole[] = [
   UserRole.DIVISION_PJ,
 ];
 const officerAttendanceDivision = "Organisasi";
+
+function officerParticipantWhere(periodId: string): Prisma.MemberWhereInput {
+  return {
+    OR: [
+      { user: { role: { in: officerDatabaseRoles } } },
+      { officerAssignments: { some: { periodId } } },
+    ],
+  };
+}
 
 const databaseActivityType: Record<ActivityType, "ROUTINE" | "WORKSHOP" | "SEMINAR" | "INTERNAL" | "OTHER"> = {
   Rutin: "ROUTINE",
@@ -90,9 +101,8 @@ const membershipStatusFromDatabase: Record<
 function getViewerDivision(viewer: AttendanceViewer) {
   if (viewer.role === "ketua-divisi" || viewer.role === "pj-divisi") {
     if (!viewer.managedDivision) throw new Error("Akun belum ditugaskan ke divisi.");
-    return viewer.managedDivision;
   }
-  return undefined;
+  return viewer.managedDivision ?? undefined;
 }
 
 function toLocalDateTime(date: Date) {
@@ -186,6 +196,9 @@ export async function getAttendancePageData(
       periodName: null,
       division: audience === "officers" ? officerAttendanceDivision : division,
       audience,
+      canManage: viewer.accessiblePages.includes(
+        audience === "officers" ? "officer-attendance" : "attendance",
+      ),
     };
   }
   const memberRows = await prisma.member.findMany({
@@ -196,13 +209,13 @@ export async function getAttendancePageData(
           ...(audience === "officers"
             ? {}
             : division === undefined
-              ? {}
+              ? { NOT: { division: officerAttendanceDivision } }
               : { division }),
           status: "ACTIVE",
         },
       },
       ...(audience === "officers"
-        ? { user: { role: { in: officerDatabaseRoles } } }
+        ? officerParticipantWhere(activePeriod.id)
         : {}),
     },
     orderBy: { fullName: "asc" },
@@ -227,7 +240,7 @@ export async function getAttendancePageData(
       ...(audience === "officers"
         ? { division: officerAttendanceDivision }
         : division === undefined
-          ? {}
+          ? { NOT: { division: officerAttendanceDivision } }
           : { division }),
     },
     orderBy: [{ scheduledAt: "desc" }, { createdAt: "desc" }],
@@ -275,6 +288,9 @@ export async function getAttendancePageData(
     periodName: activePeriod.name,
     division: audience === "officers" ? officerAttendanceDivision : division,
     audience,
+    canManage: viewer.accessiblePages.includes(
+      audience === "officers" ? "officer-attendance" : "attendance",
+    ),
   };
 }
 
@@ -290,7 +306,7 @@ export async function getAttendanceSessionData(
       ...(audience === "officers"
         ? { division: officerAttendanceDivision }
         : division === undefined
-          ? {}
+          ? { NOT: { division: officerAttendanceDivision } }
           : { division }),
     },
     select: {
@@ -327,13 +343,14 @@ export async function getAttendanceSessionData(
           periodId: session.periodId,
           ...(audience === "officers"
             ? {}
-            : session.division === null
+            : session.division === null ||
+                session.division === officerAttendanceDivision
               ? {}
               : { division: session.division }),
         },
       },
       ...(audience === "officers"
-        ? { user: { role: { in: officerDatabaseRoles } } }
+        ? officerParticipantWhere(session.periodId)
         : {}),
     },
     orderBy: { fullName: "asc" },
@@ -370,14 +387,12 @@ export async function getAttendanceSessionData(
     members,
     periodName: session.period.name,
     canManage:
-      audience === "officers"
-        ? viewer.role === "super-admin" || viewer.role === "admin"
-        : viewer.role === "ketua-divisi" || viewer.role === "pj-divisi",
-    canScan:
-      viewer.role === "super-admin" ||
-      viewer.role === "admin" ||
-      viewer.role === "ketua-divisi" ||
-      viewer.role === "pj-divisi",
+      viewer.accessiblePages.includes(
+        audience === "officers" ? "officer-attendance" : "attendance",
+      ),
+    canScan: viewer.accessiblePages.includes(
+      audience === "officers" ? "officer-attendance" : "attendance",
+    ),
     audience,
   };
 }
@@ -387,16 +402,17 @@ export async function createAttendanceSession(
   viewer: AttendanceViewer,
   audience: AttendanceAudience = "members",
 ) {
-  const division = audience === "officers" ? officerAttendanceDivision : getViewerDivision(viewer);
-  const canCreate =
+  const division =
     audience === "officers"
-      ? viewer.role === "super-admin" || viewer.role === "admin"
-      : viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
+      ? officerAttendanceDivision
+      : getViewerDivision(viewer) ?? officerAttendanceDivision;
+  const requiredPage = audience === "officers" ? "officer-attendance" : "attendance";
+  const canCreate = viewer.accessiblePages.includes(requiredPage);
   if (!division || !canCreate) {
     throw new Error(
       audience === "officers"
-        ? "Hanya Admin atau Super Admin yang dapat membuka sesi pengurus."
-        : "Hanya Ketua Divisi atau PJ yang dapat membuka sesi.",
+        ? "Akses absensi pengurus tidak tersedia untuk akun ini."
+        : "Akses absensi tidak tersedia untuk akun ini.",
     );
   }
   if (
@@ -430,10 +446,12 @@ export async function createAttendanceSession(
     const activeMemberCount = await transaction.membership.count({
       where: {
         periodId: activePeriod.id,
-        ...(audience === "officers" ? {} : { division }),
+        ...(audience === "officers" || division === officerAttendanceDivision
+          ? {}
+          : { division }),
         status: "ACTIVE",
         ...(audience === "officers"
-          ? { member: { user: { role: { in: officerDatabaseRoles } } } }
+          ? { member: officerParticipantWhere(activePeriod.id) }
           : {}),
       },
     });
@@ -510,27 +528,28 @@ export async function setAttendanceSessionStatus(
   viewer: AttendanceViewer,
 ) {
   const division = getViewerDivision(viewer);
-  const isOrganizationManager =
-    viewer.role === "super-admin" || viewer.role === "admin";
-  if (
-    (!division && !isOrganizationManager) ||
-    (!isOrganizationManager &&
-      viewer.role !== "ketua-divisi" &&
-      viewer.role !== "pj-divisi")
-  ) {
-    throw new Error("Hanya Ketua Divisi atau PJ yang dapat mengelola sesi.");
+  const isDivisionManager = Boolean(division);
+  if (!viewer.accessiblePages.some((page) =>
+    page === "attendance" || page === "officer-attendance",
+  )) {
+    throw new Error("Akses absensi tidak tersedia untuk akun ini.");
   }
   return prisma.$transaction(async (transaction) => {
     const session = await transaction.session.findFirst({
       where: {
         id: sessionId,
-        ...(isOrganizationManager
-          ? { division: officerAttendanceDivision }
-          : { division }),
+        ...(isDivisionManager ? { division } : {}),
       },
       select: { id: true, periodId: true, division: true, status: true, title: true },
     });
     if (!session) throw new Error("Sesi tidak ditemukan.");
+    const requiredPage =
+      session.division === officerAttendanceDivision
+        ? "officer-attendance"
+        : "attendance";
+    if (!viewer.accessiblePages.includes(requiredPage)) {
+      throw new Error("Akses absensi tidak tersedia untuk sesi ini.");
+    }
     if (session.status === "CLOSED") {
       throw new Error("Sesi yang sudah ditutup tidak dapat dibuka kembali.");
     }
@@ -540,10 +559,14 @@ export async function setAttendanceSessionStatus(
         transaction.membership.findMany({
           where: {
             periodId: session.periodId,
-            ...(isOrganizationManager ? {} : { division: session.division }),
+            ...(isDivisionManager
+              ? { division }
+              : session.division === officerAttendanceDivision
+                ? {}
+                : { division: session.division }),
             status: "ACTIVE",
-            ...(isOrganizationManager
-              ? { member: { user: { role: { in: officerDatabaseRoles } } } }
+            ...(session.division === officerAttendanceDivision
+              ? { member: officerParticipantWhere(session.periodId) }
               : {}),
           },
           select: { memberId: true },
@@ -621,12 +644,11 @@ export async function recordAttendanceByQr(
   viewer: AttendanceViewer,
 ) {
   const managedDivision = getViewerDivision(viewer);
-  const isDivisionManager =
-    viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
-  const isOrganizationManager =
-    viewer.role === "super-admin" || viewer.role === "admin";
-  if (!isDivisionManager && !isOrganizationManager) {
-    throw new Error("Hanya pengurus yang dapat mencatat absensi.");
+  const isDivisionManager = Boolean(managedDivision);
+  if (!viewer.accessiblePages.some((page) =>
+    page === "attendance" || page === "officer-attendance",
+  )) {
+    throw new Error("Akses absensi tidak tersedia untuk akun ini.");
   }
 
   if (isDivisionManager && !managedDivision) {
@@ -647,6 +669,13 @@ export async function recordAttendanceByQr(
         select: { id: true, periodId: true, title: true, division: true },
       });
       if (!session) throw new Error("Sesi tidak ditemukan atau sudah ditutup.");
+      const requiredPage =
+        session.division === officerAttendanceDivision
+          ? "officer-attendance"
+          : "attendance";
+      if (!viewer.accessiblePages.includes(requiredPage)) {
+        throw new Error("Akses absensi tidak tersedia untuk sesi ini.");
+      }
 
       const member = await transaction.member.findFirst({
         where: {
@@ -654,19 +683,17 @@ export async function recordAttendanceByQr(
           qrTokenHash: tokenHash,
           qrIssuedAt: new Date(tokenData.issuedAt),
           qrRevokedAt: null,
-          ...(isDivisionManager
-            ? {
-                memberships: {
-                  some: {
-                    periodId: session.periodId,
-                    division: managedDivision ?? "",
-                    status: "ACTIVE",
-                  },
-                },
-              }
-            : {}),
-          ...(isOrganizationManager && session.division === officerAttendanceDivision
-            ? { user: { role: { in: officerDatabaseRoles } } }
+          memberships: {
+            some: {
+              periodId: session.periodId,
+              ...(session.division && session.division !== officerAttendanceDivision
+                ? { division: session.division }
+                : {}),
+              status: "ACTIVE",
+            },
+          },
+          ...(session.division === officerAttendanceDivision
+            ? officerParticipantWhere(session.periodId)
             : {}),
         },
         select: { id: true, memberCode: true, fullName: true },
@@ -720,12 +747,11 @@ export async function recordAttendanceManually(
   viewer: AttendanceViewer,
 ) {
   const managedDivision = getViewerDivision(viewer);
-  const isDivisionManager =
-    viewer.role === "ketua-divisi" || viewer.role === "pj-divisi";
-  const isOrganizationManager =
-    viewer.role === "super-admin" || viewer.role === "admin";
-  if (!isDivisionManager && !isOrganizationManager) {
-    throw new Error("Hanya pengurus yang dapat mencatat absensi.");
+  const isDivisionManager = Boolean(managedDivision);
+  if (!viewer.accessiblePages.some((page) =>
+    page === "attendance" || page === "officer-attendance",
+  )) {
+    throw new Error("Akses absensi tidak tersedia untuk akun ini.");
   }
   if (reason.length > 240) throw new Error("Alasan terlalu panjang.");
 
@@ -734,33 +760,34 @@ export async function recordAttendanceManually(
       where: {
         id: sessionId,
         status: "ACTIVE",
-        ...(isDivisionManager
-          ? { division: managedDivision ?? undefined }
-          : { division: officerAttendanceDivision }),
+        ...(isDivisionManager ? { division: managedDivision ?? undefined } : {}),
       },
-      select: { id: true, periodId: true, title: true },
+      select: { id: true, periodId: true, title: true, division: true },
     });
     if (!session) throw new Error("Sesi tidak ditemukan atau sudah ditutup.");
+    const requiredPage =
+      session.division === officerAttendanceDivision
+        ? "officer-attendance"
+        : "attendance";
+    if (!viewer.accessiblePages.includes(requiredPage)) {
+      throw new Error("Akses absensi tidak tersedia untuk sesi ini.");
+    }
 
     const member = await transaction.member.findFirst({
       where: {
         memberCode,
-        ...(isDivisionManager
-          ? {
-              memberships: {
-                some: {
-                  periodId: session.periodId,
-                  division: managedDivision ?? "",
-                  status: "ACTIVE",
-                },
-              },
-            }
-          : {
-              memberships: {
-                some: { periodId: session.periodId, status: "ACTIVE" },
-              },
-              user: { role: { in: officerDatabaseRoles } },
-            }),
+        memberships: {
+          some: {
+            periodId: session.periodId,
+            ...(session.division && session.division !== officerAttendanceDivision
+              ? { division: session.division }
+              : {}),
+            status: "ACTIVE",
+          },
+        },
+        ...(session.division === officerAttendanceDivision
+          ? officerParticipantWhere(session.periodId)
+          : {}),
       },
       select: { id: true, memberCode: true, fullName: true },
     });

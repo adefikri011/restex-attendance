@@ -1,6 +1,6 @@
 import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { createMembers, type NewMemberInput } from "@/lib/member-service";
@@ -48,7 +48,7 @@ function hasMemberHeaders(worksheet: import("exceljs").Worksheet) {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUserForPage("members");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk mengimpor anggota." },

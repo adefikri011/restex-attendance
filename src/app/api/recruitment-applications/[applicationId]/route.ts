@@ -70,7 +70,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ applicationId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-applicants");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Admin dan Super Admin yang dapat memperbarui tahap seleksi." },

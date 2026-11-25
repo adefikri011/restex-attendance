@@ -28,6 +28,9 @@ export type AuditAction =
   | "account.created"
   | "account.activated"
   | "account.deactivated"
+  | "access.updated"
+  | "officer.assignment_created"
+  | "officer.assignment_deleted"
   | "session.created"
   | "session.opened"
   | "session.closed"
@@ -99,6 +102,9 @@ const actionLabels: Record<AuditAction, string> = {
   "account.created": "Akun pengurus dibuat",
   "account.activated": "Akun pengurus diaktifkan",
   "account.deactivated": "Akun pengurus dinonaktifkan",
+  "access.updated": "Hak akses halaman diperbarui",
+  "officer.assignment_created": "Penugasan pengurus dibuat",
+  "officer.assignment_deleted": "Penugasan pengurus dihapus",
   "session.created": "Sesi absensi dibuka",
   "session.opened": "Sesi absensi dibuka kembali",
   "session.closed": "Sesi absensi ditutup",

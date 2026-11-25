@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function AttendanceRoute() {
-  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const user = await requirePageUser(undefined, "attendance");
   const data = await getAttendancePageData(user);
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AttendancePage {...data} role={user.role} />
     </DashboardShell>
   );

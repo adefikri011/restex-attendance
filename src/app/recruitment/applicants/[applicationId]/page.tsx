@@ -17,14 +17,14 @@ export default async function RecruitmentApplicantDetailRoute({
 }: {
   params: Promise<{ applicationId: string }>;
 }) {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "recruitment-applicants");
   const { applicationId } = await params;
   const application = await getRecruitmentApplicantDetail(applicationId);
 
   if (!application) notFound();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <RecruitmentApplicantDetailPage application={application} />
     </DashboardShell>
   );

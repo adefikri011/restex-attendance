@@ -26,7 +26,7 @@ export default async function RecruitmentApplicantsRoute({
 }: {
   searchParams: Promise<{ page?: string; q?: string; rating?: string }>;
 }) {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "recruitment-applicants");
   const params = await searchParams;
   const parsedPage = Number(params.page ?? "1");
   const page =
@@ -40,7 +40,7 @@ export default async function RecruitmentApplicantsRoute({
   const results = await getRecruitmentApplicants(page, params.q ?? "", rating);
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <RecruitmentApplicantsPage
         applications={results.applications}
         page={results.page}

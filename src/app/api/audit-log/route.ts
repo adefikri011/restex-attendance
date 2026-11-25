@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { auditCategories, type AuditCategory } from "@/components/audit-log/audit-log-data";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { getAuditLogPageData } from "@/lib/audit-log-service";
 
 const ranges = ["7 hari", "30 hari", "Semua"] as const;
 
 export async function GET(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUserForPage("audit-log");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk melihat audit log." },

@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function RecruitmentMeetingsRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "recruitment-meetings");
   const overview = await getRecruitmentMeetingOverview();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <RecruitmentMeetingsPage initialOverview={overview} />
     </DashboardShell>
   );

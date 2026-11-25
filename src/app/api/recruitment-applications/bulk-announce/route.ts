@@ -14,7 +14,7 @@ function isUuid(value: string) {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-applicants");
   if (!access.user) {
     return NextResponse.json({ error: "Hanya Admin dan Super Admin yang dapat mengumumkan hasil." }, { status: access.status });
   }

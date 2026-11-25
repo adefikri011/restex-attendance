@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { createAttendanceSession } from "@/lib/attendance-service";
 import { activityTypes, type ActivityType } from "@/components/attendance/attendance-data";
 
@@ -13,10 +13,10 @@ function isActivityType(value: string): value is ActivityType {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["ketua-divisi", "pj-divisi"]);
+  const access = await getApiUserForPage("attendance");
   if (!access.user) {
     return NextResponse.json(
-      { error: "Hanya Ketua Divisi atau PJ yang dapat membuka sesi." },
+      { error: "Akses absensi tidak tersedia untuk akun ini." },
       { status: access.status },
     );
   }

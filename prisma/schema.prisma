@@ -119,6 +119,7 @@ model Period {
   createdAt   DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
   memberships Membership[]
   sessions    Session[]
+  officerAssignments OfficerAssignment[]
 
   @@index([isActive])
   @@map("periods")
@@ -309,10 +310,51 @@ model Member {
   user        User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
   memberships Membership[]
   attendances Attendance[]
+  officerAssignments OfficerAssignment[]
 
   @@index([fullName])
   @@index([cohort])
   @@map("members")
+}
+
+model RolePageAccess {
+  id        String   @id @default(uuid()) @db.Uuid
+  role      UserRole
+  pageKey   String   @map("page_key") @db.VarChar(60)
+  enabled   Boolean  @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([role, pageKey])
+  @@index([pageKey, enabled])
+  @@map("role_page_access")
+}
+
+model PositionPageAccess {
+  id        String   @id @default(uuid()) @db.Uuid
+  position  String   @db.VarChar(60)
+  pageKey   String   @map("page_key") @db.VarChar(60)
+  enabled   Boolean  @default(false)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@unique([position, pageKey])
+  @@index([pageKey, enabled])
+  @@map("position_page_access")
+}
+
+model OfficerAssignment {
+  id        String   @id @default(uuid()) @db.Uuid
+  memberId  String   @map("member_id") @db.Uuid
+  periodId  String   @map("period_id") @db.Uuid
+  position  String   @db.VarChar(60)
+  division  String?  @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  period    Period   @relation(fields: [periodId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, periodId, position])
+  @@index([periodId, position])
+  @@index([memberId, periodId])
+  @@map("officer_assignments")
 }
 
 model Membership {

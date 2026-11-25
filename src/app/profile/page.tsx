@@ -34,7 +34,11 @@ export default async function ProfileRoute() {
   }
 
   return (
-    <DashboardShell role={access.role} displayName={user.name}>
+    <DashboardShell
+      role={access.role}
+      displayName={user.name}
+      accessiblePages={access.accessiblePages}
+    >
       <ProfilePage
         name={user.name}
         email={user.email}

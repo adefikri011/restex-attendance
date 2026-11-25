@@ -43,6 +43,7 @@ type AttendancePageProps = {
   role: AppRoleId;
   division: string | undefined;
   audience?: AttendanceAudience;
+  canManage: boolean;
 };
 
 export function AttendancePage({
@@ -52,6 +53,7 @@ export function AttendancePage({
   role,
   division,
   audience = "members",
+  canManage,
 }: AttendancePageProps) {
   const router = useRouter();
   const [sessions, setSessions] = useState(initialSessions);
@@ -61,10 +63,6 @@ export function AttendancePage({
   const [search, setSearch] = useState("");
   const activeMembers = getActiveMembers(members);
   const isOfficerAttendance = audience === "officers";
-  const canManage = isOfficerAttendance
-    ? role === "super-admin" || role === "admin"
-    : role === "ketua-divisi" || role === "pj-divisi";
-
   function getCounts(session: AttendanceSession) {
     const sessionMembers = session.division && !isOfficerAttendance
       ? activeMembers.filter((member) => member.division === session.division)

@@ -16,7 +16,11 @@ export default async function MemberAttendanceSummaryRoute() {
   const data = await getMemberAttendanceSummary(user.id);
 
   return (
-    <DashboardShell role="anggota" displayName={user.name}>
+    <DashboardShell
+      role="anggota"
+      displayName={user.name}
+      accessiblePages={user.accessiblePages}
+    >
       <MemberAttendanceSummaryPage data={data} />
     </DashboardShell>
   );

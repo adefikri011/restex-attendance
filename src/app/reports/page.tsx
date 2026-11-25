@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function ReportsRoute() {
-  const user = await requirePageUser(["super-admin", "admin", "ketua-divisi"]);
+  const user = await requirePageUser(undefined, "reports");
   const initialData = await getReportsPageData(
     user,
     undefined,
@@ -21,7 +21,7 @@ export default async function ReportsRoute() {
   );
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <ReportsPage initialData={initialData} />
     </DashboardShell>
   );

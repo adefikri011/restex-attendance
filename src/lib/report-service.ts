@@ -187,10 +187,7 @@ export async function getReportsPageData(
   const endDate = selectedPeriod.endDate.toISOString().slice(0, 10);
   const selectedRange = getRangeDates(range, startDate, endDate);
   const hasRange = selectedRange.startDate <= selectedRange.endDate;
-  const division =
-    viewer.role === "ketua-divisi" || viewer.role === "pj-divisi"
-      ? viewer.managedDivision
-      : undefined;
+  const division = viewer.managedDivision ?? undefined;
   const scopedDivision = division ?? undefined;
   if (
     (viewer.role === "ketua-divisi" || viewer.role === "pj-divisi") &&

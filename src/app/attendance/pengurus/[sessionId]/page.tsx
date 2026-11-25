@@ -17,13 +17,13 @@ export default async function OfficerAttendanceSessionRoute({
 }: {
   params: Promise<{ sessionId: string }>;
 }) {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "officer-attendance");
   const { sessionId } = await params;
   const data = await getAttendanceSessionData(sessionId, user, "officers");
   if (!data) notFound();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AttendanceSessionDetail {...data} audience="officers" />
     </DashboardShell>
   );

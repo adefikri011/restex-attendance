@@ -13,7 +13,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "announcements");
   if (!access.user) {
     return NextResponse.json({ error: "Hanya Admin dan Super Admin yang dapat membuat pengumuman." }, { status: access.status });
   }

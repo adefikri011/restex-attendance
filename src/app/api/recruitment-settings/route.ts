@@ -26,7 +26,7 @@ function isRecruitmentSettings(value: unknown): value is RecruitmentSettings {
 }
 
 export async function GET() {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-settings");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Admin dan Super Admin yang dapat mengatur pendaftaran." },
@@ -46,7 +46,7 @@ export async function GET() {
 }
 
 export async function PUT(request: Request) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-settings");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Admin dan Super Admin yang dapat mengubah pendaftaran." },

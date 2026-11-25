@@ -1,16 +1,16 @@
 import { Prisma } from "@/generated/prisma/client";
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForAnyPage } from "@/lib/auth-guard";
 import { recordAttendanceByQr } from "@/lib/attendance-service";
 
 export async function POST(
   request: Request,
   context: RouteContext<"/api/attendance/sessions/[sessionId]/scan">,
 ) {
-  const access = await getApiUser(["super-admin", "admin", "ketua-divisi", "pj-divisi"]);
+  const access = await getApiUserForAnyPage(["attendance", "officer-attendance"]);
   if (!access.user) {
     return NextResponse.json(
-      { error: "Hanya pengurus yang dapat mencatat absensi." },
+      { error: "Akses absensi tidak tersedia untuk akun ini." },
       { status: access.status },
     );
   }
@@ -47,6 +47,9 @@ export async function POST(
       );
     }
     if (error instanceof Error) {
+      if (error.message.includes("Akses absensi")) {
+        return NextResponse.json({ error: error.message }, { status: 403 });
+      }
       if (error.message.includes("sudah tercatat")) {
         return NextResponse.json({ error: error.message }, { status: 409 });
       }

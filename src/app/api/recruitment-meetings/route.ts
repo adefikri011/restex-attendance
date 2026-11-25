@@ -29,11 +29,20 @@ async function readBody(request: Request) {
 }
 
 export async function GET() {
-  const access = await getApiUser(["super-admin", "admin", "calon-anggota"]);
+  const access = await getApiUser();
   if (!access.user) {
     return NextResponse.json(
       { error: "Silakan masuk untuk melihat informasi pertemuan." },
       { status: access.status },
+    );
+  }
+  if (
+    access.user.role !== "calon-anggota" &&
+    !access.user.accessiblePages.includes("recruitment-meetings")
+  ) {
+    return NextResponse.json(
+      { error: "Anda tidak memiliki izin untuk mengelola jadwal pertemuan." },
+      { status: 403 },
     );
   }
 
@@ -56,11 +65,20 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const access = await getApiUser(["super-admin", "admin", "calon-anggota"]);
+  const access = await getApiUser();
   if (!access.user) {
     return NextResponse.json(
       { error: "Silakan masuk sebelum mengubah pilihan pertemuan." },
       { status: access.status },
+    );
+  }
+  if (
+    access.user.role !== "calon-anggota" &&
+    !access.user.accessiblePages.includes("recruitment-meetings")
+  ) {
+    return NextResponse.json(
+      { error: "Anda tidak memiliki izin untuk mengelola jadwal pertemuan." },
+      { status: 403 },
     );
   }
   const parsed = await readBody(request);

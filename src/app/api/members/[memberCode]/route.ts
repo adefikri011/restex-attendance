@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { getDivisionNames } from "@/lib/division-service";
 import { validateMemberInput } from "@/lib/member-input";
 import { updateMember } from "@/lib/member-service";
@@ -8,7 +8,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ memberCode: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUserForPage("members");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk mengubah data anggota." },

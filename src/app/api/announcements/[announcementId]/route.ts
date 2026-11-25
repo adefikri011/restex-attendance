@@ -7,7 +7,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ announcementId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "announcements");
   if (!access.user) {
     return NextResponse.json({ error: "Akses ditolak." }, { status: access.status });
   }

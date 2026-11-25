@@ -20,7 +20,7 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ meetingId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-meetings");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Admin dan Super Admin yang dapat mengubah sesi." },
@@ -77,7 +77,7 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ meetingId: string }> },
 ) {
-  const access = await getApiUser(["super-admin", "admin"]);
+  const access = await getApiUser(undefined, "recruitment-meetings");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Admin dan Super Admin yang dapat menghapus sesi." },

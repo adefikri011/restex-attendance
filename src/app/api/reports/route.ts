@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { ReportRange } from "@/components/reports/report-data";
-import { getApiUser } from "@/lib/auth-guard";
+import { getApiUserForPage } from "@/lib/auth-guard";
 import { getReportsPageData } from "@/lib/report-service";
 
 const reportRanges: ReportRange[] = ["Bulan ini", "Semester I", "Seluruh periode"];
@@ -8,7 +8,7 @@ const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function GET(request: Request) {
-  const access = await getApiUser(["super-admin", "admin", "ketua-divisi"]);
+  const access = await getApiUserForPage("reports");
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk melihat laporan." },

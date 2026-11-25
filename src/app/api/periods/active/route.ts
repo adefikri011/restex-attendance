@@ -3,12 +3,7 @@ import { getApiUser } from "@/lib/auth-guard";
 import { getActivePeriodName } from "@/lib/dashboard-service";
 
 export async function GET() {
-  const access = await getApiUser([
-    "super-admin",
-    "admin",
-    "ketua-divisi",
-    "pj-divisi",
-  ]);
+  const access = await getApiUser();
   if (!access.user) {
     return NextResponse.json(
       { error: "Anda tidak memiliki izin untuk melihat periode aktif." },

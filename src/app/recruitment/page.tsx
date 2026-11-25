@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function RecruitmentSettingsRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "recruitment-settings");
   const settings = await getRecruitmentSettings();
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <RecruitmentSettingsPage initialSettings={settings} />
     </DashboardShell>
   );

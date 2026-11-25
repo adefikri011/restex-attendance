@@ -9,10 +9,10 @@ export const metadata: Metadata = {
 };
 
 export default async function AnnouncementManagementRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "announcements");
   const announcements = await getAllAnnouncements();
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <AnnouncementManagementPage initialAnnouncements={announcements} />
     </DashboardShell>
   );

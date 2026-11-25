@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import { UserAvatar } from "@/components/avatar/user-avatar";
 import type { AppRoleId } from "@/components/auth/role-config";
+import {
+  getPageAccessForPath,
+  type PageAccessKey,
+} from "@/lib/page-access-config";
 import type {
   DivisionDashboardData,
   OrganizationDashboardData,
@@ -81,13 +85,18 @@ export function RoleDashboardPage({
   displayName,
   dashboardData,
   memberData,
+  accessiblePages,
 }: {
   roleId: AppRoleId;
   displayName: string;
   dashboardData?: OrganizationDashboardData | DivisionDashboardData;
   memberData?: MemberPortalData;
+  accessiblePages?: readonly PageAccessKey[];
 }) {
-  const actions = roleActions[roleId];
+  const actions = roleActions[roleId].filter((action) => {
+    const pageKey = action.href ? getPageAccessForPath(action.href) : undefined;
+    return !pageKey || !accessiblePages || accessiblePages.includes(pageKey);
+  });
   const isMember = roleId === "anggota";
   const isSuperAdmin = roleId === "super-admin";
   const isAdmin = roleId === "admin";

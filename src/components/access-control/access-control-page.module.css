@@ -1,0 +1,226 @@
+.page {
+  display: grid;
+  gap: 1.25rem;
+  max-width: 76rem;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+
+.heading h1 {
+  margin: 0.25rem 0 0;
+  color: #0b2d43;
+  font-size: clamp(1.7rem, 4vw, 2.2rem);
+}
+
+.heading p:last-child,
+.panelHeading p {
+  max-width: 48rem;
+  margin: 0.5rem 0 0;
+  color: #718096;
+  line-height: 1.6;
+}
+
+.eyebrow {
+  margin: 0;
+  color: #718096;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1px solid #e1e7ed;
+}
+
+.tabs button {
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #718096;
+  cursor: pointer;
+  font: inherit;
+}
+
+.tabs button[aria-selected="true"] {
+  border-bottom-color: #0b2d43;
+  color: #0b2d43;
+  font-weight: 700;
+}
+
+.panel {
+  display: grid;
+  gap: 1.25rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
+  border: 1px solid #e1e7ed;
+  border-radius: 0.75rem;
+  background: #fff;
+}
+
+.panelHeading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.panelHeading h2 {
+  margin: 0;
+  color: #0b2d43;
+  font-size: 1.15rem;
+}
+
+.selectLabel {
+  display: grid;
+  gap: 0.4rem;
+  min-width: min(100%, 15rem);
+  color: #34495a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.selectLabel select {
+  min-height: 2.6rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #d5dee6;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #0b2d43;
+  font: inherit;
+}
+
+.permissionList,
+.assignmentList {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.permissionRow,
+.assignmentList li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid #edf1f4;
+}
+
+.permissionRow > span,
+.assignmentList li > span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.permissionRow strong,
+.assignmentList strong {
+  color: #18384c;
+  font-size: 0.94rem;
+}
+
+.permissionRow small,
+.assignmentList small {
+  color: #718096;
+  font-size: 0.8rem;
+}
+
+.permissionRow input {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
+  accent-color: #0b2d43;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #718096;
+  font-size: 0.85rem;
+}
+
+.actions button,
+.assignmentForm button {
+  min-height: 2.65rem;
+  padding: 0.6rem 1rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: #0b2d43;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 650;
+}
+
+.actions button:disabled,
+.assignmentForm button:disabled,
+.removeButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.notice {
+  margin: 0;
+  padding: 0.9rem 1rem;
+  border-radius: 0.45rem;
+  background: #f4f6f8;
+  color: #4a5d6d;
+  line-height: 1.55;
+}
+
+.assignmentForm {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 0.85rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e1e7ed;
+}
+
+.assignmentList li {
+  min-width: 0;
+}
+
+.removeButton {
+  padding: 0.45rem 0.75rem;
+  border: 1px solid #d5dee6;
+  border-radius: 0.4rem;
+  background: #fff;
+  color: #34495a;
+  cursor: pointer;
+  font: inherit;
+}
+
+.empty {
+  margin: 0;
+  color: #718096;
+}
+
+@media (max-width: 760px) {
+  .panelHeading {
+    flex-direction: column;
+  }
+
+  .selectLabel {
+    width: 100%;
+  }
+
+  .assignmentForm {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .actions button {
+    width: 100%;
+  }
+}

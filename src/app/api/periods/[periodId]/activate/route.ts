@@ -20,7 +20,7 @@ export async function POST(
   _request: Request,
   { params }: { params: Promise<{ periodId: string }> },
 ) {
-  const access = await getApiUser(["super-admin"]);
+  const access = await getApiUser(undefined, "periods");
   if (!access.user) {
     return NextResponse.json(
       { error: "Hanya Super Admin yang dapat mengaktifkan periode." },

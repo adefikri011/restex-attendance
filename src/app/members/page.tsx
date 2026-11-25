@@ -13,14 +13,14 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function MembersRoute() {
-  const user = await requirePageUser(["super-admin", "admin"]);
+  const user = await requirePageUser(undefined, "members");
   const [{ members, periodName }, divisions] = await Promise.all([
     getMembersPageData(),
     getDivisionsPageData(),
   ]);
 
   return (
-    <DashboardShell role={user.role} displayName={user.name}>
+    <DashboardShell role={user.role} displayName={user.name} accessiblePages={user.accessiblePages}>
       <MembersPage
         initialDivisions={divisions}
         initialMembers={members}
