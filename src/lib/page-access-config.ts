@@ -52,8 +52,6 @@ export const accessManagedRoles: {
 }[] = [
   { id: "super-admin", label: "Super Admin" },
   { id: "admin", label: "Admin" },
-  { id: "ketua-divisi", label: "Ketua Divisi" },
-  { id: "pj-divisi", label: "PJ Divisi" },
   { id: "calon-anggota", label: "Calon Anggota" },
   { id: "anggota", label: "Anggota" },
 ];

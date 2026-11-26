@@ -5,8 +5,8 @@ import { requirePageUser } from "@/lib/auth-guard";
 import { getAdministratorAccountsPageData } from "@/lib/administrator-account-service";
 
 export const metadata: Metadata = {
-  title: "Akun Pengurus | RESTEX Attendance",
-  description: "Kelola akun pengurus dan tanggung jawab Ketua Divisi RESTEX.",
+  title: "Akun Administrator | RESTEX Attendance",
+  description: "Kelola akun Super Admin dan Admin RESTEX.",
 };
 
 export const instant = false;

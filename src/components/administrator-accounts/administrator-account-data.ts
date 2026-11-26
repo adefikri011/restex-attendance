@@ -1,8 +1,6 @@
 export const administratorRoles = [
   "Super Admin",
   "Admin",
-  "Ketua Divisi",
-  "PJ Divisi",
 ] as const;
 
 export type AdministratorRole = (typeof administratorRoles)[number];
@@ -19,7 +17,7 @@ export type AdministratorAccount = {
   lastActiveAt: string | null;
   memberCode?: string;
   nim?: string;
-  cohort?: string;
+  cohort?: string | null;
 };
 
 export function getAdministratorInitials(name: string) {

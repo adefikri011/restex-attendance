@@ -58,7 +58,7 @@ function isReportPageData(value: unknown): value is ReportPageData {
         typeof member.email === "string" &&
         typeof member.nim === "string" &&
         typeof member.division === "string" &&
-        typeof member.cohort === "string" &&
+        (typeof member.cohort === "string" || member.cohort === null) &&
         (member.status === "Aktif" ||
           member.status === "Cuti" ||
           member.status === "Keluar" ||

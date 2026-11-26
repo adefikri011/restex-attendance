@@ -7,7 +7,7 @@ import {
 } from "@/lib/r2-storage";
 import { prisma } from "@/lib/prisma";
 
-const accountRoles = ["SUPER_ADMIN", "ADMIN", "DIVISION_LEAD", "DIVISION_PJ"] as const;
+const accountRoles = ["SUPER_ADMIN", "ADMIN"] as const;
 const viewerRoles = ["super-admin"] as const;
 
 export async function GET(

@@ -196,7 +196,7 @@ export function RoleDashboardPage({
               </div>
               <div className={styles.memberIdentityMeta}>
                 <span>Angkatan</span>
-                <strong>{memberData.member.cohort}</strong>
+                <strong>{memberData.member.cohort ?? "Belum dicantumkan"}</strong>
               </div>
             </article>
           ) : (

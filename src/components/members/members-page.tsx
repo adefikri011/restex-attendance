@@ -5,6 +5,7 @@ import { ArrowDownToLine, Building2, Copy, KeyRound, UserRoundX, UsersRound, X }
 import { AddMemberDialog } from "./add-member-dialog";
 import { EditMemberDialog } from "./edit-member-dialog";
 import { initialAccountPassword } from "@/lib/account-credentials";
+import { downloadAccountCredentials } from "@/lib/download-account-credentials";
 import {
   membershipStatuses,
   type Member,
@@ -46,7 +47,7 @@ function isMemberCredential(value: unknown): value is MemberCredential {
     typeof value.email === "string" &&
     typeof value.nim === "string" &&
     typeof value.division === "string" &&
-    typeof value.cohort === "string" &&
+    (typeof value.cohort === "string" || value.cohort === null) &&
     typeof value.status === "string" &&
     isMembershipStatus(value.status) &&
     (typeof value.attendance === "number" || value.attendance === null) &&
@@ -63,7 +64,7 @@ function isMember(value: unknown): value is Member {
     typeof value.email === "string" &&
     typeof value.nim === "string" &&
     typeof value.division === "string" &&
-    typeof value.cohort === "string" &&
+    (typeof value.cohort === "string" || value.cohort === null) &&
     typeof value.status === "string" &&
     isMembershipStatus(value.status) &&
     (typeof value.attendance === "number" || value.attendance === null) &&
@@ -73,29 +74,6 @@ function isMember(value: unknown): value is Member {
 
 function withoutCredential({ id, name, email, nim, division, cohort, status, attendance, joinedAt }: MemberCredential): Member {
   return { id, name, email, nim, division, cohort, status, attendance, joinedAt };
-}
-
-function escapeCsvCell(value: string) {
-  const safeValue = /^[=+\-@]/.test(value) ? `'${value}` : value;
-  return `"${safeValue.replaceAll('"', '""')}"`;
-}
-
-function downloadCredentials(credentials: MemberCredential[]) {
-  const rows = [
-    ["Nama", "Email", "Password awal"],
-    ...credentials.map(({ name, email, initialPassword }) => [
-      name,
-      email,
-      initialPassword,
-    ]),
-  ];
-  const csv = `\uFEFF${rows.map((row) => row.map(escapeCsvCell).join(",")).join("\r\n")}`;
-  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "kredensial-awal-anggota.csv";
-  link.click();
-  URL.revokeObjectURL(url);
 }
 
 export function MembersPage({
@@ -526,7 +504,9 @@ export function MembersPage({
             <button
               type="button"
               className={styles.credentialsDownload}
-              onClick={() => downloadCredentials(credentials)}
+              onClick={() =>
+                downloadAccountCredentials(credentials, "kredensial-awal-anggota.csv")
+              }
             >
               <Copy size={14} aria-hidden="true" />
               Unduh kredensial (.csv)

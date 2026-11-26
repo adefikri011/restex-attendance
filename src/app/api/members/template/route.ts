@@ -61,7 +61,8 @@ export async function GET() {
   instructions.addRows([
     ["PANDUAN IMPOR ANGGOTA"],
     ["Isi satu anggota per baris pada sheet Anggota."],
-    ["Kolom wajib: Nama, NIM, Divisi, dan Angkatan."],
+    ["Kolom wajib: Nama, NIM, dan Divisi."],
+    ["Angkatan boleh dikosongkan jika tidak tersedia; jika diisi, gunakan tahun 4 digit."],
     ["Status boleh dikosongkan; jika kosong akan dibuat Aktif."],
     [
       divisions.length

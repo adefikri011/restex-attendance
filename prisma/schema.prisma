@@ -299,7 +299,7 @@ model Member {
   memberCode  String       @unique @map("member_code") @db.VarChar(24)
   fullName    String       @map("full_name") @db.VarChar(160)
   nim         String       @unique @db.VarChar(32)
-  cohort      String       @db.VarChar(4)
+  cohort      String?      @db.VarChar(4)
   photoUrl    String?      @map("photo_url") @db.VarChar(2048)
   qrTokenHash String?      @unique @map("qr_token_hash") @db.VarChar(128)
   qrIssuedAt  DateTime?    @map("qr_issued_at") @db.Timestamptz(3)

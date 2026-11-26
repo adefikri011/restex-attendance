@@ -28,7 +28,7 @@ function getCardDetails(member: Member): LanyardCardDetails {
     name: member.name,
     nim: member.nim,
     division: member.division,
-    cohort: member.cohort,
+    cohort: member.cohort ?? "",
     role: member.role,
   };
 }

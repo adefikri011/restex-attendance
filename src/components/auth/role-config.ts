@@ -82,3 +82,13 @@ export function getAppRole(roleId: string) {
 export function getAppRoleByDatabaseRole(roleId: string) {
   return appRoles.find((role) => role.databaseRole === roleId);
 }
+
+export function getAppRoleByOfficerPosition(position: string) {
+  if (position === "ketua-divisi") {
+    return getAppRole("ketua-divisi");
+  }
+  if (position === "pj-divisi") {
+    return getAppRole("pj-divisi");
+  }
+  return undefined;
+}

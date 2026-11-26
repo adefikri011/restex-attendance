@@ -35,16 +35,8 @@ export async function POST(request: Request) {
   }
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const role = body.role;
-  const division = body.division;
-  if (
-    typeof role !== "string" ||
-    (role !== "super-admin" &&
-      role !== "admin" &&
-      role !== "ketua-divisi" &&
-      role !== "pj-divisi") ||
-    (division !== null && typeof division !== "string")
-  ) {
-    return NextResponse.json({ error: "Jabatan atau divisi tidak valid." }, { status: 400 });
+  if (role !== "super-admin" && role !== "admin") {
+    return NextResponse.json({ error: "Role akun tidak valid." }, { status: 400 });
   }
   if (role === "super-admin" && body.confirmSuperAdmin !== true) {
     return NextResponse.json(
@@ -57,7 +49,6 @@ export async function POST(request: Request) {
     const result = await createAdministratorAccount({
       name,
       role,
-      division,
     } satisfies NewAdministratorInput, access.user.id);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
@@ -71,12 +62,6 @@ export async function POST(request: Request) {
         error.message.includes("Email tidak")
       ) {
         return NextResponse.json({ error: error.message }, { status: 400 });
-      }
-      if (error.message.includes("sudah memiliki Ketua Divisi")) {
-        return NextResponse.json({ error: error.message }, { status: 409 });
-      }
-      if (error.message.includes("sudah memiliki PJ")) {
-        return NextResponse.json({ error: error.message }, { status: 409 });
       }
     }
 

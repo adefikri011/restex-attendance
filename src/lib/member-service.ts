@@ -18,7 +18,7 @@ export type NewMemberInput = {
   name: string;
   nim: string;
   division: string;
-  cohort: string;
+  cohort: string | null;
   status: MembershipStatus;
 };
 
@@ -73,6 +73,14 @@ export async function getMembersPageData(division?: string | null) {
       photoUrl: true,
       updatedAt: true,
       user: { select: { email: true, image: true, role: true } },
+      officerAssignments: {
+        where: {
+          periodId: activePeriod.id,
+          position: { in: ["ketua-divisi", "pj-divisi"] },
+        },
+        take: 1,
+        select: { position: true },
+      },
       memberships: {
         where: {
           periodId: activePeriod.id,
@@ -108,9 +116,11 @@ export async function getMembersPageData(division?: string | null) {
             ? "Super Admin"
             : row.user?.role === "ADMIN"
               ? "Admin"
-              : row.user?.role === "DIVISION_LEAD"
+              : row.officerAssignments[0]?.position === "ketua-divisi" ||
+                  row.user?.role === "DIVISION_LEAD"
                 ? "Ketua Divisi"
-                : row.user?.role === "DIVISION_PJ"
+                : row.officerAssignments[0]?.position === "pj-divisi" ||
+                    row.user?.role === "DIVISION_PJ"
                   ? "PJ Divisi"
                   : undefined
         ) as Member["role"],
@@ -377,12 +387,15 @@ export async function updateMember(
   }
 
   const currentStatus = statusFromDatabase[membership.status];
+  const accountActiveMatchesStatus =
+    !member.userId || member.user?.isActive === (input.status === "Aktif");
   if (
     member.fullName === input.name &&
     member.nim === input.nim &&
     member.cohort === input.cohort &&
     membership.division === input.division &&
-    currentStatus === input.status
+    currentStatus === input.status &&
+    accountActiveMatchesStatus
   ) {
     return {
       id: memberCode,
@@ -468,11 +481,13 @@ export async function updateMember(
         name: member.fullName,
         division: membership.division,
         status: membership.status,
+        accountActive: member.user?.isActive ?? null,
       },
       newValue: {
         name: input.name,
         division: input.division,
         status: statusToDatabase[input.status],
+        accountActive: input.status === "Aktif",
       },
     });
   });

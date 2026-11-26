@@ -71,7 +71,7 @@ export function MemberDetailDialog({ member, onClose }: MemberDetailDialogProps)
           </div>
           <div>
             <dt><GraduationCap size={15} /> Angkatan</dt>
-            <dd>{member.cohort}</dd>
+            <dd>{member.cohort ?? "Belum dicantumkan"}</dd>
           </div>
           <div>
             <dt><CalendarDays size={15} /> Bergabung</dt>

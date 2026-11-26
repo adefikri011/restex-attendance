@@ -107,7 +107,7 @@ export function MemberTable({
                     <span className={styles.divisionName}>{member.division}</span>
                   </td>
                   <td>
-                    <span className={styles.cohortPill}>{member.cohort}</span>
+                    <span className={styles.cohortPill}>{member.cohort ?? "Belum diisi"}</span>
                   </td>
                   <td>
                     {member.attendance === null ? (

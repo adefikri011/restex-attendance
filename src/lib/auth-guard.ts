@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   getAppRoleByDatabaseRole,
+  getAppRoleByOfficerPosition,
   type AppRoleId,
 } from "@/components/auth/role-config";
 import { auth } from "@/lib/auth";
@@ -68,13 +69,22 @@ export async function getApiUser(
 
   const effectiveAccess = await getEffectiveUserPageAccess(role.id, user.id);
   const accessiblePages = effectiveAccess.pages;
+  const assignedRole = effectiveAccess.positions.includes("ketua-divisi")
+    ? getAppRoleByOfficerPosition("ketua-divisi")
+    : effectiveAccess.positions.includes("pj-divisi")
+      ? getAppRoleByOfficerPosition("pj-divisi")
+      : undefined;
+  const effectiveRole =
+    role.id === "super-admin" || role.id === "admin"
+      ? role
+      : assignedRole ?? role;
   const managedDivision =
-    role.id === "ketua-divisi" || role.id === "pj-divisi"
+    effectiveRole.id === "ketua-divisi" || effectiveRole.id === "pj-divisi"
       ? user.managedDivision ?? effectiveAccess.managedDivision
-      : role.id === "admin" || role.id === "super-admin"
+      : effectiveRole.id === "admin" || effectiveRole.id === "super-admin"
         ? null
         : effectiveAccess.managedDivision;
-  if (allowedRoles && !allowedRoles.includes(role.id)) {
+  if (allowedRoles && !allowedRoles.includes(effectiveRole.id)) {
     return {
       user: null,
       status: 403 as const,
@@ -95,7 +105,7 @@ export async function getApiUser(
       id: user.id,
       name: user.name,
       email: user.email,
-      role: role.id,
+      role: effectiveRole.id,
       managedDivision,
       accessiblePages,
     },

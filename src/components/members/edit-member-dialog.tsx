@@ -33,7 +33,7 @@ export function EditMemberDialog({
   const [name, setName] = useState(member.name);
   const [nim, setNim] = useState(member.nim);
   const [division, setDivision] = useState(member.division);
-  const [cohort, setCohort] = useState(member.cohort);
+  const [cohort, setCohort] = useState(member.cohort ?? "");
   const [status, setStatus] = useState<MembershipStatus>(member.status);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const emailPreview = generateMemberEmail(name, division, periodName);
@@ -47,7 +47,7 @@ export function EditMemberDialog({
         name: name.trim(),
         nim: nim.trim(),
         division,
-        cohort: cohort.trim(),
+        cohort: cohort.trim() || null,
         status,
       });
       if (result.error) {
@@ -119,9 +119,8 @@ export function EditMemberDialog({
             </select>
           </label>
           <label>
-            Angkatan
+            Angkatan (opsional)
             <input
-              required
               inputMode="numeric"
               maxLength={4}
               pattern="\d{4}"
@@ -129,7 +128,7 @@ export function EditMemberDialog({
               onChange={(event) => setCohort(event.target.value)}
               aria-describedby="edit-member-cohort-hint"
             />
-            <small id="edit-member-cohort-hint">Gunakan tahun angkatan 4 digit.</small>
+            <small id="edit-member-cohort-hint">Kosongkan jika tidak tersedia. Jika diisi, gunakan tahun 4 digit.</small>
           </label>
         </div>
         <label>
@@ -154,7 +153,7 @@ export function EditMemberDialog({
           </select>
         </label>
         <p className={styles.dialogNote}>
-          NIM, nama, divisi, angkatan, dan status dapat diubah. ID anggota tetap.
+          NIM, nama, divisi, angkatan, dan status dapat diubah. Angkatan boleh dikosongkan. ID anggota tetap.
           Perubahan nama atau divisi akan memperbarui email login otomatis; password
           tidak berubah. Status selain Aktif menonaktifkan akses login.
         </p>

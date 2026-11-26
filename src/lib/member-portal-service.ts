@@ -6,7 +6,7 @@ type MemberSummary = {
   name: string;
   memberCode: string;
   nim: string;
-  cohort: string;
+  cohort: string | null;
   division: string | null;
   membershipStatus: "Aktif" | "Cuti" | "Keluar" | "Alumni" | null;
   joinedAt: string | null;

@@ -20,7 +20,9 @@ export function LanyardCardForm({
   onFieldChange,
 }: LanyardCardFormProps) {
   const divisions = [...new Set(members.map((member) => member.division))].sort();
-  const cohorts = [...new Set(members.map((member) => member.cohort))].sort().reverse();
+  const cohorts = [...new Set(members.flatMap((member) => member.cohort ? [member.cohort] : []))]
+    .sort()
+    .reverse();
 
   return (
     <section className={styles.formPanel} aria-labelledby="card-form-title">
@@ -96,6 +98,7 @@ export function LanyardCardForm({
             value={details.cohort}
             onChange={(event) => onFieldChange("cohort", event.target.value)}
           >
+            <option value="">Tidak dicantumkan</option>
             {cohorts.map((cohort) => (
               <option value={cohort} key={cohort}>
                 {cohort}

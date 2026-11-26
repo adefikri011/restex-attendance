@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Send, ShieldAlert, X } from "lucide-react";
-import { generateMemberEmail, getPeriodEmailCode } from "@/components/members/member-data";
+import { getPeriodEmailCode } from "@/components/members/member-data";
 import { initialAccountPassword } from "@/lib/account-credentials";
 import {
   administratorRoles,
@@ -18,11 +18,8 @@ type CreatedAccount = {
 };
 
 type InviteAdministratorFormProps = {
-  availableDivisions: string[];
-  availablePjDivisions: string[];
   periodName: string | null;
   initialRole?: AdministratorRole;
-  initialDivision?: string;
   onCancel: () => void;
   onCreated: (result: CreatedAccount) => void;
 };
@@ -42,21 +39,15 @@ function isCreatedAccount(value: unknown): value is CreatedAccount {
     "email" in account &&
     typeof account.email === "string" &&
     "role" in account &&
-    (account.role === "Super Admin" ||
-      account.role === "Admin" ||
-      account.role === "Ketua Divisi" ||
-      account.role === "PJ Divisi") &&
+    (account.role === "Super Admin" || account.role === "Admin") &&
     "status" in account &&
     account.status === "Aktif" &&
     typeof initialPassword === "string"
   );
 }
 
-function previewEmail(name: string, role: AdministratorRole, division: string, periodName: string | null) {
+function previewEmail(name: string, role: AdministratorRole, periodName: string | null) {
   if (!name.trim() || !periodName) return "";
-  if (role === "Ketua Divisi" || role === "PJ Divisi") {
-    return generateMemberEmail(name, division, periodName);
-  }
   const nameSlug = name
     .normalize("NFKD")
     .replace(/[\u0300-\u036f]/g, "")
@@ -68,24 +59,17 @@ function previewEmail(name: string, role: AdministratorRole, division: string, p
 }
 
 export function InviteAdministratorForm({
-  availableDivisions,
-  availablePjDivisions,
   periodName,
   initialRole = "Admin",
-  initialDivision = "",
   onCancel,
   onCreated,
 }: InviteAdministratorFormProps) {
   const [name, setName] = useState("");
   const [role, setRole] = useState<AdministratorRole>(initialRole);
-  const [division, setDivision] = useState<string>(initialDivision || availableDivisions[0] || "");
   const [confirmedSuperAdmin, setConfirmedSuperAdmin] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const isDivisionRole = role === "Ketua Divisi" || role === "PJ Divisi";
   const isSuperAdminRole = role === "Super Admin";
-  const roleDivisions = role === "PJ Divisi" ? availablePjDivisions : availableDivisions;
-  const selectedDivision = roleDivisions.includes(division) ? division : (roleDivisions[0] ?? "");
-  const emailPreview = previewEmail(name, role, selectedDivision, periodName);
+  const emailPreview = previewEmail(name, role, periodName);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,28 +81,20 @@ export function InviteAdministratorForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name,
-          role:
-            role === "Super Admin"
-              ? "super-admin"
-              : role === "Admin"
-                ? "admin"
-                : role === "Ketua Divisi"
-                  ? "ketua-divisi"
-                  : "pj-divisi",
-          division: isDivisionRole ? selectedDivision : null,
+          role: role === "Super Admin" ? "super-admin" : "admin",
           confirmSuperAdmin: isSuperAdminRole && confirmedSuperAdmin,
         }),
       });
       const result: unknown = await response.json();
       if (!response.ok) {
         notifications.error(
-          "Akun pengurus gagal dibuat",
+          "Akun administrator gagal dibuat",
           typeof result === "object" &&
             result !== null &&
             "error" in result &&
             typeof result.error === "string"
             ? result.error
-            : "Akun pengurus gagal dibuat.",
+            : "Akun administrator gagal dibuat.",
         );
         return;
       }
@@ -128,7 +104,7 @@ export function InviteAdministratorForm({
       onCreated(result);
     } catch (caught) {
       notifications.error(
-        "Akun pengurus gagal dibuat",
+        "Akun administrator gagal dibuat",
         caught instanceof Error
           ? caught.message
           : "Layanan pembuatan akun tidak dapat dihubungi.",
@@ -142,8 +118,8 @@ export function InviteAdministratorForm({
     <section className={styles.invitePanel} aria-labelledby="invite-admin-title">
       <div className={styles.inviteHeading}>
         <div>
-          <span className={styles.sectionEyebrow}>AKSES PENGURUS</span>
-          <h2 id="invite-admin-title">Buat akun pengurus</h2>
+          <span className={styles.sectionEyebrow}>AKUN ADMINISTRATOR</span>
+          <h2 id="invite-admin-title">Buat akun administrator</h2>
           <p>Akun langsung aktif setelah dibuat.</p>
         </div>
         <button
@@ -170,7 +146,7 @@ export function InviteAdministratorForm({
           />
         </label>
         <label>
-          Jabatan
+          Role akun
           <select
             value={role}
             onChange={(event) => {
@@ -203,27 +179,6 @@ export function InviteAdministratorForm({
             </label>
           </div>
         )}
-        {isDivisionRole && (
-          <label>
-            Divisi
-            <select
-              required
-              value={selectedDivision}
-              onChange={(event) => setDivision(event.target.value)}
-              disabled={!roleDivisions.length}
-            >
-              {roleDivisions.length ? (
-                roleDivisions.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))
-              ) : (
-                <option value="">Semua divisi sudah memiliki {role === "PJ Divisi" ? "PJ" : "ketua"}</option>
-              )}
-            </select>
-          </label>
-        )}
         <label>
           Email akun
           <input readOnly value={emailPreview} placeholder="Email dibuat otomatis" />
@@ -243,7 +198,6 @@ export function InviteAdministratorForm({
               disabled={
                 isSubmitting ||
                 !periodName ||
-                (isDivisionRole && !roleDivisions.length) ||
                 (isSuperAdminRole && !confirmedSuperAdmin)
               }
             >

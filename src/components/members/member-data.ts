@@ -7,7 +7,7 @@ export type Member = {
   photoUrl?: string | null;
   nim: string;
   division: string;
-  cohort: string;
+  cohort: string | null;
   status: MembershipStatus;
   attendance: number | null;
   joinedAt: string;

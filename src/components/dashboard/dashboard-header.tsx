@@ -25,7 +25,7 @@ export function DashboardHeader({
     "/reports": "Laporan",
     "/announcements/manage": "Kelola Pengumuman",
     "/audit-log": "Audit Log",
-    "/administrator-accounts": "Akun Pengurus",
+    "/administrator-accounts": "Akun Administrator",
     "/portal/anggota": "Portal Anggota",
     "/portal/anggota/ringkasan-kehadiran": "Ringkasan Kehadiran",
     "/portal/anggota/riwayat-absensi": "Riwayat Absensi",

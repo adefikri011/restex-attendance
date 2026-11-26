@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { Prisma, UserRole } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import type { AppRoleId } from "@/components/auth/role-config";
 import type { PageAccessKey } from "@/lib/page-access-config";
 import { writeAuditLog } from "@/lib/audit-log-service";
@@ -24,18 +24,12 @@ type AttendanceViewer = {
 };
 
 export type AttendanceAudience = "members" | "officers";
-const officerDatabaseRoles: UserRole[] = [
-  UserRole.SUPER_ADMIN,
-  UserRole.ADMIN,
-  UserRole.DIVISION_LEAD,
-  UserRole.DIVISION_PJ,
-];
 const officerAttendanceDivision = "Organisasi";
 
 function officerParticipantWhere(periodId: string): Prisma.MemberWhereInput {
   return {
     OR: [
-      { user: { role: { in: officerDatabaseRoles } } },
+      { user: { role: { in: ["SUPER_ADMIN", "ADMIN"] } } },
       { officerAssignments: { some: { periodId } } },
     ],
   };

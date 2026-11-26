@@ -42,7 +42,7 @@ function getHeaders(worksheet: import("exceljs").Worksheet) {
 
 function hasMemberHeaders(worksheet: import("exceljs").Worksheet) {
   const headers = getHeaders(worksheet);
-  return ["name", "nim", "division", "cohort"].every((field) =>
+  return ["name", "nim", "division"].every((field) =>
     columnAliases[field].some((alias) => headers.has(alias)),
   );
 }
@@ -155,14 +155,9 @@ export async function POST(request: Request) {
     status: getColumn(columnAliases.status),
   };
 
-  const missingHeaders = (["name", "nim", "division", "cohort"] as const)
+  const missingHeaders = (["name", "nim", "division"] as const)
     .filter((field) => !columns[field])
-    .map((field) => {
-      if (field === "name") return "Nama";
-      if (field === "nim") return "NIM";
-      if (field === "division") return "Divisi";
-      return "Angkatan";
-    });
+    .map((field) => ({ name: "Nama", nim: "NIM", division: "Divisi" })[field]);
   if (missingHeaders.length > 0) {
     return NextResponse.json(
       { error: `Kolom wajib tidak ditemukan: ${missingHeaders.join(", ")}.` },

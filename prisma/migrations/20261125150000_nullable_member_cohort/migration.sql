@@ -1,0 +1,2 @@
+ALTER TABLE "members"
+ALTER COLUMN "cohort" DROP NOT NULL;

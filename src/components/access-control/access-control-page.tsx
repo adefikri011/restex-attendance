@@ -2,12 +2,17 @@
 
 import { useState, type FormEvent } from "react";
 import {
+  Download,
+  Upload,
+} from "lucide-react";
+import {
   accessManagedRoles,
   officerPositions,
   type OfficerPositionKey,
   type PageAccessKey,
 } from "@/lib/page-access-config";
 import { notifications } from "@/lib/notifications";
+import { OfficerAssignmentImportDialog } from "./officer-assignment-import-dialog";
 import styles from "./access-control-page.module.css";
 
 type Settings = {
@@ -75,6 +80,7 @@ export function AccessControlPage({
   const [position, setPosition] = useState<OfficerPositionKey>("humas");
   const [division, setDivision] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const role = settings.roles.find(({ id }) => id === selectedRole);
   const roleDefaults = savedSettings.roles.find(({ id }) => id === selectedRole);
@@ -438,6 +444,22 @@ export function AccessControlPage({
             <p className={styles.notice}>Buat periode terlebih dahulu sebelum menetapkan pengurus.</p>
           ) : (
             <>
+              <div className={styles.assignmentImportActions}>
+                <p>
+                  Unggah susunan dari Excel. Sistem memeriksa anggota dan jabatan sebelum
+                  menyimpan seluruh baris.
+                </p>
+                <div>
+                  <a href="/api/officer-assignments/template" download>
+                    <Download size={15} aria-hidden="true" />
+                    Unduh template
+                  </a>
+                  <button type="button" onClick={() => setIsImportOpen(true)}>
+                    <Upload size={15} aria-hidden="true" />
+                    Import pengurus
+                  </button>
+                </div>
+              </div>
               <form className={styles.assignmentForm} onSubmit={addAssignment}>
                 <label className={styles.selectLabel}>
                   Anggota
@@ -501,6 +523,20 @@ export function AccessControlPage({
                     );
                   })}
                 </ul>
+              )}
+              {assignmentData.selectedPeriod && (
+                <OfficerAssignmentImportDialog
+                  open={isImportOpen}
+                  periodId={assignmentData.selectedPeriod.id}
+                  onClose={() => setIsImportOpen(false)}
+                  onImported={async ({ createdCount, createdMembersCount, createdAccounts }) => {
+                    await loadAssignments(assignmentData.selectedPeriod!.id);
+                    notifications.success(
+                      "Susunan pengurus diimpor",
+                      `${createdMembersCount} anggota baru, ${createdCount} penugasan, dan ${createdAccounts.length} akun baru ditambahkan ke periode ${assignmentData.selectedPeriod!.name}.`,
+                    );
+                  }}
+                />
               )}
             </>
           )}

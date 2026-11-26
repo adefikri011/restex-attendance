@@ -30,7 +30,7 @@ export function AddMemberDialog({
   const [name, setName] = useState("");
   const [nim, setNim] = useState("");
   const [division, setDivision] = useState(divisions[0] ?? "");
-  const [cohort, setCohort] = useState("2026");
+  const [cohort, setCohort] = useState("");
   const [status, setStatus] = useState<MembershipStatus>("Aktif");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const generatedEmail = generateMemberEmail(name, division, periodName);
@@ -44,7 +44,7 @@ export function AddMemberDialog({
         name: name.trim(),
         nim: nim.trim(),
         division,
-        cohort,
+        cohort: cohort || null,
         status,
       });
       if (result.error) {
@@ -117,8 +117,9 @@ export function AddMemberDialog({
               </select>
             </label>
             <label>
-              Angkatan
+              Angkatan (opsional)
               <select value={cohort} onChange={(event) => setCohort(event.target.value)}>
+                <option value="">Tidak dicantumkan</option>
                 <option>2026</option>
                 <option>2025</option>
                 <option>2024</option>

@@ -39,22 +39,22 @@ export async function getDivisionsPageData(): Promise<DivisionSummary[]> {
       by: ["division"],
       _count: { _all: true },
     }),
-    prisma.user.groupBy({
-      by: ["managedDivision"],
+    prisma.officerAssignment.findMany({
       where: {
-        role: { in: ["DIVISION_LEAD", "DIVISION_PJ"] },
-        managedDivision: { not: null },
+        period: { isActive: true },
+        position: { in: ["ketua-divisi", "pj-divisi"] },
       },
-      _count: { _all: true },
+      select: { division: true },
     }),
   ]);
   const membershipCounts = new Map(
     memberships.map(({ division, _count }) => [division, _count._all]),
   );
   const managerCounts = new Map(
-    leaders.flatMap(({ managedDivision, _count }) =>
-      managedDivision ? [[managedDivision, _count._all] as const] : [],
-    ),
+    leaders.reduce<Map<string, number>>((counts, { division }) => {
+      if (division) counts.set(division, (counts.get(division) ?? 0) + 1);
+      return counts;
+    }, new Map()),
   );
 
   return divisions.map((division) => ({
@@ -100,11 +100,11 @@ export async function updateDivision(
 
     const name = input.name === undefined ? current.name : normalizeDivisionName(input.name);
     if (input.isActive === false) {
-      const activeAssignee = await transaction.user.findFirst({
+      const activeAssignee = await transaction.officerAssignment.findFirst({
         where: {
-          role: { in: ["DIVISION_LEAD", "DIVISION_PJ"] },
-          isActive: true,
-          managedDivision: current.name,
+          period: { isActive: true },
+          position: { in: ["ketua-divisi", "pj-divisi"] },
+          division: current.name,
         },
         select: { id: true },
       });
@@ -121,6 +121,10 @@ export async function updateDivision(
     if (name !== current.name) {
       await Promise.all([
         transaction.membership.updateMany({
+          where: { division: current.name },
+          data: { division: name },
+        }),
+        transaction.officerAssignment.updateMany({
           where: { division: current.name },
           data: { division: name },
         }),
@@ -156,12 +160,18 @@ export async function deleteDivision(id: string, actorId: string) {
     });
     if (!division) throw new Error("Divisi tidak ditemukan.");
 
-    const [membershipCount, managerCount, sessionCount] = await Promise.all([
+    const [membershipCount, managerCount, legacyManagerCount, sessionCount] = await Promise.all([
       transaction.membership.count({ where: { division: division.name } }),
-      transaction.user.count({ where: { managedDivision: division.name } }),
+      transaction.officerAssignment.count({ where: { division: division.name } }),
+      transaction.user.count({
+        where: {
+          role: { in: ["DIVISION_LEAD", "DIVISION_PJ"] },
+          managedDivision: division.name,
+        },
+      }),
       transaction.session.count({ where: { division: division.name } }),
     ]);
-    if (membershipCount || managerCount || sessionCount) {
+    if (membershipCount || managerCount || legacyManagerCount || sessionCount) {
       throw new Error("Divisi masih digunakan. Nonaktifkan divisi agar riwayat tetap aman.");
     }
 

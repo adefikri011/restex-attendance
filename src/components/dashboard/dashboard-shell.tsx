@@ -78,7 +78,7 @@ const primaryNavigation: NavigationItem[] = [
 
 const managementNavigation: NavigationItem[] = [
   { label: "Audit Log", icon: ScrollText, href: "/audit-log", pageKey: "audit-log" },
-  { label: "Akun Pengurus", icon: Activity, href: "/administrator-accounts", superAdminOnly: true },
+  { label: "Akun Administrator", icon: Activity, href: "/administrator-accounts", superAdminOnly: true },
   { label: "Akses Halaman", icon: ShieldCheck, href: "/access-control", superAdminOnly: true },
 ];
 

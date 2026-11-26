@@ -22,8 +22,9 @@ export function validateMemberInput(value: unknown, divisions: string[]): Valida
   const nim = typeof value.nim === "string" ? value.nim.trim() : "";
   const division =
     typeof value.division === "string" ? value.division.trim() : "";
-  const cohort =
+  const rawCohort =
     typeof value.cohort === "string" ? value.cohort.trim() : "";
+  const cohort = rawCohort || null;
   const rawStatus =
     typeof value.status === "string" ? value.status.trim() : "Aktif";
   const status =
@@ -40,7 +41,7 @@ export function validateMemberInput(value: unknown, divisions: string[]): Valida
   if (!divisions.includes(division)) {
     return { input: null, error: "Divisi tidak dikenal." };
   }
-  if (!/^\d{4}$/.test(cohort)) {
+  if (cohort !== null && !/^\d{4}$/.test(cohort)) {
     return { input: null, error: "Angkatan harus berupa tahun 4 digit." };
   }
   if (!isMembershipStatus(status)) {
